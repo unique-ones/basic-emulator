@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 # Set the project name and language
-project(basic VERSION 0.0.1 DESCRIPTION "basic" LANGUAGES CXX C)
+project(basic VERSION 0.0.1 DESCRIPTION "basic" LANGUAGES C)
 include(FetchContent)
 
 # Set the C standard
