@@ -1,8 +1,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/cmake,c++,visualstudiocode,visualstudio,clion
 # Edit at https://www.toptal.com/developers/gitignore?templates=cmake,c++,visualstudiocode,visualstudio,clion
 
-### Custom build
+### Custom options ###
 build/
+.idea/
 
 ### C++ ###
 # Prerequisites

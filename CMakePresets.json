@@ -16,7 +16,8 @@
       "hidden": true,
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}"
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}",
+        "CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG": "${sourceDir}/build/${presetName}"
       }
     },
     {
@@ -24,7 +25,8 @@
       "hidden": true,
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}"
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}",
+        "CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE": "${sourceDir}/build/${presetName}"
       }
     },
     {
@@ -54,8 +56,7 @@
         "rhs": "Linux"
       },
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "/usr/local/gcc-10.1.0/bin/gcc-10.1",
-        "CMAKE_CXX_COMPILER": "/usr/local/gcc-10.1.0/bin/g++-10.1",
+        "CMAKE_C_COMPILER": "gcc",
         "TARGET_BUILD_PLATFORM": "linux"
       }
     },
