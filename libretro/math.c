@@ -1,11 +1,15 @@
 #include "math.h"
 
-s32 max_s32(s32 a, s32 b) {
+s32 s32_max(s32 a, s32 b) {
     return a > b ? a : b;
 }
 
-f32 max_f32(f32 a, f32 b) {
-    return a > b ? a : b;
+s32 s32_min(s32 a, s32 b) {
+    return a < b ? a : b;
+}
+
+s32 s32_clamp(s32 n, s32 min, s32 max) {
+    return s32_min(max, s32_max(n, min));
 }
 
 void f32mat4_create_identity(f32mat4_t* matrix) {

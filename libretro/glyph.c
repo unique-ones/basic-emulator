@@ -43,7 +43,7 @@ bool glyph_cache_create(glyph_cache_t* cache, const char* path) {
         info->texture_span.y = 0.0f;
         info->texture_offset = 0.0f;
         size.x += (s32) face->glyph->bitmap.width;
-        size.y = max_s32(size.y, (s32) face->glyph->bitmap.rows);
+        size.y = s32_max(size.y, (s32) face->glyph->bitmap.rows);
     }
 
     cache->atlas.data = NULL;
@@ -81,6 +81,10 @@ bool glyph_cache_create(glyph_cache_t* cache, const char* path) {
     FT_Done_Face(face);
     FT_Done_FreeType(library);
     return true;
+}
+
+void glyph_cache_destroy(glyph_cache_t* cache) {
+    texture_destroy(&cache->atlas);
 }
 
 void glyph_cache_acquire(glyph_cache_t* cache, glyph_info_t* info, char symbol) {

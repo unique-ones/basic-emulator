@@ -1,12 +1,50 @@
 #include "display.h"
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "utility.h"
 
 static void display_framebuffer_callback(GLFWwindow* handle, s32 width, s32 height) {
     display_t* display = glfwGetWindowUserPointer(handle);
     display->width = width;
     display->height = height;
     glViewport(0, 0, width, height);
+}
+
+static void display_key_callback(GLFWwindow* handle, s32 key, s32 scancode, s32 action, s32 mods) {
+    if (action != GLFW_PRESS && action != GLFW_REPEAT) {
+        return;
+    }
+    display_t* display = glfwGetWindowUserPointer(handle);
+    if (display->input_state) {
+        input_state_t* state = display->input_state;
+        switch (key) {
+            case GLFW_KEY_LEFT:
+                input_buffer_advance_cursor(&state->input, -1);
+                break;
+            case GLFW_KEY_RIGHT:
+                input_buffer_advance_cursor(&state->input, 1);
+                break;
+            case GLFW_KEY_BACKSPACE:
+                input_buffer_remove(&state->input);
+                break;
+            case GLFW_KEY_TAB:
+                input_buffer_emplace(&state->input, '\t');
+                break;
+            case GLFW_KEY_ENTER:
+                state->mode = INPUT_MODE_EXECUTE;
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+static void display_char_callback(GLFWwindow* handle, u32 unicode) {
+    display_t* display = glfwGetWindowUserPointer(handle);
+    if (display->input_state) {
+        input_buffer_emplace(&display->input_state->input, (char) toupper((char) unicode));
+    }
 }
 
 static const char* severity_string(u32 severity) {
@@ -64,12 +102,25 @@ bool display_create(display_t* display, const char* title, s32 width, s32 height
         glfwDestroyWindow(display->handle);
         glfwTerminate();
     }
+
     glfwSwapInterval(0);
+    glfwSetInputMode(display->handle, GLFW_STICKY_KEYS, GLFW_TRUE);
     glfwSetWindowUserPointer(display->handle, display);
     glfwSetFramebufferSizeCallback(display->handle, display_framebuffer_callback);
+    glfwSetKeyCallback(display->handle, display_key_callback);
+    glfwSetCharCallback(display->handle, display_char_callback);
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(display_error_callback, NULL);
     return true;
+}
+
+void display_input(display_t* display, input_state_t* input_state) {
+    display->input_state = input_state;
+}
+
+void display_title(display_t* display, const char* title) {
+    glfwSetWindowTitle(display->handle, title);
+    display->title = title;
 }
 
 void display_destroy(display_t* display) {

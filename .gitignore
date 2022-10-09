@@ -4,6 +4,7 @@
 ### Custom options ###
 build/
 .idea/
+.vscode/
 
 ### C++ ###
 # Prerequisites

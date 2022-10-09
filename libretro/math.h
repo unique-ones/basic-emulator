@@ -9,15 +9,26 @@
  * @brief Returns the greater of the two passed variables
  * @param a First variable
  * @param b Second variable
+ * @return Max value
  */
-s32 max_s32(s32 a, s32 b);
+s32 s32_max(s32 a, s32 b);
 
 /**
- * @brief Returns the greater of the two passed variables
+ * @brief Returns the smaller of the two passed variables
  * @param a First variable
  * @param b Second variable
+ * @return Min value
  */
-f32 max_f32(f32 a, f32 b);
+s32 s32_min(s32 a, s32 b);
+
+/**
+ * @brief Clamps the specified value to the given bounds
+ * @param n Value that shall be clamped
+ * @param min Lower bound
+ * @param max Upper bound
+ * @return Clamped value
+ */
+s32 s32_clamp(s32 n, s32 min, s32 max);
 
 /**
  * @brief Creates an identity matrix

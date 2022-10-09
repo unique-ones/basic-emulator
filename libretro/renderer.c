@@ -94,6 +94,11 @@ bool text_renderer_create(text_renderer_t* text_renderer, const char* path) {
     return true;
 }
 
+void text_renderer_destroy(text_renderer_t* text_renderer) {
+    renderer_destroy(&text_renderer->renderer);
+    glyph_cache_destroy(&text_renderer->cache);
+}
+
 void text_renderer_draw_symbol(text_renderer_t* text_renderer,
                                glyph_info_t* symbol,
                                const f32vec2_t* position,
@@ -133,24 +138,82 @@ void text_renderer_draw_symbol(text_renderer_t* text_renderer,
 
 void text_renderer_draw_text(text_renderer_t* text_renderer,
                              const char* text,
+                             u32 length,
                              const f32vec2_t* position,
                              const f32vec3_t* color,
                              f32 scale) {
     renderer_t* renderer = &text_renderer->renderer;
     f32vec2_t position_iterator = *position;
     renderer_begin_batch(renderer);
-    for (u32 i = 0; i < strlen(text); i++) {
+    for (u32 i = 0; i < length; i++) {
         char symbol = text[i];
         if (symbol == '\n') {
             position_iterator.x = position->x;
             position_iterator.y += FONT_SIZE * scale;
-            continue;
+        } else if (symbol == '\t') {
+            glyph_info_t glyph_info;
+            glyph_cache_acquire(&text_renderer->cache, &glyph_info, ' ');
+            for (u32 j = 0; j < 4; j++) {
+                text_renderer_draw_symbol(text_renderer, &glyph_info, &position_iterator, color, scale);
+                position_iterator.x += glyph_info.advance.x * scale;
+            }
+        } else {
+            glyph_info_t glyph_info;
+            glyph_cache_acquire(&text_renderer->cache, &glyph_info, symbol);
+            text_renderer_draw_symbol(text_renderer, &glyph_info, &position_iterator, color, scale);
+            position_iterator.x += glyph_info.advance.x * scale;
         }
-        glyph_info_t glyph_info;
-        glyph_cache_acquire(&text_renderer->cache, &glyph_info, symbol);
-        text_renderer_draw_symbol(text_renderer, &glyph_info, &position_iterator, color, scale);
-        position_iterator.x += glyph_info.advance.x * scale;
     }
+    texture_bind(&text_renderer->cache.atlas, 0);
+    shader_uniform_sampler(&renderer->shader, "uniform_glyph_atlas", 0);
+    renderer_end_batch(renderer);
+}
+
+void text_renderer_draw_input(text_renderer_t* text_renderer,
+                              input_buffer_t* input,
+                              const f32vec2_t* position,
+                              const f32vec3_t* color,
+                              f32 scale) {
+    renderer_t* renderer = &text_renderer->renderer;
+    f32vec2_t position_iterator = *position;
+    renderer_begin_batch(renderer);
+
+    // First we draw the input indicator
+    glyph_info_t input_indicator_info;
+    glyph_cache_acquire(&text_renderer->cache, &input_indicator_info, ']');
+    text_renderer_draw_symbol(text_renderer, &input_indicator_info, &position_iterator, color, scale);
+    position_iterator.x += input_indicator_info.advance.x * scale;
+
+    // Then we fetch the cursor glyph
+    glyph_info_t cursor_info;
+    glyph_cache_acquire(&text_renderer->cache, &cursor_info, '_');
+    if (input->cursor == 0) {
+        text_renderer_draw_symbol(text_renderer, &cursor_info, &position_iterator, color, scale);
+    }
+
+    for (u32 i = 0; i < input->fill; i++) {
+        char symbol = input->data[i];
+        if (symbol == '\t') {
+            // If we encounter a tab, advance by four spaces
+            glyph_info_t glyph_info;
+            glyph_cache_acquire(&text_renderer->cache, &glyph_info, ' ');
+            for (u32 j = 0; j < 4; j++) {
+                text_renderer_draw_symbol(text_renderer, &glyph_info, &position_iterator, color, scale);
+                position_iterator.x += glyph_info.advance.x * scale;
+            }
+        } else {
+            // Any other character
+            glyph_info_t glyph_info;
+            glyph_cache_acquire(&text_renderer->cache, &glyph_info, symbol);
+            text_renderer_draw_symbol(text_renderer, &glyph_info, &position_iterator, color, scale);
+            position_iterator.x += glyph_info.advance.x * scale;
+        }
+
+        if (i == input->cursor - 1) {
+            text_renderer_draw_symbol(text_renderer, &cursor_info, &position_iterator, color, scale);
+        }
+    }
+
     texture_bind(&text_renderer->cache.atlas, 0);
     shader_uniform_sampler(&renderer->shader, "uniform_glyph_atlas", 0);
     renderer_end_batch(renderer);

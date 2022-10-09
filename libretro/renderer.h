@@ -4,7 +4,7 @@
 #include "buffer.h"
 #include "glyph.h"
 #include "shader.h"
-
+#include "state.h"
 
 #include <string.h>
 
@@ -79,6 +79,12 @@ typedef struct text_renderer {
 bool text_renderer_create(text_renderer_t* text_renderer, const char* path);
 
 /**
+ * @brief Destroys the text renderer
+ * @param text_renderer Text renderer handle
+ */
+void text_renderer_destroy(text_renderer_t* text_renderer);
+
+/**
  * @brief Draws the specified symbol at the given position
  * @param text_renderer Text renderer handle
  * @param symbol Symbol that shall be drawn
@@ -96,14 +102,30 @@ void text_renderer_draw_symbol(text_renderer_t* text_renderer,
  * @brief Draws the specified text at the given position
  * @param text_renderer Text renderer handle
  * @param text Text that shall be drawn
+ * @param length Length of the text
  * @param position Position were the text shall be drawn
  * @param color Color for the text
  * @param scale Scale of the text
  */
 void text_renderer_draw_text(text_renderer_t* text_renderer,
                              const char* text,
+                             u32 length,
                              const f32vec2_t* position,
                              const f32vec3_t* color,
                              f32 scale);
+
+/**
+ * @brief Draws the specified text at the given position
+ * @param text_renderer Text renderer handle
+ * @param input Input buffer
+ * @param position Position were the text shall be drawn
+ * @param color Color for the text
+ * @param scale Scale of the text
+ */
+void text_renderer_draw_input(text_renderer_t* text_renderer,
+                              input_buffer_t* input,
+                              const f32vec2_t* position,
+                              const f32vec3_t* color,
+                              f32 scale);
 
 #endif// RETRO_RENDERER_H

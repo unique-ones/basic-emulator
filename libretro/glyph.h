@@ -29,6 +29,12 @@ typedef struct glyph_cache {
 bool glyph_cache_create(glyph_cache_t* cache, const char* path);
 
 /**
+ * @brief Destroys the glyph cache and its glyph atlas
+ * @param cache Cache handle
+ */
+void glyph_cache_destroy(glyph_cache_t* cache);
+
+/**
  * @brief Fetches the specified symbol from the glyph cache
  * @param cache Cache handle
  * @param info Glyph info handle
