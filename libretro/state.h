@@ -3,47 +3,53 @@
 
 #include "types.h"
 
-#define STATE_INPUT_BUFFER_SIZE 128
-
 typedef struct input_buffer {
-    char data[STATE_INPUT_BUFFER_SIZE];
+    char* data;
     s32 fill;
     s32 cursor;
+    u32 capacity;
 } input_buffer_t;
 
 /**
- * @brief Creates an input buffer
- * @param buffer Buffer handle
+ * @brief creates an input buffer
+ * @param self buffer handle
+ * @param capacity capacity of the input buffer
  */
-void input_buffer_create(input_buffer_t* buffer);
+void input_buffer_create(input_buffer_t* self, u32 capacity);
 
 /**
- * @brief Inserts a character into the input buffer
- * @param buffer Buffer handle
- * @param data Data
+ * @brief destroys the input buffer and frees its data
+ * @param self buffer handle
+ */
+void input_buffer_destroy(input_buffer_t* self);
+
+/**
+ * @brief inserts a character into the input buffer
+ * @param self buffer handle
+ * @param data data
  * @return bool
  */
-bool input_buffer_emplace(input_buffer_t* buffer, char data);
+bool input_buffer_emplace(input_buffer_t* self, char data);
 
 /**
- * @brief Removes data at the cursor, reorders buffer to be continuous in memory
- * @param buffer Buffer handle
+ * @brief removes data at the cursor, reorders buffer to be continuous in memory
+ * @param self buffer handle
  * @return bool
  */
-bool input_buffer_remove(input_buffer_t* buffer);
+bool input_buffer_remove(input_buffer_t* self);
 
 /**
- * @brief Advances the cursor by the specified offset
- * @param buffer Input buffer handle
- * @param offset Offset
+ * @brief advances the cursor by the specified offset
+ * @param self input buffer handle
+ * @param offset offset
  */
-void input_buffer_advance_cursor(input_buffer_t* buffer, s32 offset);
+void input_buffer_advance_cursor(input_buffer_t* self, s32 offset);
 
 /**
- * @brief Checks if the input buffer is full
+ * @brief checks if the input buffer is full
  * @return bool
  */
-bool input_buffer_is_full(input_buffer_t* buffer);
+bool input_buffer_is_full(input_buffer_t* self);
 
 typedef enum input_mode { INPUT_MODE_INPUT = 0, INPUT_MODE_EXECUTE = 1 } input_mode_t;
 
@@ -53,9 +59,23 @@ typedef struct input_state {
 } input_state_t;
 
 /**
- * @brief Creates an input state
- * @param state State handle
+ * @brief creates an input state
+ * @param self state handle
+ * @param capacity capacity of the input buffer
  */
-void input_state_create(input_state_t* state);
+void input_state_create(input_state_t* self, u32 capacity);
+
+/**
+ * @brief destroys the input state and frees the input buffer
+ * @param self reference to input state
+ */
+void input_state_destroy(input_state_t* self);
+
+/**
+ * Here we will eventually have a program state with the following components:
+ * - virtual memory buffer
+ * - variable map
+ * - subroutine stack
+ */
 
 #endif// RETRO_STATE_H

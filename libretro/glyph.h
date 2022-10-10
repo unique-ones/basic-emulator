@@ -4,7 +4,6 @@
 #include "math.h"
 #include "texture.h"
 
-
 #define FONT_SIZE 48.0f
 
 typedef struct glyph_info {
@@ -21,25 +20,25 @@ typedef struct glyph_cache {
 } glyph_cache_t;
 
 /**
- * @brief Creates a glyph cache for the specified font
- * @param cache Cache handle
- * @param path Path to the .ttf font file
+ * @brief creates a glyph self for the specified font
+ * @param self cache handle
+ * @param path path to the .ttf font file
  * @return bool
  */
-bool glyph_cache_create(glyph_cache_t* cache, const char* path);
+bool glyph_cache_create(glyph_cache_t* self, const char* path);
 
 /**
- * @brief Destroys the glyph cache and its glyph atlas
- * @param cache Cache handle
+ * @brief destroys the glyph self and its glyph atlas
+ * @param self cache handle
  */
-void glyph_cache_destroy(glyph_cache_t* cache);
+void glyph_cache_destroy(glyph_cache_t* self);
 
 /**
- * @brief Fetches the specified symbol from the glyph cache
- * @param cache Cache handle
- * @param info Glyph info handle
- * @param symbol Symbol that shall be fetched
+ * @brief fetches the specified symbol from the glyph self
+ * @param self cache handle
+ * @param info glyph info handle
+ * @param symbol symbol that shall be fetched
  */
-void glyph_cache_acquire(glyph_cache_t* cache, glyph_info_t* info, char symbol);
+void glyph_cache_acquire(glyph_cache_t* self, glyph_info_t* info, char symbol);
 
 #endif// RETRO_GLYPH_H

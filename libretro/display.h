@@ -17,47 +17,47 @@ typedef struct display {
 } display_t;
 
 /**
- * @brief Creates a new window and a corresponding OpenGL context
- * @param display Display Handle
- * @param title Title of the window
- * @param width Width of the window
- * @param height Height of the window
+ * @brief creates a new window and a corresponding OpenGL context
+ * @param self display Handle
+ * @param title title of the window
+ * @param width width of the window
+ * @param height height of the window
  * @return bool
  */
-bool display_create(display_t* display, const char* title, s32 width, s32 height);
+bool display_create(display_t* self, const char* title, s32 width, s32 height);
 
 /**
- * @brief Set the input state handle for the display
- * @param display Display handle
- * @param input_state_t Input state handle
+ * @brief set the input state handle for the self
+ * @param self display handle
+ * @param input_state_t input state handle
  */
-void display_input(display_t* display, input_state_t* input_state);
+void display_input(display_t* self, input_state_t* input_state);
 
 /**
- * @brief Updates the title of the window
- * @param display Display handle
- * @param title Title
+ * @brief updates the title of the window
+ * @param self display handle
+ * @param title title
  */
-void display_title(display_t* display, const char* title);
+void display_title(display_t* self, const char* title);
 
 /**
- * @brief Destroys the window
- * @param display Display handle
+ * @brief destroys the window
+ * @param self display handle
  */
-void display_destroy(display_t* display);
+void display_destroy(display_t* self);
 
 /**
- * @brief Polls for events and swaps front and back buffer
- * @param display Display handle
- * @return Frame time
+ * @brief polls for events and swaps front and back buffer
+ * @param self display handle
+ * @return frame time
  */
-f64 display_update(display_t* display);
+f64 display_update(display_t* self);
 
 /**
- * @brief Checks if the window should be closed or not
- * @param display Display handle
+ * @brief checks if the window should be closed or not
+ * @param self display handle
  * @return
  */
-bool display_running(display_t* display);
+bool display_running(display_t* self);
 
 #endif// RETRO_DISPLAY_H

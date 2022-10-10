@@ -1,69 +1,71 @@
 #ifndef RETRO_RENDERER_H
 #define RETRO_RENDERER_H
 
+#include <string.h>
+
 #include "buffer.h"
 #include "glyph.h"
 #include "shader.h"
 #include "state.h"
 
-#include <string.h>
-
-#define MAX_BATCH_SIZE 1024
+#define QUAD_VERTICES 4
+#define QUAD_INDICES 6
+#define BATCH_CAPACITY 1024
 
 typedef struct renderer {
     shader_t shader;
     vertex_array_t vertex_array;
     vertex_buffer_t vertex_buffer;
     index_buffer_t index_buffer;
-    vertex_t vertices[MAX_BATCH_SIZE * 4];
-    u32 indices[MAX_BATCH_SIZE * 6];
+    vertex_t vertices[BATCH_CAPACITY * QUAD_VERTICES];
+    u32 indices[BATCH_CAPACITY * QUAD_INDICES];
     u32 batch_size;
 } renderer_t;
 
 /**
- * @brief Clears the currently bound frame buffer
+ * @brief clears the currently bound frame buffer
  */
 void renderer_clear(void);
 
 /**
- * @brief Sets the clear color
- * @param color Color value
+ * @brief sets the clear color
+ * @param color color value
  */
-void renderer_clear_color(const f32vec4_t* color);
+void renderer_clear_color(f32vec4_t* color);
 
 /**
- * @brief Creates a new renderer and initializes its pipeline
- * @param renderer Renderer handle
- * @param shader Optional shader handle, if NULL is passed, a default shader is used
+ * @brief creates a new renderer and initializes its pipeline
+ * @param self renderer handle
+ * @param shader shader handle
  */
-void renderer_create(renderer_t* renderer, shader_t* shader);
+void renderer_create(renderer_t* self, shader_t* shader);
 
 /**
- * @brief Destroys the specified renderer
- * @param renderer Renderer handle
+ * @brief destroys the specified renderer
+ * @param self renderer handle
  */
-void renderer_destroy(renderer_t* renderer);
+void renderer_destroy(renderer_t* self);
 
 /**
- * @brief Begins a renderer batch
- * @param renderer Renderer
+ * @brief begins a renderer batch
+ * @param self renderer handle
  */
-void renderer_begin_batch(renderer_t* renderer);
+void renderer_begin_batch(renderer_t* self);
 
 /**
- * @brief Ends a renderer batch
- * @param renderer Renderer
+ * @brief ends a renderer batch
+ * @param self renderer handle
  */
-void renderer_end_batch(renderer_t* renderer);
+void renderer_end_batch(renderer_t* self);
 
 /**
- * @brief Draws a quad using the specified renderer and the other parameters
- * @param renderer Renderer handle
- * @param position Position where the quad should start at
- * @param size Size of the quad
- * @param color Color of the quad
+ * @brief draws a quad using the specified renderer
+ * @param self renderer handle
+ * @param position position where the quad should start at
+ * @param size size of the quad
+ * @param color color of the quad
  */
-void renderer_draw_quad(renderer_t* renderer, const f32vec2_t* position, const f32vec2_t* size, const f32vec3_t* color);
+void renderer_draw_quad(renderer_t* self, f32vec2_t* position, f32vec2_t* size, f32vec3_t* color);
 
 typedef struct text_renderer {
     renderer_t renderer;
@@ -71,61 +73,61 @@ typedef struct text_renderer {
 } text_renderer_t;
 
 /**
- * @brief Creates a new text renderer and a glyph cache for it
- * @param text_renderer Text renderer handle
- * @param path Path to the .ttf file of the font
+ * @brief creates a new text renderer and a glyph cache for it
+ * @param self text renderer handle
+ * @param path path to the .ttf file of the font
  * @return bool
  */
-bool text_renderer_create(text_renderer_t* text_renderer, const char* path);
+bool text_renderer_create(text_renderer_t* self, const char* path);
 
 /**
- * @brief Destroys the text renderer
- * @param text_renderer Text renderer handle
+ * @brief destroys the text renderer
+ * @param self text renderer handle
  */
-void text_renderer_destroy(text_renderer_t* text_renderer);
+void text_renderer_destroy(text_renderer_t* self);
 
 /**
- * @brief Draws the specified symbol at the given position
- * @param text_renderer Text renderer handle
- * @param symbol Symbol that shall be drawn
- * @param position Position were the symbol shall be drawn
- * @param color Color for the symbol
- * @param scale Scale of the text
+ * @brief draws the specified symbol at the given position
+ * @param self text renderer handle
+ * @param symbol symbol that shall be drawn
+ * @param position position were the symbol shall be drawn
+ * @param color color for the symbol
+ * @param scale scale of the text
  */
-void text_renderer_draw_symbol(text_renderer_t* text_renderer,
+void text_renderer_draw_symbol(text_renderer_t* self,
                                glyph_info_t* symbol,
-                               const f32vec2_t* position,
-                               const f32vec3_t* color,
+                               f32vec2_t* position,
+                               f32vec3_t* color,
                                f32 scale);
 
 /**
- * @brief Draws the specified text at the given position
- * @param text_renderer Text renderer handle
- * @param text Text that shall be drawn
- * @param length Length of the text
- * @param position Position were the text shall be drawn
- * @param color Color for the text
- * @param scale Scale of the text
+ * @brief draws the specified text at the given position
+ * @param self text renderer handle
+ * @param text text that shall be drawn
+ * @param length length of the text
+ * @param position position were the text shall be drawn
+ * @param color color for the text
+ * @param scale scale of the text
  */
-void text_renderer_draw_text(text_renderer_t* text_renderer,
+void text_renderer_draw_text(text_renderer_t* self,
                              const char* text,
                              u32 length,
-                             const f32vec2_t* position,
-                             const f32vec3_t* color,
+                             f32vec2_t* position,
+                             f32vec3_t* color,
                              f32 scale);
 
 /**
- * @brief Draws the specified text at the given position
- * @param text_renderer Text renderer handle
- * @param input Input buffer
- * @param position Position were the text shall be drawn
- * @param color Color for the text
- * @param scale Scale of the text
+ * @brief draws the specified input buffer using a input indicator and cursor
+ * @param self text renderer handle
+ * @param input input buffer
+ * @param position position were the text shall be drawn
+ * @param color color for the text
+ * @param scale scale of the text
  */
-void text_renderer_draw_input(text_renderer_t* text_renderer,
+void text_renderer_draw_input(text_renderer_t* self,
                               input_buffer_t* input,
-                              const f32vec2_t* position,
-                              const f32vec3_t* color,
+                              f32vec2_t* position,
+                              f32vec3_t* color,
                               f32 scale);
 
 #endif// RETRO_RENDERER_H
