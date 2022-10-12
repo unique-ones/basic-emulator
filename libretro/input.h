@@ -8,6 +8,7 @@ typedef struct input_buffer {
     s32 fill;
     s32 cursor;
     u32 capacity;
+    bool submit;
 } input_buffer_t;
 
 /**
@@ -50,32 +51,5 @@ void input_buffer_advance_cursor(input_buffer_t* self, s32 offset);
  * @return bool
  */
 bool input_buffer_is_full(input_buffer_t* self);
-
-typedef enum input_mode { INPUT_MODE_INPUT = 0, INPUT_MODE_EXECUTE = 1 } input_mode_t;
-
-typedef struct input_state {
-    input_buffer_t input;
-    input_mode_t mode;
-} input_state_t;
-
-/**
- * @brief creates an input state
- * @param self state handle
- * @param capacity capacity of the input buffer
- */
-void input_state_create(input_state_t* self, u32 capacity);
-
-/**
- * @brief destroys the input state and frees the input buffer
- * @param self reference to input state
- */
-void input_state_destroy(input_state_t* self);
-
-/**
- * Here we will eventually have a program state with the following components:
- * - virtual memory buffer
- * - variable map
- * - subroutine stack
- */
 
 #endif// RETRO_STATE_H

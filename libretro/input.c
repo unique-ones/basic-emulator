@@ -2,14 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "input.h"
 #include "math.h"
-#include "state.h"
 
 void input_buffer_create(input_buffer_t* self, u32 capacity) {
     self->fill = 0;
     self->cursor = 0;
     self->data = (char*) malloc(capacity);
     self->capacity = capacity;
+    self->submit = false;
 }
 
 void input_buffer_destroy(input_buffer_t* self) {
@@ -54,13 +55,4 @@ void input_buffer_advance_cursor(input_buffer_t* self, s32 offset) {
 
 bool input_buffer_is_full(input_buffer_t* self) {
     return self->fill == self->capacity;
-}
-
-void input_state_create(input_state_t* self, u32 capacity) {
-    self->mode = INPUT_MODE_INPUT;
-    input_buffer_create(&self->input, capacity);
-}
-
-void input_state_destroy(input_state_t* self) {
-    input_buffer_destroy(&self->input);
 }

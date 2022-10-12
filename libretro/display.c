@@ -17,23 +17,23 @@ static void display_key_callback(GLFWwindow* handle, s32 key, s32 scancode, s32 
         return;
     }
     display_t* display = glfwGetWindowUserPointer(handle);
-    if (display->input_state) {
-        input_state_t* state = display->input_state;
+    if (display->input_buffer) {
+        input_buffer_t* input = display->input_buffer;
         switch (key) {
             case GLFW_KEY_LEFT:
-                input_buffer_advance_cursor(&state->input, -1);
+                input_buffer_advance_cursor(input, -1);
                 break;
             case GLFW_KEY_RIGHT:
-                input_buffer_advance_cursor(&state->input, 1);
+                input_buffer_advance_cursor(input, 1);
                 break;
             case GLFW_KEY_BACKSPACE:
-                input_buffer_remove(&state->input);
+                input_buffer_remove(input);
                 break;
             case GLFW_KEY_TAB:
-                input_buffer_emplace(&state->input, '\t');
+                input_buffer_emplace(input, '\t');
                 break;
             case GLFW_KEY_ENTER:
-                state->mode = INPUT_MODE_EXECUTE;
+                input->submit = true;
                 break;
             default:
                 break;
@@ -43,8 +43,8 @@ static void display_key_callback(GLFWwindow* handle, s32 key, s32 scancode, s32 
 
 static void display_char_callback(GLFWwindow* handle, u32 unicode) {
     display_t* display = glfwGetWindowUserPointer(handle);
-    if (display->input_state) {
-        input_buffer_emplace(&display->input_state->input, (char) toupper((char) unicode));
+    if (display->input_buffer) {
+        input_buffer_emplace(display->input_buffer, (char) toupper((char) unicode));
     }
 }
 
@@ -115,8 +115,8 @@ bool display_create(display_t* self, const char* title, s32 width, s32 height) {
     return true;
 }
 
-void display_input(display_t* self, input_state_t* input_state) {
-    self->input_state = input_state;
+void display_input(display_t* self, input_buffer_t* input_buffer) {
+    self->input_buffer = input_buffer;
 }
 
 void display_title(display_t* self, const char* title) {

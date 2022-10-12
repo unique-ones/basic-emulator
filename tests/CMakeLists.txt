@@ -1,6 +1,6 @@
 # tests cmake configuration
 
-set(TEST_TARGETS "list_test")
+set(TEST_TARGETS "list_test" "stack_test")
 
 foreach (TEST_TARGET ${TEST_TARGETS})
     add_executable(${TEST_TARGET} "${TEST_TARGET}.c")

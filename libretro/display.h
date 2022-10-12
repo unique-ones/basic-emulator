@@ -1,7 +1,7 @@
 #ifndef RETRO_DISPLAY_H
 #define RETRO_DISPLAY_H
 
-#include "state.h"
+#include "input.h"
 #include "types.h"
 
 #include <GLFW/glfw3.h>
@@ -13,7 +13,7 @@ typedef struct display {
     s32 height;
     bool running;
     f64 time;
-    input_state_t* input_state;
+    input_buffer_t* input_buffer;
 } display_t;
 
 /**
@@ -29,9 +29,9 @@ bool display_create(display_t* self, const char* title, s32 width, s32 height);
 /**
  * @brief set the input state handle for the self
  * @param self display handle
- * @param input_state_t input state handle
+ * @param input_buffer input buffer handle
  */
-void display_input(display_t* self, input_state_t* input_state);
+void display_input(display_t* self, input_buffer_t* input_buffer);
 
 /**
  * @brief updates the title of the window

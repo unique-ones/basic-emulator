@@ -99,5 +99,14 @@ void list_insert(list_t* self, u32 idx, void* data) {
 }
 
 void* list_at(list_t* self, u32 idx) {
-    return NULL;
+    if (self->head == NULL) {
+        return NULL;
+    }
+
+    u32 iterator;
+    node_t* temp = self->head;
+    for (iterator = 0; temp != NULL && iterator < idx; ++iterator) {
+        temp = temp->next;
+    }
+    return temp != NULL && iterator == idx ? temp->data : NULL;
 }

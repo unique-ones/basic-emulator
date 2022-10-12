@@ -5,8 +5,8 @@
 
 #include "buffer.h"
 #include "glyph.h"
+#include "input.h"
 #include "shader.h"
-#include "state.h"
 
 #define QUAD_VERTICES 4
 #define QUAD_INDICES 6

@@ -1,5 +1,5 @@
-#ifndef RETRO_COLLECTIONS_LIST_H
-#define RETRO_COLLECTIONS_LIST_H
+#ifndef RETRO_COLLECTIONS_H
+#define RETRO_COLLECTIONS_H
 
 #include "types.h"
 
@@ -85,4 +85,4 @@ void list_set_head(list_t* self, void* data);
  */
 void list_set_tail(list_t* self, void* data);
 
-#endif// RETRO_COLLECTIONS_LIST_H
+#endif// RETRO_COLLECTIONS_H
