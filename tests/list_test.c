@@ -11,11 +11,13 @@ static void list_test_at() {
     char* data = "GOSUB 1000";
     for (u32 i = 0; i < strlen(data); i++) {
         list_append(list, data + i);
+        assert(list->length == i + 1 && "list_append length mismatch");
     }
 
     for (u32 i = 0; i < strlen(data); i++) {
         char* node_data = list_at(list, i);
-        assert(*node_data == *(data + i) && "list_at mismatch");
+        assert(node_data && "list_at returned NULL data");
+        assert(*node_data == *(data + i) && "list_at data mismatch");
     }
     list_free(list);
 }
@@ -26,6 +28,7 @@ static void list_test_insert() {
     char* data = "foo_bar";
     for (u32 i = 0; i < strlen(data); ++i) {
         list_insert(list, i, data + i);
+        assert(list->length == i + 1 && "list_insert length mismatch");
     }
 
     u32 i = 0;
