@@ -31,32 +31,32 @@ list_t* list_new() {
 void list_free(list_t* self) {
     node_t* it = self->head;
     node_t* tmp;
-    
+
     while (it != NULL) {
         tmp = it;
         it = it->next;
         node_free(tmp);
     }
-    
+
     free(self);
 }
 
 void list_append(list_t* self, void* data) {
     node_t* node = node_new(data);
-    
+
     if (self->head == NULL) {
         self->head = node;
         node->prev = NULL;
         self->length++;
         return;
     }
-    
+
     node_t* temp = self->head;
-    
+
     while (temp->next != NULL) {
         temp = temp->next;
     }
-    
+
     temp->next = node;
     node->prev = temp;
     self->tail = node;
@@ -65,14 +65,14 @@ void list_append(list_t* self, void* data) {
 
 void list_set_head(list_t* self, void* data) {
     node_t* node = node_new(data);
-    
+
     node->next = self->head;
     node->prev = NULL;
-    
+
     if (self->head != NULL) {
         self->head->prev = node;
     }
-    
+
     self->head = node;
     self->length++;
 }
@@ -86,17 +86,17 @@ void list_insert(list_t* self, u32 idx, void* data) {
         list_set_head(self, data);
         return;
     }
-    
+
     node_t* node = node_new(data);
     node_t* temp = self->head;
-    
+
     while (--idx) {
         temp = temp->next;
     }
-    
+
     node->next = temp->next;
     node->prev = temp;
-    
+
     temp->next = node;
     self->length++;
 }
@@ -105,7 +105,7 @@ void* list_at(list_t* self, u32 idx) {
     if (self->head == NULL || idx >= self->length) {
         return NULL;
     }
-    
+
     u32 iterator;
     u32 iterator_limit;
     node_t* temp;
@@ -123,4 +123,17 @@ void* list_at(list_t* self, u32 idx) {
         }
     }
     return temp != NULL && iterator == iterator_limit ? temp->data : NULL;
+}
+
+node_t* list_find(list_t* self, void* data, list_equal_function_t equal) {
+    if (self->head == NULL || data == NULL || equal == NULL) {
+        return NULL;
+    }
+
+    for (node_t* it = self->head; it != NULL; it = it->next) {
+        if (equal(it->data, data)) {
+            return it;
+        }
+    }
+    return NULL;
 }

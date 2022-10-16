@@ -7,6 +7,7 @@ stack_t* stack_new(u32 capacity) {
     self->capacity = capacity;
     self->size = 0;
     self->data = (void**) malloc(capacity * sizeof(void*));
+    return self;
 }
 
 void stack_grow(stack_t* self, u32 capacity) {

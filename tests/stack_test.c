@@ -13,15 +13,7 @@ bool employee_equal(employee_t* a, employee_t* b) {
     if (a->id != b->id) {
         return false;
     }
-    u32 a_length = strlen(a->name);
-    u32 b_length = strlen(b->name);
-    if (a_length != b_length) {
-        return false;
-    }
-    if (strncmp(a->name, b->name, a_length) != 0) {
-        return false;
-    }
-    return true;
+    return strcmp(a->name, b->name) == 0;
 }
 
 static void stack_test_push() {

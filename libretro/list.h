@@ -36,6 +36,8 @@ typedef struct list {
     u32 capacity;// pre-allocation?
 } list_t;
 
+typedef bool (*list_equal_function_t)(const void*, const void*);
+
 /**
  * @brief allocate a new list instance
  * @return reference to list
@@ -84,5 +86,14 @@ void list_set_head(list_t* self, void* data);
  * @param data reference to the data which is set as the tail (appended)
  */
 void list_set_tail(list_t* self, void* data);
+
+/**
+ * @brief tries to find the specified data using the specified compare function
+ * @param self reference to the list
+ * @param data reference to the data which shall be found
+ * @param compare compare function
+ * @return node of the found data, NULL on failure
+ */
+node_t* list_find(list_t* self, void* data, list_equal_function_t equal);
 
 #endif// RETRO_COLLECTIONS_H
