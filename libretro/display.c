@@ -129,13 +129,16 @@ void display_destroy(display_t* self) {
     glfwTerminate();
 }
 
-f64 display_update(display_t* self) {
+f64 display_update_frame(display_t* self) {
     glfwSwapBuffers(self->handle);
-    glfwPollEvents();
     f64 time = glfwGetTime();
     f64 frame_time = time - self->time;
     self->time = time;
     return frame_time;
+}
+
+void display_update_input() {
+    glfwPollEvents();
 }
 
 bool display_running(display_t* self) {

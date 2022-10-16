@@ -1,14 +1,14 @@
 #ifndef RETRO_EMU_H
 #define RETRO_EMU_H
 
-#include <pthread.h>
-
 #include "input.h"
 #include "map.h"
 #include "stack.h"
 
+typedef enum emulator_state { EMULATOR_STATE_INPUT = 0, EMULATOR_STATE_EXECUTION = 1 } emulator_state_t;
+
 typedef struct emulator {
-    pthread_t thread_id;
+    emulator_state_t state;
     map_t* variables;
     stack_t* subroutines;
 } emulator_t;
@@ -24,12 +24,5 @@ emulator_t* emulator_new();
  * @param self reference to emulator instance
  */
 void emulator_free(emulator_t* self);
-
-/**
- * @brief executes the specified input
- * @param self emulator instance
- * @param input basic code
- */
-bool emulator_execute(emulator_t* self, const char* input);
 
 #endif// RETRO_EMU_H

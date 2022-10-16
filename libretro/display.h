@@ -47,11 +47,16 @@ void display_title(display_t* self, const char* title);
 void display_destroy(display_t* self);
 
 /**
- * @brief polls for events and swaps front and back buffer
+ * @brief swaps front and back buffer
  * @param self display handle
  * @return frame time
  */
-f64 display_update(display_t* self);
+f64 display_update_frame(display_t* self);
+
+/**
+ * @brief polls for incoming events
+ */
+void display_update_input();
 
 /**
  * @brief checks if the window should be closed or not
