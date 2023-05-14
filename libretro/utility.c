@@ -7,7 +7,7 @@ bool file_read(binary_buffer_t* buffer, const char* path) {
     }
 
     fseek(file, 0, SEEK_END);
-    s32 size = ftell(file);
+    s32 size = (s32) ftell(file);
     fseek(file, 0, SEEK_SET);
 
     buffer->data = (char*) malloc(size);

@@ -1,10 +1,10 @@
 #ifndef RETRO_TYPES_H
 #define RETRO_TYPES_H
 
-#include <glad/glad.h>
-#include <stddef.h>
 #include <stdint.h>
 
+#include <glad/glad.h>
+#include <stddef.h>
 
 typedef int8_t s8;
 typedef int16_t s16;

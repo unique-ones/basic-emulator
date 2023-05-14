@@ -4,7 +4,9 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-bool glyph_cache_create(glyph_cache_t* cache, const char* path) {
+glyph_cache_t* glyph_cache_new(const char* path) {
+    glyph_cache_t* self = (glyph_cache_t*) malloc(sizeof(glyph_cache_t));
+
     binary_buffer_t font_data;
     if (!file_read(&font_data, path)) {
         return false;
@@ -25,14 +27,14 @@ bool glyph_cache_create(glyph_cache_t* cache, const char* path) {
     }
     FT_Set_Pixel_Sizes(face, 0, (s32) FONT_SIZE);
 
-    // Calculate combined size of glyphs
+    // calculate combined size of glyphs
     s32vec2_t size = { 0, 0 };
     for (s32 i = 32; i < 128; i++) {
         if (FT_Load_Char(face, i, FT_LOAD_RENDER)) {
             fprintf(stderr, "could not load character: %c\n", (char) i);
             continue;
         }
-        glyph_info_t* info = (cache->info + i - 32);
+        glyph_info_t* info = (self->info + i - 32);
         info->size.x = (f32) (face->glyph->bitmap.width);
         info->size.y = (f32) (face->glyph->bitmap.rows);
         info->bearing.x = (f32) (face->glyph->bitmap_left);
@@ -43,16 +45,16 @@ bool glyph_cache_create(glyph_cache_t* cache, const char* path) {
         info->texture_span.y = 0.0f;
         info->texture_offset = 0.0f;
         size.x += (s32) face->glyph->bitmap.width;
-        size.y = max_s32(size.y, (s32) face->glyph->bitmap.rows);
+        size.y = s32_max(size.y, (s32) face->glyph->bitmap.rows);
     }
 
-    cache->atlas.data = NULL;
-    cache->atlas.handle = 0;
-    cache->atlas.width = size.x;
-    cache->atlas.height = size.y;
-    cache->atlas.channels = 1;
-    glCreateTextures(GL_TEXTURE_2D, 1, &cache->atlas.handle);
-    glBindTextureUnit(0, cache->atlas.handle);
+    self->atlas.data = NULL;
+    self->atlas.handle = 0;
+    self->atlas.width = size.x;
+    self->atlas.height = size.y;
+    self->atlas.channels = 1;
+    glCreateTextures(GL_TEXTURE_2D, 1, &self->atlas.handle);
+    glBindTextureUnit(0, self->atlas.handle);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -62,11 +64,11 @@ bool glyph_cache_create(glyph_cache_t* cache, const char* path) {
 
     s32 offset = 0;
     for (s32 i = 0; i < 96; i++) {
-        // Unfortunately we still need to load the character again, as we need its bitmap buffer for the upload
-        if (FT_Load_Char(face, i + 32, FT_LOAD_RENDER)) {
+        // unfortunately we still need to load the character again, as we need its bitmap buffer for the upload
+        if (FT_Load_Char(face, i + 32, FT_LOAD_RENDER) || face->glyph->bitmap.buffer == NULL) {
             continue;
         }
-        glyph_info_t* info = (cache->info + i);
+        glyph_info_t* info = (self->info + i);
         info->texture_offset = (f32) offset / (f32) size.x;
         info->texture_span.x = info->size.x / (f32) size.x;
         info->texture_span.y = info->size.y / (f32) size.y;
@@ -80,11 +82,16 @@ bool glyph_cache_create(glyph_cache_t* cache, const char* path) {
     font_data.size = 0;
     FT_Done_Face(face);
     FT_Done_FreeType(library);
-    return true;
+    return self;
 }
 
-void glyph_cache_acquire(glyph_cache_t* cache, glyph_info_t* info, char symbol) {
-    const glyph_info_t* fetched = (cache->info + symbol - 32);
+void glyph_cache_free(glyph_cache_t* self) {
+    texture_destroy(&self->atlas);
+    free(self);
+}
+
+void glyph_cache_acquire(glyph_cache_t* self, glyph_info_t* info, char symbol) {
+    glyph_info_t* fetched = (self->info + symbol - 32);
     info->size = fetched->size;
     info->advance = fetched->advance;
     info->bearing = fetched->bearing;

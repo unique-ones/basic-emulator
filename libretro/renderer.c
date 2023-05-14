@@ -1,11 +1,75 @@
+#include <stdarg.h>
+#include <stdio.h>
+
 #include "renderer.h"
 
-/**
- * @brief Indexed draw-call
- * @param vertex_array Vertex array that holds the vertex and index buffers
- * @param shader Shader handle
- * @param mode Draw mode
- */
+render_command_t* render_command_new(vertex_t* vertices, u32* indices) {
+    render_command_t* self = (render_command_t*) malloc(sizeof(render_command_t));
+    self->prev = NULL;
+    self->next = NULL;
+    memcpy(self->vertices, vertices, sizeof self->vertices);
+    memcpy(self->indices, indices, sizeof self->indices);
+    return self;
+}
+
+void render_command_free(render_command_t* self) {
+    free(self);
+}
+
+render_group_t* render_group_new(void) {
+    render_group_t* self = (render_group_t*) malloc(sizeof(render_group_t));
+    self->begin = NULL;
+    self->end = NULL;
+    self->commands = 0;
+    self->mutex = mutex_new();
+    return self;
+}
+
+void render_group_clear(render_group_t* self) {
+    mutex_lock(self->mutex);
+    render_command_t* it = self->begin;
+    render_command_t* tmp;
+
+    while (it != NULL) {
+        tmp = it;
+        it = it->next;
+        render_command_free(tmp);
+    }
+    self->begin = NULL;
+    self->end = NULL;
+    self->commands = 0;
+    mutex_unlock(self->mutex);
+}
+
+void render_group_free(render_group_t* self) {
+    render_group_clear(self);
+    mutex_free(self->mutex);
+    free(self);
+}
+
+void render_group_push(render_group_t* self, vertex_t* vertices, u32* indices) {
+    mutex_lock(self->mutex);
+    render_command_t* command = render_command_new(vertices, indices);
+    if (self->begin == NULL) {
+        self->begin = command;
+        command->prev = NULL;
+        self->commands++;
+        mutex_unlock(self->mutex);
+        return;
+    }
+
+    render_command_t* tmp = self->begin;
+    while (tmp->next != NULL) {
+        tmp = tmp->next;
+    }
+
+    tmp->next = command;
+    command->prev = tmp;
+    self->end = command;
+    self->commands++;
+    mutex_unlock(self->mutex);
+}
+
 static void renderer_draw_indexed(vertex_array_t* vertex_array, shader_t* shader, u32 mode) {
     shader_bind(shader);
     vertex_array_bind(vertex_array);
@@ -16,142 +80,209 @@ void renderer_clear() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void renderer_clear_color(const f32vec4_t* color) {
+void renderer_clear_color(f32vec4_t* color) {
     glClearColor(color->x, color->y, color->z, color->w);
 }
 
-void renderer_create(renderer_t* renderer, shader_t* shader) {
+void renderer_create(renderer_t* self, const char* font) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    vertex_array_create(&renderer->vertex_array);
-    vertex_buffer_create(&renderer->vertex_buffer);
-    index_buffer_create(&renderer->index_buffer);
-    memset(renderer->vertices, 0, sizeof renderer->vertices);
-    memset(renderer->indices, 0, sizeof renderer->indices);
-    renderer->batch_size = 0;
 
-    // Attributes are `attrib_position`, `attrib_color`, `attrib_texture`
+    vertex_array_create(&self->vertex_array);
+    vertex_buffer_create(&self->vertex_buffer);
+    index_buffer_create(&self->index_buffer);
+
+    // attributes are usually `attrib_position`, `attrib_color`, `attrib_texture`
     shader_type_t attributes[] = { FLOAT3, FLOAT3, FLOAT2 };
     vertex_buffer_layout_t layout;
     layout.attributes = attributes;
     layout.count = STACK_ARRAY_SIZE(attributes);
 
-    vertex_buffer_layout(&renderer->vertex_buffer, &layout);
-    vertex_array_vertex_buffer(&renderer->vertex_array, &renderer->vertex_buffer);
-    vertex_array_index_buffer(&renderer->vertex_array, &renderer->index_buffer);
-    renderer->shader = *shader;
+    vertex_buffer_layout(&self->vertex_buffer, &layout);
+    vertex_array_vertex_buffer(&self->vertex_array, &self->vertex_buffer);
+    vertex_array_index_buffer(&self->vertex_array, &self->index_buffer);
+
+    shader_create(&self->glyph_shader, "assets/glyph_vertex.glsl", "assets/glyph_fragment.glsl");
+    self->glyph_group = render_group_new();
+    self->glyphs = glyph_cache_new(font);
+
+    shader_create(&self->quad_shader, "assets/quad_vertex.glsl", "assets/quad_fragment.glsl");
+    self->quad_group = render_group_new();
 }
 
-void renderer_destroy(renderer_t* renderer) {
-    index_buffer_destroy(&renderer->index_buffer);
-    vertex_buffer_destroy(&renderer->vertex_buffer);
-    vertex_array_destroy(&renderer->vertex_array);
-    shader_destroy(&renderer->shader);
+void renderer_destroy(renderer_t* self) {
+    index_buffer_destroy(&self->index_buffer);
+    vertex_buffer_destroy(&self->vertex_buffer);
+    vertex_array_destroy(&self->vertex_array);
+
+    shader_destroy(&self->glyph_shader);
+    render_group_free(self->glyph_group);
+    glyph_cache_free(self->glyphs);
+
+    shader_destroy(&self->quad_shader);
+    render_group_free(self->quad_group);
 }
 
-void renderer_begin_batch(renderer_t* renderer) {
-    renderer->batch_size = 0;
+void renderer_begin_batch(renderer_t* self) {
+    if (self->glyph_group->commands > 0 || self->quad_group->commands > 0) {
+        renderer_end_batch(self);
+    }
+    render_group_clear(self->glyph_group);
+    render_group_clear(self->quad_group);
 }
 
-void renderer_end_batch(renderer_t* renderer) {
-    vertex_buffer_data(&renderer->vertex_buffer, renderer->vertices, renderer->batch_size * 4 * sizeof(vertex_t));
-    index_buffer_data(&renderer->index_buffer, renderer->indices, renderer->batch_size * 6);
-    renderer_draw_indexed(&renderer->vertex_array, &renderer->shader, GL_TRIANGLES);
-}
+static void renderer_group_end_batch(renderer_t* self, render_group_t* group) {
+    mutex_lock(group->mutex);
+    vertex_t* vertices = (vertex_t*) malloc(4 * sizeof(vertex_t) * group->commands);
+    u32* indices = (u32*) malloc(6 * sizeof(u32) * group->commands);
 
-void renderer_draw_quad(renderer_t* renderer,
-                        const f32vec2_t* position,
-                        const f32vec2_t* size,
-                        const f32vec3_t* color) {
-    // In case the batch gets to big, we submit the draw call and immediately start a new batch again
-    if (renderer->batch_size >= MAX_BATCH_SIZE) {
-        renderer_end_batch(renderer);
-        renderer_begin_batch(renderer);
+    u32 insert_index = 0;
+    for (render_command_t* it = group->begin; it != NULL; it = it->next) {
+        memcpy((u8*) vertices + 4 * sizeof(vertex_t) * insert_index, it->vertices, sizeof it->vertices);
+        memcpy((u8*) indices + 6 * sizeof(u32) * insert_index, it->indices, sizeof it->indices);
+        insert_index++;
     }
 
-    const vertex_t vertices[] = { { { position->x, position->y, 0.0f }, *color, { 0.0f, 1.0f } },
-                                  { { position->x, position->y + size->y, 0.0f }, *color, { 0.0f, 0.0f } },
-                                  { { position->x + size->x, position->y + size->y, 0.0f }, *color, { 1.0f, 0.0f } },
-                                  { { position->x + size->x, position->y, 0.0f }, *color, { 1.0f, 1.0f } } };
+    vertex_buffer_data(&self->vertex_buffer, vertices, group->commands * 4 * sizeof(vertex_t));
+    free(vertices);
 
-    const u32 index_offset = renderer->batch_size * 4;
-    const u32 indices[] = { 0 + index_offset, 1 + index_offset, 2 + index_offset,
-                            2 + index_offset, 0 + index_offset, 3 + index_offset };
-    memcpy(renderer->vertices + renderer->batch_size * STACK_ARRAY_SIZE(vertices), vertices, sizeof vertices);
-    memcpy(renderer->indices + renderer->batch_size * STACK_ARRAY_SIZE(indices), indices, sizeof indices);
-    renderer->batch_size++;
+    index_buffer_data(&self->index_buffer, indices, group->commands * 6);
+    free(indices);
+
+    renderer_draw_indexed(&self->vertex_array, &self->glyph_shader, GL_TRIANGLES);
+    mutex_unlock(group->mutex);
 }
 
-bool text_renderer_create(text_renderer_t* text_renderer, const char* path) {
-    shader_t glyph_shader;
-    if (!shader_create(&glyph_shader, "assets/glyph_vertex.glsl", "assets/glyph_fragment.glsl")) {
-        return false;
-    }
-    if (!glyph_cache_create(&text_renderer->cache, path)) {
-        return false;
-    }
-    renderer_create(&text_renderer->renderer, &glyph_shader);
-    return true;
+void renderer_end_batch(renderer_t* self) {
+    renderer_group_end_batch(self, self->quad_group);
+
+    texture_bind(&self->glyphs->atlas, 0);
+    shader_uniform_sampler(&self->glyph_shader, "uniform_glyph_atlas", 0);
+    renderer_group_end_batch(self, self->glyph_group);
 }
 
-void text_renderer_draw_symbol(text_renderer_t* text_renderer,
-                               glyph_info_t* symbol,
-                               const f32vec2_t* position,
-                               const f32vec3_t* color,
-                               f32 scale) {
-    // In case the batch gets to big, we submit the draw call and immediately start a new batch again
-    renderer_t* renderer = &text_renderer->renderer;
-    if (renderer->batch_size >= MAX_BATCH_SIZE) {
-        renderer_end_batch(renderer);
-        renderer_begin_batch(renderer);
-    }
+void renderer_draw_quad(renderer_t* self, f32vec2_t* position, f32vec2_t* size, f32vec3_t* color) {
+    vertex_t vertices[] = { { { position->x, position->y, 0.0f }, *color, { 0.0f, 1.0f } },
+                            { { position->x, position->y + size->y, 0.0f }, *color, { 0.0f, 0.0f } },
+                            { { position->x + size->x, position->y + size->y, 0.0f }, *color, { 1.0f, 0.0f } },
+                            { { position->x + size->x, position->y, 0.0f }, *color, { 1.0f, 1.0f } } };
 
-    f32vec2_t scaled_position = { position->x + symbol->bearing.x * scale,
-                                  position->y + (symbol->size.y - symbol->bearing.y) * scale };
+    u32 index_offset = self->quad_group->commands * 4;
+    u32 indices[] = { 0 + index_offset, 1 + index_offset, 2 + index_offset,
+                      2 + index_offset, 0 + index_offset, 3 + index_offset };
+    render_group_push(self->quad_group, vertices, indices);
+}
+
+void renderer_draw_symbol(renderer_t* self, glyph_info_t* symbol, f32vec2_t* position, f32vec3_t* color, f32 scale) {
+    // clang-format off
     f32vec2_t scaled_size = { symbol->size.x * scale, symbol->size.y * scale };
-    vertex_t vertices[] = { { .position = { scaled_position.x, scaled_position.y },
-                              .color = *color,
-                              .texture = { symbol->texture_offset, 0.0f } },
-                            { .position = { scaled_position.x, scaled_position.y + scaled_size.y },
-                              .color = *color,
-                              .texture = { symbol->texture_offset, symbol->texture_span.y } },
-                            { .position = { scaled_position.x + scaled_size.x, scaled_position.y + scaled_size.y },
-                              .color = *color,
-                              .texture = { symbol->texture_offset + symbol->texture_span.x, symbol->texture_span.y } },
-                            { .position = { scaled_position.x + scaled_size.x, scaled_position.y },
-                              .color = *color,
-                              .texture = { symbol->texture_offset + symbol->texture_span.x, 0.0f } } };
+    f32vec2_t scaled_position = {
+        position->x + symbol->bearing.x * scale,
+        position->y + (symbol->size.y - symbol->bearing.y) * scale
+    };
+    vertex_t vertices[] = {
+        { { scaled_position.x, scaled_position.y }, *color, { symbol->texture_offset, 0.0f } },
+        { { scaled_position.x, scaled_position.y + scaled_size.y }, *color, { symbol->texture_offset, symbol->texture_span.y } },
+        { { scaled_position.x + scaled_size.x, scaled_position.y + scaled_size.y }, *color, { symbol->texture_offset + symbol->texture_span.x, symbol->texture_span.y } },
+        { { scaled_position.x + scaled_size.x, scaled_position.y }, *color, { symbol->texture_offset + symbol->texture_span.x, 0.0f } }
+    };
+    // clang-format on
 
-    const u32 index_offset = renderer->batch_size * 4;
-    const u32 indices[] = { 0 + index_offset, 1 + index_offset, 2 + index_offset,
-                            2 + index_offset, 0 + index_offset, 3 + index_offset };
-    memcpy(text_renderer->renderer.vertices + renderer->batch_size * STACK_ARRAY_SIZE(vertices), vertices,
-           sizeof vertices);
-    memcpy(text_renderer->renderer.indices + renderer->batch_size * STACK_ARRAY_SIZE(indices), indices, sizeof indices);
-    renderer->batch_size++;
+    u32 index_offset = self->glyph_group->commands * 4;
+    u32 indices[] = { 0 + index_offset, 1 + index_offset, 2 + index_offset,
+                      2 + index_offset, 0 + index_offset, 3 + index_offset };
+    render_group_push(self->glyph_group, vertices, indices);
 }
 
-void text_renderer_draw_text(text_renderer_t* text_renderer,
-                             const char* text,
-                             const f32vec2_t* position,
-                             const f32vec3_t* color,
-                             f32 scale) {
-    renderer_t* renderer = &text_renderer->renderer;
+void renderer_draw_text(renderer_t* self,
+                        f32vec2_t* position,
+                        f32vec3_t* color,
+                        f32 scale,
+                        const char* fmt,
+                        ...) {
+    char text_buffer[0x1000];
+    va_list list;
+    va_start(list, fmt);
+    u32 length = (u32) vsnprintf(text_buffer, sizeof text_buffer, fmt, list);
+    va_end(list);
+
     f32vec2_t position_iterator = *position;
-    renderer_begin_batch(renderer);
-    for (u32 i = 0; i < strlen(text); i++) {
-        char symbol = text[i];
+    for (u32 i = 0; i < length; i++) {
+        char symbol = text_buffer[i];
         if (symbol == '\n') {
             position_iterator.x = position->x;
             position_iterator.y += FONT_SIZE * scale;
-            continue;
+        } else if (symbol == '\t') {
+            glyph_info_t glyph_info;
+            glyph_cache_acquire(self->glyphs, &glyph_info, ' ');
+            for (u32 j = 0; j < 4; j++) {
+                renderer_draw_symbol(self, &glyph_info, &position_iterator, color, scale);
+                position_iterator.x += glyph_info.advance.x * scale;
+            }
+        } else {
+            glyph_info_t glyph_info;
+            glyph_cache_acquire(self->glyphs, &glyph_info, symbol);
+            renderer_draw_symbol(self, &glyph_info, &position_iterator, color, scale);
+            position_iterator.x += glyph_info.advance.x * scale;
         }
-        glyph_info_t glyph_info;
-        glyph_cache_acquire(&text_renderer->cache, &glyph_info, symbol);
-        text_renderer_draw_symbol(text_renderer, &glyph_info, &position_iterator, color, scale);
-        position_iterator.x += glyph_info.advance.x * scale;
     }
-    texture_bind(&text_renderer->cache.atlas, 0);
-    shader_uniform_sampler(&renderer->shader, "uniform_glyph_atlas", 0);
-    renderer_end_batch(renderer);
+    *position = position_iterator;
+}
+
+static void renderer_draw_indicator(renderer_t* self, f32vec2_t* position, f32vec3_t* color, f32 scale) {
+    // first we draw the input indicator
+    glyph_info_t input_indicator_info;
+    glyph_cache_acquire(self->glyphs, &input_indicator_info, ']');
+    renderer_draw_symbol(self, &input_indicator_info, position, color, scale);
+    position->x += input_indicator_info.advance.x * scale;
+}
+
+void renderer_draw_text_with_cursor(renderer_t* self, f32vec2_t* position, f32vec3_t* color, f32 scale, u32 cursor_index, const char* fmt, ...) {
+    char text_buffer[0x1000];
+    va_list list;
+    va_start(list, fmt);
+    u32 length = (u32) vsnprintf(text_buffer, sizeof text_buffer, fmt, list);
+    va_end(list);
+
+    f32vec2_t position_iterator = *position;
+    renderer_begin_batch(self);
+    renderer_draw_indicator(self, &position_iterator, color, scale);
+
+    // then we fetch the cursor glyph
+    glyph_info_t cursor_info;
+    glyph_cache_acquire(self->glyphs, &cursor_info, '_');
+    if (cursor_index == 0) {
+        renderer_draw_symbol(self, &cursor_info, &position_iterator, color, scale);
+    }
+
+    for (u32 i = 0; i < length; i++) {
+        char symbol = text_buffer[i];
+        if (symbol == '\t') {
+            // if we encounter a tab, advance by four spaces
+            glyph_info_t glyph_info;
+            glyph_cache_acquire(self->glyphs, &glyph_info, ' ');
+            for (u32 j = 0; j < 4; j++) {
+                renderer_draw_symbol(self, &glyph_info, &position_iterator, color, scale);
+                position_iterator.x += glyph_info.advance.x * scale;
+            }
+        } else if (symbol == '\n') {
+            position_iterator.x = position->x;
+            position_iterator.y += FONT_SIZE * scale;
+            renderer_draw_indicator(self, &position_iterator, color, scale);
+        } else {
+            // any other character
+            glyph_info_t glyph_info;
+            glyph_cache_acquire(self->glyphs, &glyph_info, symbol);
+            renderer_draw_symbol(self, &glyph_info, &position_iterator, color, scale);
+            position_iterator.x += glyph_info.advance.x * scale;
+        }
+
+        if (i == cursor_index - 1) {
+            renderer_draw_symbol(self, &cursor_info, &position_iterator, color, scale);
+        }
+    }
+
+    texture_bind(&self->glyphs->atlas, 0);
+    shader_uniform_sampler(&self->glyph_shader, "uniform_glyph_atlas", 0);
+    renderer_end_batch(self);
 }

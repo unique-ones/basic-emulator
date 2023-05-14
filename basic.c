@@ -1,45 +1,67 @@
 #include <libretro/retro.h>
 
-const f32vec3_t COLOR_RED = { 1.0f, 0.0f, 0.0f };
-const f32vec3_t COLOR_GREEN = { 0.0f, 1.0f, 0.0f };
-const f32vec3_t COLOR_BLUE = { 0.0f, 0.0f, 1.0f };
-const f32vec3_t COLOR_WHITE = { 1.0f, 1.0f, 1.0f };
-
-const char* BASIC_PROGRAM =
-        "]LIST\n\n10    HOME\n"
-        "20    LET W = 40: LET H = 24\n"
-        "30    LET X = 20: LET Y = 12\n"
-        "40    HTAB X: VTAB Y\n"
-        "50    PRINT \"S\"\n"
-        "60    GOSUB 1000\n"
-        "70    GOTO 40\n"
-        "1000  LET K = PEEK(49152)\n"
-        "1010  IF K = 196 THEN X = X + 1\n"
-        "1020  IF K = 193 THEN X = X - 1\n"
-        "1030  IF K = 215 THEN Y = Y - 1\n"
-        "1040  IF K = 211 THEN Y = Y + 1\n"
-        "1050  RETURN";
-
 int main(int argc, char** argv) {
     display_t display;
-    display_create(&display, "Applesoft-BASIC Emulator", 800, 600);
+    display_create(&display, "Emulator", 800, 600);
 
-    text_renderer_t text_renderer;
-    text_renderer_create(&text_renderer, "assets/pc21.ttf");
+    // renderer with apple2 pc21 font
+    renderer_t renderer;
+    renderer_create(&renderer, "assets/pc21.ttf");
+    renderer_clear_color(&(f32vec4_t){ 0.1f, 0.1f, 0.1f, 1.0f });
+
+    emulator_t emulator;
+    emulator_create(&emulator, &renderer);
+
+    // set up callbacks
+    display_callback_argument(&display, &emulator);
+    display_key_callback(&display, emulator_key_callback);
+    display_char_callback(&display, emulator_char_callback);
 
     while (display_running(&display)) {
-        renderer_clear();
-        renderer_clear_color(&(f32vec4_t){ 0.1f, 0.1f, 0.1f, 1.0f });
-
-        // Orthogonal projection matrix
         f32mat4_t orthogonal;
-        f32mat4_create_ortho(&orthogonal, 0.0f, (f32) display.width, (f32) display.height, 0.0f);
-        shader_uniform_f32mat4(&text_renderer.renderer.shader, "uniform_transform", &orthogonal);
+        f32mat4_create_orthogonal(&orthogonal, 0.0f, (f32) display.width, (f32) display.height, 0.0f);
+        shader_uniform_f32mat4(&renderer.glyph_shader, "uniform_transform", &orthogonal);
+        renderer_clear();
 
-        f32vec2_t text_position = { 0.0f, 0.0f };
-        text_renderer_draw_text(&text_renderer, BASIC_PROGRAM, &text_position, &COLOR_GREEN, 0.5f);
-        display_update(&display);
+        // stage 1
+        // input processing
+        if (emulator.text.submit) {
+            // spin off executing thread
+            emulator_run(&emulator);
+        }
+
+        // stage 2, render graphics
+        switch (emulator.state) {
+            case EMULATOR_STATE_INPUT: {
+                // if the emulator is in input state, we just draw the command prompt and the user's input
+                renderer_begin_batch(&renderer);
+                renderer_draw_text_with_cursor(&renderer, &(f32vec2_t){ 0.0f, 0.0f }, &(f32vec3_t){ 0.0f, 1.0f, 0.0f },
+                                               0.5f, emulator.text.cursor, "%.*s", emulator.text.fill,
+                                               emulator.text.data);
+                renderer_end_batch(&renderer);
+                break;
+            }
+            case EMULATOR_STATE_EXECUTION: {
+                // if the emulator is in execution state, we check the render group for commands and flush
+                // them to the graphics card
+                renderer_begin_batch(&renderer);
+                renderer_end_batch(&renderer);
+                break;
+            }
+            default:
+                break;
+        }
+
+        // stage 3
+        // check for incoming input
+        display_update_input(&display);
+        display_update_frame(&display);
     }
+
+    // don't be a dork, free your resources :)
+    emulator_destroy(&emulator);
+    renderer_destroy(&renderer);
     display_destroy(&display);
+
     return 0;
 }

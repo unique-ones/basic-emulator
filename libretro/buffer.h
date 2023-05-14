@@ -16,42 +16,42 @@ typedef struct vertex_buffer {
 } vertex_buffer_t;
 
 /**
- * @brief Creates a vertex buffer on the gpu
- * @param buffer Buffer handle
+ * @brief creates a vertex buffer on the gpu
+ * @param self buffer handle
  */
-void vertex_buffer_create(vertex_buffer_t* buffer);
+void vertex_buffer_create(vertex_buffer_t* self);
 
 /**
- * @brief Destroys the vertex buffer
- * @param buffer Buffer Handle
+ * @brief destroys the vertex buffer
+ * @param self buffer Handle
  */
-void vertex_buffer_destroy(vertex_buffer_t* buffer);
+void vertex_buffer_destroy(vertex_buffer_t* self);
 
 /**
- * @brief Sets the data for the specified buffer
- * @param buffer Buffer handle
- * @param data Pointer to the first element of the data
- * @param size Size in bytes
+ * @brief sets the data for the specified buffer
+ * @param self self handle
+ * @param data pointer to the first element of the data
+ * @param size size in bytes
  */
-void vertex_buffer_data(vertex_buffer_t* buffer, const void* data, u32 size);
+void vertex_buffer_data(vertex_buffer_t* self, const void* data, u32 size);
 
 /**
- * @brief Sets the attribute layout for the specified buffer
- * @param buffer Buffer handle
- * @param layout Layout handle
+ * @brief sets the attribute layout for the specified buffer
+ * @param self self handle
+ * @param layout layout handle
  */
-void vertex_buffer_layout(vertex_buffer_t* buffer, vertex_buffer_layout_t* layout);
+void vertex_buffer_layout(vertex_buffer_t* self, vertex_buffer_layout_t* layout);
 
 /**
- * @brief Binds the specified buffer
- * @param buffer Buffer handle
+ * @brief binds the specified buffer
+ * @param self Buffer handle
  */
-void vertex_buffer_bind(vertex_buffer_t* buffer);
+void vertex_buffer_bind(vertex_buffer_t* self);
 
 /**
- * @brief Unbinds the currently bound buffer
+ * @brief unbinds the currently bound buffer
  */
-void vertex_buffer_unbind();
+void vertex_buffer_unbind(void);
 
 typedef struct index_buffer {
     u32 handle;
@@ -59,35 +59,35 @@ typedef struct index_buffer {
 } index_buffer_t;
 
 /**
- * @brief Creates a index buffer on the gpu
- * @param buffer Buffer handle
+ * @brief creates an index buffer on the gpu
+ * @param self Buffer handle
  */
-void index_buffer_create(index_buffer_t* buffer);
+void index_buffer_create(index_buffer_t* self);
 
 /**
- * @brief Destroys the index buffer
- * @param buffer Buffer Handle
+ * @brief destroys the index buffer
+ * @param self Buffer Handle
  */
-void index_buffer_destroy(index_buffer_t* buffer);
+void index_buffer_destroy(index_buffer_t* self);
 
 /**
- * @brief Sets the data for the specified buffer
- * @param buffer Buffer handle
- * @param data Pointer to the first index
- * @param count Number of indices
+ * @brief sets the data for the specified buffer
+ * @param self buffer handle
+ * @param data pointer to the first index
+ * @param count number of indices
  */
-void index_buffer_data(index_buffer_t* buffer, const u32* data, u32 count);
+void index_buffer_data(index_buffer_t* self, const u32* data, u32 count);
 
 /**
- * @brief Binds the specified buffer
- * @param buffer Buffer handle
+ * @brief binds the specified buffer
+ * @param self self handle
  */
-void index_buffer_bind(index_buffer_t* buffer);
+void index_buffer_bind(index_buffer_t* self);
 
 /**
- * @brief Unbinds the currently bound buffer
+ * @brief unbinds the currently bound buffer
  */
-void index_buffer_unbind();
+void index_buffer_unbind(void);
 
 typedef struct vertex_array {
     u32 handle;
@@ -96,41 +96,41 @@ typedef struct vertex_array {
 } vertex_array_t;
 
 /**
- * @brief Creates a new vertex array
- * @param vertex_array Vertex array handle
+ * @brief creates a new vertex array
+ * @param self vertex array handle
  */
-void vertex_array_create(vertex_array_t* vertex_array);
+void vertex_array_create(vertex_array_t* self);
 
 /**
- * @brief Destroys the specified vertex array
- * @param vertex_array Vertex array handle
+ * @brief destroys the specified vertex array
+ * @param self vertex array handle
  */
-void vertex_array_destroy(vertex_array_t* vertex_array);
+void vertex_array_destroy(vertex_array_t* self);
 
 /**
- * @brief Sets the vertex buffer for the vertex array, this sets all the specified attributes
- * @param vertex_array Vertex array handle
- * @param vertex_buffer Vertex buffer handle
+ * @brief sets the vertex buffer for the vertex array, this sets all the specified attributes
+ * @param self vertex array handle
+ * @param vertex_buffer vertex buffer handle
  */
-void vertex_array_vertex_buffer(vertex_array_t* vertex_array, vertex_buffer_t* vertex_buffer);
+void vertex_array_vertex_buffer(vertex_array_t* self, vertex_buffer_t* vertex_buffer);
 
 /**
- * @brief Sets the index buffer for the vertex array
- * @param vertex_array Vertex array handle
- * @param index_buffer Index buffer handle
+ * @brief sets the index buffer for the vertex array
+ * @param self vertex array handle
+ * @param index_buffer index buffer handle
  */
-void vertex_array_index_buffer(vertex_array_t* vertex_array, index_buffer_t* index_buffer);
+void vertex_array_index_buffer(vertex_array_t* self, index_buffer_t* index_buffer);
 
 /**
- * @brief Binds the specified vertex array
- * @param vertex_array Vertex array handle
+ * @brief binds the specified vertex array
+ * @param self vertex array handle
  */
-void vertex_array_bind(vertex_array_t* vertex_array);
+void vertex_array_bind(vertex_array_t* self);
 
 /**
- * @brief Unbinds the currently bound vertex array
+ * @brief unbinds the currently bound vertex array
  */
-void vertex_array_unbind();
+void vertex_array_unbind(void);
 
 typedef struct frame_buffer {
     u32 handle;
@@ -141,46 +141,46 @@ typedef struct frame_buffer {
 } frame_buffer_t;
 
 /**
- * @brief Creates a frame buffer of specified size
- * @param buffer Frame buffer handle
- * @param width Initial width
- * @param height Initial height
+ * @brief creates a frame buffer of specified size
+ * @param self frame self handle
+ * @param width initial width
+ * @param height initial height
  * @return bool
  */
-bool frame_buffer_create(frame_buffer_t* buffer, s32 width, s32 height);
+bool frame_buffer_create(frame_buffer_t* self, s32 width, s32 height);
 
 /**
- * @brief Invalidates the frame buffer, this needs to be called if the frame buffer is resized
- * @param buffer Frame buffer handle
+ * @brief invalidates the frame buffer, this needs to be called if the frame buffer is resized
+ * @param self frame self handle
  * @return bool
  */
-bool frame_buffer_invalidate(frame_buffer_t* buffer);
+bool frame_buffer_invalidate(frame_buffer_t* self);
 
 /**
- * @brief Resizes the frame buffer
- * @param buffer Frame buffer handle
- * @param width New width
- * @param height New height
+ * @brief resizes the frame buffer
+ * @param self frame buffer handle
+ * @param width new width
+ * @param height new height
  * @return bool
  */
-bool frame_buffer_resize(frame_buffer_t* buffer, s32 width, s32 height);
+bool frame_buffer_resize(frame_buffer_t* self, s32 width, s32 height);
 
 /**
- * @brief Binds the specified frame buffer for rendering
- * @param buffer Frame buffer handle
+ * @brief binds the specified frame buffer for rendering
+ * @param self frame self handle
  */
-void frame_buffer_bind(frame_buffer_t* buffer);
+void frame_buffer_bind(frame_buffer_t* self);
 
 /**
- * @brief Binds the texture of the frame buffer at the specified sampler slot
- * @param buffer Frame buffer handle
- * @param slot Sampler slot
+ * @brief binds the texture of the frame buffer at the specified sampler slot
+ * @param self frame self handle
+ * @param slot sampler slot
  */
-void frame_buffer_bind_texture(frame_buffer_t* buffer, u32 slot);
+void frame_buffer_bind_texture(frame_buffer_t* self, u32 slot);
 
 /**
- * @brief Unbinds the currently bound frame buffer
+ * @brief unbinds the currently bound frame buffer
  */
-void frame_buffer_unbind();
+void frame_buffer_unbind(void);
 
 #endif// RETRO_BUFFER_H
