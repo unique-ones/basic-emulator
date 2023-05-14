@@ -3,22 +3,22 @@
 
 #include "../types.h"
 
+typedef u32 thread_id;
+typedef void* (*thread_runner)(void*);
+
 /**
- * forward declarations of platform specific handles
-*/
-typedef struct thread thread_t;
+ * create a new thread with the specified runner
+ * @param runner runner for the thread
+ * @param arg arguments that are passed to the runner
+ * @return thread id
+ */
+thread_id thread_create(thread_runner runner, void* arg);
+
 typedef struct mutex mutex_t;
 
-/**
- * @brief allocate a platform specific thread instance
- * @return reference to thread instance
-*/
-thread_t* thread_new();
+mutex_t* mutex_new(void);
+void mutex_free(mutex_t* self);
+void mutex_lock(mutex_t* self);
+void mutex_unlock(mutex_t* self);
 
-/**
- * @brief free the thread instance
- * @param self reference to thread instance
-*/
-void thread_free(thread_t* self);
-
-#endif // RETRO_ARCH_THREAD_H
+#endif// RETRO_ARCH_THREAD_H

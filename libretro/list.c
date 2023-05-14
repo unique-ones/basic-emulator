@@ -15,10 +15,6 @@ void node_free(node_t* self) {
     free(self);
 }
 
-void* node_data(node_t* self) {
-    return self->data;
-}
-
 list_t* list_new() {
     list_t* self = (list_t*) malloc(sizeof(list_t));
     self->head = NULL;

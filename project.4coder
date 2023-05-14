@@ -1,0 +1,68 @@
+version(1);
+project_name = "basic emulator";
+
+patterns = {
+	"*.cpp",
+    "*.c",
+	"*.h",
+	"*.sh",
+	"*.4coder",
+	"*.txt",
+    "*.json"
+};
+
+blacklist_patterns =
+{
+	".*",
+};
+
+load_paths = {
+    {
+        { 
+    	    {"./libretro", .relative = true, .recursive = true, },
+    	    {"./extern", .relative = true, .recursive = true, },
+    	    {".", .relative = true, .recursive = false, }
+    	}, 
+    	.os = "linux" 
+    },
+    {
+        { 
+    	    {"./libretro", .relative = true, .recursive = true, },
+    	    {"./extern", .relative = true, .recursive = true, },
+    	    {".", .relative = true, .recursive = false, }
+    	}, 
+    	.os = "win" 
+    },
+};
+
+command_list = {
+    { .name = "configure",
+        .out = "*configure*", .footer_panel = true, .save_dirty_files = true, .cursor_at_end = true,
+        .cmd = {
+            {"./configure-lin-64 debug && ./configure-lin-64 release", .os = "linux"},
+        },
+    },
+    { .name = "build",
+        .out = "*compile*", .footer_panel = true, .save_dirty_files = true, .cursor_at_end = false,
+        .cmd = {
+            {"make -C build/lin-64-debug && make -C build/lin-64-release", .os = "linux"},
+        },
+    },
+    { .name = "run-debug",
+        .out = "*run*", .footer_panel = true, .save_dirty_files = false, .cursor_at_end = true,
+        .cmd = {         
+            {"build/lin-64-debug/basic", .os = "linux"}                    
+        },
+    },
+    { .name = "run-release",
+        .out = "*run*", .footer_panel = true, .save_dirty_files = false, .cursor_at_end = true,
+        .cmd = {         
+            {"build/lin-64-release/basic", .os = "linux"}                    
+        },
+    },
+};
+    
+fkey_command[4] = "configure";
+fkey_command[5] = "build";
+fkey_command[1] = "run-debug";
+fkey_command[2] = "run-release";

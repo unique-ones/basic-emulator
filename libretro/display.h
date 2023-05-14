@@ -1,7 +1,6 @@
 #ifndef RETRO_DISPLAY_H
 #define RETRO_DISPLAY_H
 
-#include "input.h"
 #include "types.h"
 
 #include <GLFW/glfw3.h>
@@ -13,12 +12,11 @@ typedef struct display {
     s32 height;
     bool running;
     f64 time;
-    input_buffer_t* input_buffer;
 } display_t;
 
 /**
  * @brief creates a new window and a corresponding OpenGL context
- * @param self display Handle
+ * @param self display handle
  * @param title title of the window
  * @param width width of the window
  * @param height height of the window
@@ -27,11 +25,25 @@ typedef struct display {
 bool display_create(display_t* self, const char* title, s32 width, s32 height);
 
 /**
- * @brief set the input state handle for the self
+ * @brief set the argument that gets passed to every callback
  * @param self display handle
- * @param input_buffer input buffer handle
+ * @param arg argument pointer
  */
-void display_input(display_t* self, input_buffer_t* input_buffer);
+void display_callback_argument(display_t* self, void* arg);
+
+/**
+ * @brief set the key callback for the display
+ * @param self display handle
+ * @param callback callback
+ */
+void display_key_callback(display_t* self, GLFWkeyfun callback);
+
+/**
+ * @brief set the char callback for the display
+ * @param self display handle
+ * @param callback callback
+ */
+void display_char_callback(display_t* self, GLFWcharfun callback);
 
 /**
  * @brief updates the title of the window
@@ -56,7 +68,7 @@ f64 display_update_frame(display_t* self);
 /**
  * @brief polls for incoming events
  */
-void display_update_input();
+void display_update_input(display_t* self);
 
 /**
  * @brief checks if the window should be closed or not

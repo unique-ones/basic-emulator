@@ -76,7 +76,7 @@ u32 hash(const char* data, u32 size) {
     }
 
     u32 result = size;
-    s32 remainder = size & 3;
+    u32 remainder = size & 3;
     size >>= 2;
 
     // main loop
@@ -105,6 +105,8 @@ u32 hash(const char* data, u32 size) {
             result += (u32) ((signed char) *data);
             result ^= result << 10;
             result += result >> 1;
+        default:
+            break;
     }
 
     // force avalanching of final 127 bites

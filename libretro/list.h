@@ -22,13 +22,6 @@ node_t* node_new(void* data);
  */
 void node_free(node_t* self);
 
-/**
- * @brief get a reference to the data of the given node
- * @param self reference to node
- * @return reference to data
- */
-void* node_data(node_t* self);
-
 typedef struct list {
     node_t* head;
     node_t* tail;

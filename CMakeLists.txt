@@ -6,6 +6,8 @@ include(FetchContent)
 
 # Set the C standard
 set(CMAKE_C_STANDARD 11)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Add subprojects
 add_subdirectory(libretro)
 

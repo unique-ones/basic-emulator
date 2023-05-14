@@ -21,17 +21,16 @@ typedef struct glyph_cache {
 
 /**
  * @brief creates a glyph self for the specified font
- * @param self cache handle
  * @param path path to the .ttf font file
  * @return bool
  */
-bool glyph_cache_create(glyph_cache_t* self, const char* path);
+glyph_cache_t* glyph_cache_new(const char* path);
 
 /**
  * @brief destroys the glyph self and its glyph atlas
  * @param self cache handle
  */
-void glyph_cache_destroy(glyph_cache_t* self);
+void glyph_cache_free(glyph_cache_t* self);
 
 /**
  * @brief fetches the specified symbol from the glyph self

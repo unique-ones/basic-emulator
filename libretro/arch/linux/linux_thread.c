@@ -1,21 +1,33 @@
 #include <pthread.h>
+#include <stdlib.h>
 
 #include "../thread.h"
-
-typedef struct thread {
-    pthread_t handle;
-} thread_t;
 
 typedef struct mutex {
     pthread_mutex_t handle;
 } mutex_t;
 
-thread_t* thread_new() {
-    thread_t* thread = (thread_t*) malloc(sizeof(thread_t));
-    thread->handle = 0;
-    return thread;
+thread_id thread_create(thread_runner runner, void* arg) {
+    pthread_t thread_handle;
+    pthread_create(&thread_handle, NULL, runner, arg);
+    return (thread_id) thread_handle;
 }
 
-void thread_free(thread_t* self) {
+mutex_t* mutex_new(void) {
+    mutex_t* self = (mutex_t*) malloc(sizeof(mutex_t));
+    pthread_mutex_init(&self->handle, NULL);
+    return self;
+}
+
+void mutex_free(mutex_t* self) {
+    pthread_mutex_destroy(&self->handle);
     free(self);
+}
+
+void mutex_lock(mutex_t* self) {
+    pthread_mutex_lock(&self->handle);
+}
+
+void mutex_unlock(mutex_t* self) {
+    pthread_mutex_unlock(&self->handle);
 }

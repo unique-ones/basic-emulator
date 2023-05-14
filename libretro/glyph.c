@@ -4,7 +4,9 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-bool glyph_cache_create(glyph_cache_t* self, const char* path) {
+glyph_cache_t* glyph_cache_new(const char* path) {
+    glyph_cache_t* self = (glyph_cache_t*) malloc(sizeof(glyph_cache_t));
+
     binary_buffer_t font_data;
     if (!file_read(&font_data, path)) {
         return false;
@@ -80,11 +82,12 @@ bool glyph_cache_create(glyph_cache_t* self, const char* path) {
     font_data.size = 0;
     FT_Done_Face(face);
     FT_Done_FreeType(library);
-    return true;
+    return self;
 }
 
-void glyph_cache_destroy(glyph_cache_t* self) {
+void glyph_cache_free(glyph_cache_t* self) {
     texture_destroy(&self->atlas);
+    free(self);
 }
 
 void glyph_cache_acquire(glyph_cache_t* self, glyph_info_t* info, char symbol) {
