@@ -3,15 +3,15 @@
 
 #include "../thread.h"
 
+thread_t thread_create(thread_runner runner, void* arg) {
+    pthread_t thread;
+    pthread_create(&thread, NULL, runner, arg);
+    return (thread_t) thread;
+}
+
 typedef struct mutex {
     pthread_mutex_t handle;
 } mutex_t;
-
-thread_id thread_create(thread_runner runner, void* arg) {
-    pthread_t thread_handle;
-    pthread_create(&thread_handle, NULL, runner, arg);
-    return (thread_id) thread_handle;
-}
 
 mutex_t* mutex_new(void) {
     mutex_t* self = (mutex_t*) malloc(sizeof(mutex_t));

@@ -41,6 +41,7 @@
         "rhs": "Windows"
       },
       "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
         "TARGET_BUILD_PLATFORM": "win32"
       }
     },
@@ -56,7 +57,7 @@
         "rhs": "Linux"
       },
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_C_COMPILER": "clang",
         "TARGET_BUILD_PLATFORM": "linux"
       }
     },

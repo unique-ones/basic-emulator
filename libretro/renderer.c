@@ -1,6 +1,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include "arch/time.h"
 #include "renderer.h"
 
 render_command_t* render_command_new(vertex_t* vertices, u32* indices) {
@@ -28,13 +29,13 @@ render_group_t* render_group_new(void) {
 void render_group_clear(render_group_t* self) {
     mutex_lock(self->mutex);
     render_command_t* it = self->begin;
-    render_command_t* tmp;
 
     while (it != NULL) {
-        tmp = it;
+        render_command_t* tmp = it;
         it = it->next;
         render_command_free(tmp);
     }
+    
     self->begin = NULL;
     self->end = NULL;
     self->commands = 0;
@@ -48,6 +49,8 @@ void render_group_free(render_group_t* self) {
 }
 
 void render_group_push(render_group_t* self, vertex_t* vertices, u32* indices) {
+    while (self->commands >= RENDER_GROUP_COMMANDS_MAX);
+
     mutex_lock(self->mutex);
     render_command_t* command = render_command_new(vertices, indices);
     if (self->begin == NULL) {
@@ -181,10 +184,10 @@ void renderer_draw_symbol(renderer_t* self, glyph_info_t* symbol, f32vec2_t* pos
         position->y + (symbol->size.y - symbol->bearing.y) * scale
     };
     vertex_t vertices[] = {
-        { { scaled_position.x, scaled_position.y }, *color, { symbol->texture_offset, 0.0f } },
-        { { scaled_position.x, scaled_position.y + scaled_size.y }, *color, { symbol->texture_offset, symbol->texture_span.y } },
-        { { scaled_position.x + scaled_size.x, scaled_position.y + scaled_size.y }, *color, { symbol->texture_offset + symbol->texture_span.x, symbol->texture_span.y } },
-        { { scaled_position.x + scaled_size.x, scaled_position.y }, *color, { symbol->texture_offset + symbol->texture_span.x, 0.0f } }
+        { { scaled_position.x, scaled_position.y, 0.0f }, *color, { symbol->texture_offset, 0.0f } },
+        { { scaled_position.x, scaled_position.y + scaled_size.y, 0.0f }, *color, { symbol->texture_offset, symbol->texture_span.y } },
+        { { scaled_position.x + scaled_size.x, scaled_position.y + scaled_size.y, 0.0f }, *color, { symbol->texture_offset + symbol->texture_span.x, symbol->texture_span.y } },
+        { { scaled_position.x + scaled_size.x, scaled_position.y, 0.0f }, *color, { symbol->texture_offset + symbol->texture_span.x, 0.0f } }
     };
     // clang-format on
 
@@ -194,12 +197,7 @@ void renderer_draw_symbol(renderer_t* self, glyph_info_t* symbol, f32vec2_t* pos
     render_group_push(self->glyph_group, vertices, indices);
 }
 
-void renderer_draw_text(renderer_t* self,
-                        f32vec2_t* position,
-                        f32vec3_t* color,
-                        f32 scale,
-                        const char* fmt,
-                        ...) {
+void renderer_draw_text(renderer_t* self, f32vec2_t* position, f32vec3_t* color, f32 scale, const char* fmt, ...) {
     char text_buffer[0x1000];
     va_list list;
     va_start(list, fmt);
@@ -237,7 +235,13 @@ static void renderer_draw_indicator(renderer_t* self, f32vec2_t* position, f32ve
     position->x += input_indicator_info.advance.x * scale;
 }
 
-void renderer_draw_text_with_cursor(renderer_t* self, f32vec2_t* position, f32vec3_t* color, f32 scale, u32 cursor_index, const char* fmt, ...) {
+void renderer_draw_text_with_cursor(renderer_t* self,
+                                    f32vec2_t* position,
+                                    f32vec3_t* color,
+                                    f32 scale,
+                                    u32 cursor_index,
+                                    const char* fmt,
+                                    ...) {
     char text_buffer[0x1000];
     va_list list;
     va_start(list, fmt);
@@ -285,4 +289,5 @@ void renderer_draw_text_with_cursor(renderer_t* self, f32vec2_t* position, f32ve
     texture_bind(&self->glyphs->atlas, 0);
     shader_uniform_sampler(&self->glyph_shader, "uniform_glyph_atlas", 0);
     renderer_end_batch(self);
+    *position = position_iterator;
 }

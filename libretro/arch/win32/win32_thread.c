@@ -2,8 +2,9 @@
 
 #include "../thread.h"
 
-thread_id thread_create(thread_runner runner, void* arg) {
-    return (thread_id) CreateThread(NULL, 0, runner, arg, 0, NULL);
+thread_t thread_create(thread_runner runner, void* arg) {
+    thread_t thread = CreateThread(NULL, 0, runner, arg, 0, NULL);
+    return thread;
 }
 
 typedef struct mutex {

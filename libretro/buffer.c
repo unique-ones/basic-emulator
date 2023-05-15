@@ -75,6 +75,7 @@ static s32 vertex_buffer_layout_stride(vertex_buffer_layout_t* layout) {
 }
 
 static bool frame_buffer_is_valid(frame_buffer_t* buffer) {
+    frame_buffer_bind(buffer);
     return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 }
 
@@ -149,10 +150,10 @@ void vertex_array_vertex_buffer(vertex_array_t* self, vertex_buffer_t* vertex_bu
 
     s64 offset = 0;
     s32 stride = vertex_buffer_layout_stride(vertex_buffer->layout);
-    for (s32 i = 0; i < vertex_buffer->layout->count; i++) {
+    for (u32 i = 0; i < vertex_buffer->layout->count; i++) {
         glEnableVertexAttribArray(i);
         shader_type_t attribute = *(vertex_buffer->layout->attributes + i);
-        s32 opengl_type = shader_type_opengl(attribute);
+        GLenum opengl_type = (GLenum) shader_type_opengl(attribute);
         if (opengl_type == GL_FLOAT) {
             glVertexAttribPointer(i, shader_type_primitives(attribute), opengl_type, GL_FALSE, stride,
                                   (const void*) offset);

@@ -1,5 +1,5 @@
-#ifndef LIBRETRO_COLLECTIONS_MAP_H
-#define LIBRETRO_COLLECTIONS_MAP_H
+#ifndef RETRO_COLLECTIONS_MAP_H
+#define RETRO_COLLECTIONS_MAP_H
 
 #include "list.h"
 
@@ -50,4 +50,4 @@ void* map_find(map_t* self, const char* key);
  */
 u32 hash(const char* data, u32 size);
 
-#endif// LIBRETRO_COLLECTIONS_MAP_H
+#endif// RETRO_COLLECTIONS_MAP_H

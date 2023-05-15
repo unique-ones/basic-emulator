@@ -15,3 +15,6 @@ add_library(libretro ${RETRO_SOURCES} "${CMAKE_SOURCE_DIR}/extern/glad/glad.h" "
 target_include_directories(libretro PUBLIC ${CMAKE_SOURCE_DIR}/extern/)
 target_link_libraries(libretro PUBLIC "glfw" "freetype")
   
+if(WIN32)
+    target_compile_definitions(libretro PUBLIC LIBRETRO_PLATFORM_WIN32=1 _CRT_SECURE_NO_WARNINGS=1)
+endif()

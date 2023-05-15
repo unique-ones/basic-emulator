@@ -13,7 +13,7 @@ static u32 shader_compile(binary_buffer_t* source, u32 type) {
         glGetShaderiv(program, GL_INFO_LOG_LENGTH, &info_length);
 
         binary_buffer_t failure_info;
-        failure_info.data = (char*) malloc(info_length);
+        failure_info.data = (char*) malloc((size_t) info_length);
         failure_info.size = (u32) info_length;
         glGetShaderInfoLog(program, info_length, &info_length, failure_info.data);
         glDeleteProgram(program);
@@ -54,7 +54,7 @@ bool shader_create(shader_t* self, const char* vertex, const char* fragment) {
         glGetProgramiv(handle, GL_INFO_LOG_LENGTH, &info_length);
 
         binary_buffer_t failure_info;
-        failure_info.data = (char*) malloc(info_length);
+        failure_info.data = (char*) malloc((size_t) info_length);
         failure_info.size = (u32) info_length;
         glGetProgramInfoLog(handle, info_length, NULL, failure_info.data);
         glDeleteProgram(handle);
@@ -75,14 +75,14 @@ bool shader_create(shader_t* self, const char* vertex, const char* fragment) {
     if (uniform_count > 0 && uniform_length > 0) {
         binary_buffer_t uniform_name;
         uniform_name.data = (char*) malloc(uniform_length);
-        uniform_name.size = uniform_length;
+        uniform_name.size = (u32) uniform_length;
 
-        for (s32 i = 0; i < uniform_count; i++) {
+        for (u32 i = 0; i < (u32) uniform_count; i++) {
             s32 length, size;
             u32 data_type;
 
             glGetActiveUniform(handle, i, uniform_length, &length, &size, &data_type, uniform_name.data);
-            u32 location = glGetUniformLocation(handle, uniform_name.data);
+            s32 location = glGetUniformLocation(handle, uniform_name.data);
             fprintf(stderr, "self [%s, %s] uniform %s has location %d\n", vertex, fragment, uniform_name.data,
                     location);
         }

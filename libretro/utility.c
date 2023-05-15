@@ -12,7 +12,7 @@ bool file_read(binary_buffer_t* buffer, const char* path) {
 
     buffer->data = (char*) malloc(size);
     if (buffer->data) {
-        buffer->size = size;
+        buffer->size = (u32) size;
         fread(buffer->data, sizeof(char), size, file);
         fclose(file);
         buffer->data[size - 1] = 0;

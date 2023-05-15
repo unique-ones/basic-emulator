@@ -3,16 +3,25 @@
 
 #include "../types.h"
 
-typedef u32 thread_id;
+#ifdef LIBRETRO_PLATFORM_WIN32
+
+typedef void* thread_t;
+typedef unsigned long (*thread_runner)(void*);
+
+#else
+
+typedef u32 thread_t;
 typedef void* (*thread_runner)(void*);
+
+#endif
 
 /**
  * create a new thread with the specified runner
  * @param runner runner for the thread
  * @param arg arguments that are passed to the runner
- * @return thread id
+ * @return thread
  */
-thread_id thread_create(thread_runner runner, void* arg);
+thread_t thread_create(thread_runner runner, void* arg);
 
 typedef struct mutex mutex_t;
 

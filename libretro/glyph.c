@@ -30,7 +30,7 @@ glyph_cache_t* glyph_cache_new(const char* path) {
     // calculate combined size of glyphs
     s32vec2_t size = { 0, 0 };
     for (s32 i = 32; i < 128; i++) {
-        if (FT_Load_Char(face, i, FT_LOAD_RENDER)) {
+        if (FT_Load_Char(face, (FT_ULong) i, FT_LOAD_RENDER)) {
             fprintf(stderr, "could not load character: %c\n", (char) i);
             continue;
         }
@@ -63,7 +63,7 @@ glyph_cache_t* glyph_cache_new(const char* path) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, size.x, size.y, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
 
     s32 offset = 0;
-    for (s32 i = 0; i < 96; i++) {
+    for (u32 i = 0; i < 96; i++) {
         // unfortunately we still need to load the character again, as we need its bitmap buffer for the upload
         if (FT_Load_Char(face, i + 32, FT_LOAD_RENDER) || face->glyph->bitmap.buffer == NULL) {
             continue;

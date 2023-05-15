@@ -17,6 +17,7 @@ int main(int argc, char** argv) {
     display_key_callback(&display, emulator_key_callback);
     display_char_callback(&display, emulator_char_callback);
 
+    u32 fps_display_counter = 0;
     while (display_running(&display)) {
         f32mat4_t orthogonal;
         f32mat4_create_orthogonal(&orthogonal, 0.0f, (f32) display.width, (f32) display.height, 0.0f);
@@ -35,9 +36,18 @@ int main(int argc, char** argv) {
             case EMULATOR_STATE_INPUT: {
                 // if the emulator is in input state, we just draw the command prompt and the user's input
                 renderer_begin_batch(&renderer);
-                renderer_draw_text_with_cursor(&renderer, &(f32vec2_t){ 0.0f, 0.0f }, &(f32vec3_t){ 0.0f, 1.0f, 0.0f },
-                                               0.5f, emulator.text.cursor, "%.*s", emulator.text.fill,
-                                               emulator.text.data);
+
+                // history
+                f32vec2_t position_iterator = { 0.0f, 0.0f };
+                for (text_entry_t* it = emulator.history->begin; it; it = it->next) {
+                    position_iterator.x = 0.0f;
+                    renderer_draw_text_with_cursor(&renderer, &position_iterator, &(f32vec3_t){ 0.0f, 0.9f, 0.0f },
+                                                   0.5f, UINT32_MAX, "%.*s", it->length, it->data);
+                }
+
+                position_iterator.x = 0.0f;
+                renderer_draw_text_with_cursor(&renderer, &position_iterator, &(f32vec3_t){ 0.0f, 1.0f, 0.0f }, 0.5f,
+                                               emulator.text.cursor, "%.*s", emulator.text.fill, emulator.text.data);
                 renderer_end_batch(&renderer);
                 break;
             }
@@ -55,7 +65,14 @@ int main(int argc, char** argv) {
         // stage 3
         // check for incoming input
         display_update_input(&display);
-        display_update_frame(&display);
+        f64 frame_time = display_update_frame(&display);
+        if (fps_display_counter++ == 10000) {
+            f64 fps = 1.0 / frame_time;
+            char fps_text_buffer[128];
+            snprintf(fps_text_buffer, sizeof fps_text_buffer, "Basic Emulator - %d FPS", (int) fps);
+            display_title(&display, fps_text_buffer);
+            fps_display_counter = 0;
+        }
     }
 
     // don't be a dork, free your resources :)

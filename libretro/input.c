@@ -28,10 +28,10 @@ bool input_buffer_emplace(input_buffer_t* self, char data) {
 }
 
 static void input_buffer_reorder(input_buffer_t* buffer) {
-    for (u32 i = 0; i < buffer->fill; i++) {
+    for (s32 i = 0; i < buffer->fill; i++) {
         char* current = buffer->data + i;
         if (*current == -1) {
-            memcpy(current, current + 1, buffer->fill - i - 1);
+            memcpy(current, current + 1, (size_t) (buffer->fill - i - 1));
             buffer->fill--;
             if (i < buffer->cursor) {
                 buffer->cursor--;
@@ -54,5 +54,5 @@ void input_buffer_advance_cursor(input_buffer_t* self, s32 offset) {
 }
 
 bool input_buffer_is_full(input_buffer_t* self) {
-    return self->fill == self->capacity;
+    return self->fill == (s32) self->capacity;
 }

@@ -9,14 +9,16 @@
 #include "shader.h"
 #include "text.h"
 
-#define QUAD_VERTICES 4
-#define QUAD_INDICES 6
+enum {
+    QUAD_VERTICES = 4,
+    QUAD_INDICES = 6
+};
 
 typedef struct render_command {
     struct render_command* prev;
     struct render_command* next;
-    vertex_t vertices[4];
-    u32 indices[6];
+    vertex_t vertices[QUAD_VERTICES];
+    u32 indices[QUAD_INDICES];
 } render_command_t;
 
 /**
@@ -32,6 +34,10 @@ render_command_t* render_command_new(vertex_t* vertices, u32* indices);
  * @param self render command
  */
 void render_command_free(render_command_t* self);
+
+enum {
+    RENDER_GROUP_COMMANDS_MAX = 512
+};
 
 typedef struct render_group {
     render_command_t* begin;
@@ -60,6 +66,7 @@ void render_group_free(render_group_t* self);
 
 /**
  * @brief push a set of vertices and indices to the render group
+ * @note blocks while there are too many commands in the render group
  * @param self render group
  */
 void render_group_push(render_group_t* self, vertex_t* vertices, u32* indices);
@@ -141,13 +148,15 @@ void renderer_draw_symbol(renderer_t* self, glyph_info_t* symbol, f32vec2_t* pos
  * @param scale scale of the text
  * @param fmt text that shall be drawn
  */
-void renderer_draw_text(renderer_t* self,
-                        f32vec2_t* position,
-                        f32vec3_t* color,
-                        f32 scale,
-                        const char* fmt, ...);
+void renderer_draw_text(renderer_t* self, f32vec2_t* position, f32vec3_t* color, f32 scale, const char* fmt, ...);
 
 
-void renderer_draw_text_with_cursor(renderer_t* self, f32vec2_t* position, f32vec3_t* color, f32 scale, u32 cursor_index, const char* fmt, ...);
+void renderer_draw_text_with_cursor(renderer_t* self,
+                                    f32vec2_t* position,
+                                    f32vec3_t* color,
+                                    f32 scale,
+                                    u32 cursor_index,
+                                    const char* fmt,
+                                    ...);
 
 #endif// RETRO_RENDERER_H

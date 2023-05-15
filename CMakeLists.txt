@@ -16,7 +16,7 @@ target_include_directories(basic PUBLIC ${CMAKE_SOURCE_DIR})
 target_link_libraries(basic PUBLIC "libretro")
 
 # Copy Assets to the Output Directory
-file(COPY ${CMAKE_CURRENT_LIST_DIR}/assets DESTINATION ${CMAKE_INSTALL_PREFIX})
+file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 enable_testing()
 add_subdirectory(tests)
