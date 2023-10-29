@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <libretro/list.h>
+#include <libretro/util/list.h>
 
-static void list_test_at() {
+static void list_test_at(void) {
     list_t* list = list_new();
 
     char* data = "GOSUB 1000";
@@ -22,7 +22,7 @@ static void list_test_at() {
     list_free(list);
 }
 
-static void list_test_insert() {
+static void list_test_insert(void) {
     list_t* list = list_new();
 
     char* data = "foo_bar";
@@ -48,19 +48,19 @@ typedef struct animal {
     animal_type_t type;
 } animal_t;
 
-static bool animal_compare(void* a, void* b) {
+static bool animal_compare(const void* a, const void* b) {
     if (a == NULL || b == NULL) {
         return false;
     }
-    animal_t* first_animal = (animal_t*) a;
-    animal_t* second_animal = (animal_t*) b;
+    const animal_t* first_animal = (const animal_t*) a;
+    const animal_t* second_animal = (const animal_t*) b;
     if (first_animal->type != second_animal->type) {
         return false;
     }
     return strcmp(first_animal->name, second_animal->name) == 0;
 }
 
-static void list_test_find() {
+static void list_test_find(void) {
     animal_t* bear = &(animal_t){ .name = "joe", .type = MAMMAL };
     animal_t* monkey = &(animal_t){ .name = "jeff", .type = MAMMAL };
     animal_t* bee = &(animal_t){ .name = "mia", .type = INSECT };

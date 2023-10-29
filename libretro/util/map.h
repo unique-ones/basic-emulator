@@ -26,9 +26,7 @@
 
 #include "list.h"
 
-enum {
-    MAP_BUCKET_COUNT = 16
-};
+enum { MAP_BUCKET_COUNT = 16 };
 
 typedef struct map {
     list_t* buckets[MAP_BUCKET_COUNT];
@@ -38,7 +36,7 @@ typedef struct map {
  * @brief allocates a new map instance
  * @return map instance
  */
-map_t* map_new();
+map_t* map_new(void);
 
 /**
  * @brief frees the map instance and its buckets

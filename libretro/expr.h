@@ -25,8 +25,8 @@
 #define RETRO_EXPR_H
 
 #include "lexer.h"
-#include "map.h"
 #include "types.h"
+#include "util/map.h"
 
 typedef enum expression_type {
     EXPRESSION_BINARY,

@@ -1,4 +1,4 @@
-//
+﻿//
 // MIT License
 //
 // Copyright (c) 2023 Elias Engelbert Plank
@@ -21,13 +21,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef RETRO_RANDOM_H
-#define RETRO_RANDOM_H
+#ifndef RETRO_PROG_H
+#define RETRO_PROG_H
 
-#include "types.h"
+#include "util/map.h"
 
-void random_seed(u64 seed);
+typedef struct program {
+    map_t* symbols;
+    map_t* lines;
+    s32 last_key;
+    u8* memory;
+} program_t;
 
-u64 random_u64(void);
+void program_create(program_t* program, u32 memory_size);
+void program_destroy(program_t* program);
 
-#endif// RETRO_RANDOM_H
+#endif// RETRO_PROG_H

@@ -22,7 +22,7 @@
 // SOFTWARE.
 
 #include "glyph.h"
-#include "utility.h"
+#include "util/utility.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H

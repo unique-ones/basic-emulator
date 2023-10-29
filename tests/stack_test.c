@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <libretro/stack.h>
+#include <libretro/util/stack.h>
 
 typedef struct employee {
     const char* name;
@@ -16,7 +16,7 @@ bool employee_equal(employee_t* a, employee_t* b) {
     return strcmp(a->name, b->name) == 0;
 }
 
-static void stack_test_push() {
+static void stack_test_push(void) {
     employee_t* joseph = &(employee_t){ .name = "Joseph", .id = 1 };
     employee_t* adam = &(employee_t){ .name = "Adam", .id = 2 };
 
@@ -27,7 +27,7 @@ static void stack_test_push() {
     stack_free(stack);
 }
 
-static void stack_test_pop() {
+static void stack_test_pop(void) {
     employee_t* peter = &(employee_t){ .name = "Peter", .id = 1 };
     employee_t* michael = &(employee_t){ .name = "Michael", .id = 10 };
     employee_t* natalie = &(employee_t){ .name = "Natalie", .id = 3 };
@@ -43,7 +43,7 @@ static void stack_test_pop() {
     stack_free(stack);
 }
 
-static void stack_test_peek() {
+static void stack_test_peek(void) {
     employee_t* mario = &(employee_t){ .name = "Mario", .id = 11 };
     employee_t* eva = &(employee_t){ .name = "Eva", .id = 20 };
     employee_t* alina = &(employee_t){ .name = "Alina", .id = 17 };
@@ -66,7 +66,7 @@ static void stack_test_peek() {
     stack_free(stack);
 }
 
-static void stack_test_grow() {
+static void stack_test_grow(void) {
     employee_t* mario = &(employee_t){ .name = "Mario", .id = 11 };
     employee_t* eva = &(employee_t){ .name = "Eva", .id = 20 };
     employee_t* alina = &(employee_t){ .name = "Alina", .id = 17 };

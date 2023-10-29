@@ -72,7 +72,7 @@ void render_group_clear(render_group_t* self) {
         it = it->next;
         render_command_free(tmp);
     }
-    
+
     self->begin = NULL;
     self->end = NULL;
     self->commands = 0;
@@ -89,7 +89,8 @@ void render_group_free(render_group_t* self) {
 }
 
 void render_group_push(render_group_t* self, vertex_t* vertices, u32* indices) {
-    while (self->commands >= RENDER_GROUP_COMMANDS_MAX);
+    while (self->commands >= RENDER_GROUP_COMMANDS_MAX)
+        ;
 
     mutex_lock(self->mutex);
     render_command_t* command = render_command_new(vertices, indices);
@@ -156,7 +157,7 @@ static void renderer_group_end_batch(render_group_t* group, shader_t* shader) {
     if (group->commands == 0) {
         return;
     }
-    
+
     mutex_lock(group->mutex);
     vertex_t* vertices = (vertex_t*) malloc(4 * sizeof(vertex_t) * group->commands);
     u32* indices = (u32*) malloc(6 * sizeof(u32) * group->commands);

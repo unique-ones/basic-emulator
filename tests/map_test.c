@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <libretro/buffer.h>
-#include <libretro/map.h>
+#include <libretro/gpu/buffer.h>
+#include <libretro/util/map.h>
 
 typedef struct uniform {
     u32 location;
@@ -17,7 +17,7 @@ bool uniform_equal(uniform_t* a, uniform_t* b) {
     return a->type == b->type;
 }
 
-static void map_test() {
+static void map_test(void) {
     uniform_t* scale = &(uniform_t){ .location = 0, .type = FLOAT4 };
     uniform_t* curvature = &(uniform_t){ .location = 1, .type = FLOAT2 };
 

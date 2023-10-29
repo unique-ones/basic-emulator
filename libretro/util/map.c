@@ -31,7 +31,7 @@ typedef struct map_entry {
     void* data;
 } map_entry_t;
 
-map_t* map_new() {
+map_t* map_new(void) {
     map_t* self = (map_t*) malloc(sizeof(map_t));
     for (u32 i = 0; i < MAP_BUCKET_COUNT; ++i) {
         self->buckets[i] = list_new();

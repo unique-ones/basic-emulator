@@ -116,4 +116,42 @@ void token_list_push(token_list_t* self, token_type_t type, char* lexeme, u32 le
  */
 token_list_t* tokenize(char* data, u32 length);
 
+typedef struct token_state {
+    token_t* current;
+    token_t* end;
+} token_state_t;
+
+/**
+ * @brief checks if the token state reached the end
+ * @param state the token state
+ * @return boolean that indicates whether the state is at the end
+ */
+bool token_state_end(token_state_t* state);
+
+/**
+ * @brief returns an invalid token
+ * @return invalid token
+ */
+token_t* token_state_invalid(void);
+
+/**
+ * @brief retrieves the current token
+ * @param state the token state
+ * @return current token
+ */
+token_t* token_state_current(token_state_t* state);
+
+/**
+ * @brief retrieves the next token
+ * @param state the token state
+ * @return next token
+ */
+token_t* token_state_next(token_state_t* state);
+
+/**
+ * @brief advances the token cursor by one
+ * @param state the token state
+ */
+void token_state_advance(token_state_t* state);
+
 #endif// RETRO_LEXER_H

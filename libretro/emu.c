@@ -31,7 +31,8 @@
 #include "emu.h"
 #include "expr.h"
 #include "lexer.h"
-#include "random.h"
+#include "stmt.h"
+#include "util/random.h"
 
 static void emulator_pass_finish(emulator_t* self) {
     text_queue_push(self->history, self->text.data, (u32) self->text.fill);
@@ -43,15 +44,12 @@ static void emulator_pass(emulator_t* self) {
     // step 1: tokenize
     token_list_t* tokens = tokenize(self->text.data, (u32) self->text.fill);
 
-    // step 2: parse into command queue
-    // for now, we will just test math mode
-    expression_t* expression = expression_compile(tokens->begin, tokens->end);
-
-    f64 result = 0.0;
-    if (expression) {
-        result = expression_evaluate(expression, self->symbols);
-        expression_free(expression);
+    // step 2: parse into statement
+    statement_t* statement = statement_compile(tokens->begin, tokens->end);
+    if (statement) {
+        statement_free(statement);
     }
+
     // free tokens
     token_list_free(tokens);
 
@@ -60,14 +58,14 @@ static void emulator_pass(emulator_t* self) {
     // print buffer, which will be sent to the renderer
     // after every command execution
     text_queue_t* output = text_queue_new();
-    text_queue_push_format(output, "%lf", result);
+    text_queue_push_format(output, "foobar");
 
     // drawing of the output queue
     f32vec2_t position_iterator = { 0.0f, 0.0f };
     for (text_entry_t* it = output->begin; it; it = it->next) {
         renderer_draw_text(self->renderer, &position_iterator, &(f32vec3_t){ 0.0f, 0.0f, 1.0f }, 0.5f, it->data);
     }
-    while (self->last_key != GLFW_KEY_ESCAPE) {
+    while (self->program.last_key != GLFW_KEY_ESCAPE) {
         // here we waste time
         time_sleep(10);
     }
@@ -151,14 +149,17 @@ static f64 emulator_sgn(f64 x) {
 static void emulator_add_builtin_symbols(emulator_t* self) {
     // available math functions
     static function_definition_t builtin[] = {
-        { "ABS", 1, { .func1 = emulator_abs } },   { "ATN", 1, { .func1 = emulator_atan } }, { "COS", 1, { .func1 = emulator_cos } }, { "EXP", 1, { .func1 = emulator_exp } },
-        { "INT", 1, { .func1 = emulator_floor } }, { "LOG", 1, { .func1 = emulator_log } },  { "RND", 1, { .func1 = emulator_rnd } }, { "SGN", 1, { .func1 = emulator_sgn } },
-        { "SIN", 1, { .func1 = emulator_sin } },   { "SQR", 1, { .func1 = emulator_sqrt } }, { "TAN", 1, { .func1 = emulator_tan } }
+        { "ABS", 1, { .func1 = emulator_abs } },   { "ATN", 1, { .func1 = emulator_atan } },
+        { "COS", 1, { .func1 = emulator_cos } },   { "EXP", 1, { .func1 = emulator_exp } },
+        { "INT", 1, { .func1 = emulator_floor } }, { "LOG", 1, { .func1 = emulator_log } },
+        { "RND", 1, { .func1 = emulator_rnd } },   { "SGN", 1, { .func1 = emulator_sgn } },
+        { "SIN", 1, { .func1 = emulator_sin } },   { "SQR", 1, { .func1 = emulator_sqrt } },
+        { "TAN", 1, { .func1 = emulator_tan } }
     };
 
     for (u32 index = 0; index < STACK_ARRAY_SIZE(builtin); ++index) {
         function_definition_t* function = builtin + index;
-        map_insert(self->symbols, function->name, function);
+        map_insert(self->program.symbols, function->name, function);
     }
 }
 
@@ -166,31 +167,15 @@ void emulator_create(emulator_t* self, renderer_t* renderer) {
     self->state = EMULATOR_STATE_INPUT;
     self->mode = EMULATOR_MODE_TEXT;
     self->renderer = renderer;
-
-    self->symbols = map_new();
+    program_create(&self->program, EMULATOR_MEMORY_SIZE);
     emulator_add_builtin_symbols(self);
 
-    self->lines = map_new();
-    self->stack = stack_new(255);
-
-    self->memory = (u8*) malloc(EMULATOR_MEMORY_SIZE);
     text_cursor_create(&self->text, 128);
     self->history = text_queue_new();
 }
 
 void emulator_destroy(emulator_t* self) {
-    map_free(self->lines);
-    self->lines = NULL;
-
-    map_free(self->symbols);
-    self->symbols = NULL;
-
-    stack_free(self->stack);
-    self->stack = NULL;
-
-    free(self->memory);
-    self->memory = NULL;
-
+    program_destroy(&self->program);
     text_cursor_destroy(&self->text);
     text_queue_free(self->history);
 }
@@ -207,7 +192,7 @@ void emulator_key_callback(GLFWwindow* handle, s32 key, s32 scancode, s32 action
     }
     emulator_t* self = glfwGetWindowUserPointer(handle);
     if (self) {
-        self->last_key = key;
+        self->program.last_key = key;
         if (self->state == EMULATOR_STATE_INPUT) {
             text_cursor_t* text = &self->text;
             switch (key) {

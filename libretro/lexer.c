@@ -218,9 +218,9 @@ token_list_t* tokenize(char* data, u32 length) {
             }
             u32 end_index = iterator.index;
             u32 length = end_index - begin_index;
-            
+
             if (string_view_equal(lexeme, length, "CLEAR", 5)) {
-                token_list_push(list, TOKEN_CLEAR, lexeme, length);    
+                token_list_push(list, TOKEN_CLEAR, lexeme, length);
             } else if (string_view_equal(lexeme, length, "LET", 3)) {
                 token_list_push(list, TOKEN_LET, lexeme, length);
             } else {
@@ -251,4 +251,38 @@ token_list_t* tokenize(char* data, u32 length) {
         string_iterator_advance(&iterator);
     }
     return list;
+}
+
+bool token_state_end(token_state_t* state) {
+    return state->current == state->end;
+}
+
+token_t* token_state_invalid(void) {
+    static token_t token = { 0 };
+    token.type = TOKEN_INVALID;
+    token.lexeme = "";
+    token.length = 0;
+    token.prev = NULL;
+    token.next = NULL;
+    return &token;
+}
+
+token_t* token_state_current(token_state_t* state) {
+    if (state->current) {
+        return state->current;
+    }
+    return token_state_invalid();
+}
+
+token_t* token_state_next(token_state_t* state) {
+    if (!token_state_end(state)) {
+        return state->current->next;
+    }
+    return token_state_invalid();
+}
+
+void token_state_advance(token_state_t* state) {
+    if (!token_state_end(state)) {
+        state->current = state->current->next;
+    }
 }

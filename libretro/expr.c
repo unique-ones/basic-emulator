@@ -242,63 +242,25 @@ f64 exponential_expression_evaluate(expression_t* self, map_t* symbol_table) {
                expression_evaluate(self->exponential.exponent, symbol_table));
 }
 
-typedef struct expression_state {
-    token_t* current;
-    token_t* end;
-} expression_state_t;
-
-static bool end(expression_state_t* state) {
-    return state->current == state->end;
-}
-
-static token_t* invalid(void) {
-    static token_t token = { 0 };
-    token.type = TOKEN_INVALID;
-    token.lexeme = "";
-    token.length = 0;
-    token.prev = NULL;
-    token.next = NULL;
-    return &token;
-}
-
-static token_t* current(expression_state_t* state) {
-    if (state->current) {
-        return state->current;
-    }
-    return invalid();
-}
-
-static token_t* next(expression_state_t* state) {
-    if (!end(state)) {
-        return state->current->next;
-    }
-    return invalid();
-}
-
-static void advance(expression_state_t* state) {
-    if (!end(state)) {
-        state->current = state->current->next;
-    }
-}
 
 /**
  * forward declaration
  */
-static expression_t* expression_add_or_sub(expression_state_t* state);
-static expression_t* expression_unary_plus_or_minus(expression_state_t* state);
+static expression_t* expression_add_or_sub(token_state_t* state);
+static expression_t* expression_unary_plus_or_minus(token_state_t* state);
 
-static expression_t* expression_exponential(expression_state_t* state, expression_t* base) {
-    if (current(state)->type == TOKEN_CIRCUMFLEX) {
-        advance(state);
+static expression_t* expression_exponential(token_state_t* state, expression_t* base) {
+    if (token_state_current(state)->type == TOKEN_CIRCUMFLEX) {
+        token_state_advance(state);
         return exponential_expression_new(base, expression_unary_plus_or_minus(state));
     }
     return base;
 }
 
-static expression_t* expression_primary(expression_state_t* state) {
-    if (current(state)->type == TOKEN_NUMBER || current(state)->type == TOKEN_NUMBER_FLOAT) {
-        token_t* number_token = current(state);
-        advance(state);
+static expression_t* expression_primary(token_state_t* state) {
+    if (token_state_current(state)->type == TOKEN_NUMBER || token_state_current(state)->type == TOKEN_NUMBER_FLOAT) {
+        token_t* number_token = token_state_current(state);
+        token_state_advance(state);
 
         char* number_begin = number_token->lexeme;
         char* number_end = number_begin + number_token->length;
@@ -306,16 +268,16 @@ static expression_t* expression_primary(expression_state_t* state) {
         expression_t* number = number_expression_new(value);
         return expression_exponential(state, number);
     }
-    if (current(state)->type == TOKEN_IDENTIFIER) {
-        token_t* text_token = current(state);
-        advance(state);
+    if (token_state_current(state)->type == TOKEN_IDENTIFIER) {
+        token_t* text_token = token_state_current(state);
+        token_state_advance(state);
 
         // function expression
-        if (current(state) && current(state)->type == TOKEN_LEFT_PARENTHESIS) {
+        if (token_state_current(state) && token_state_current(state)->type == TOKEN_LEFT_PARENTHESIS) {
             expression_t* function = function_expression_new(text_token->lexeme, text_token->length);
-            advance(state);
+            token_state_advance(state);
             function_expression_push(function, expression_add_or_sub(state));
-            while (current(state)->type == TOKEN_COMMA) {
+            while (token_state_current(state)->type == TOKEN_COMMA) {
                 function_expression_push(function, expression_add_or_sub(state));
             }
             return expression_exponential(state, function);
@@ -325,16 +287,16 @@ static expression_t* expression_primary(expression_state_t* state) {
             return expression_exponential(state, variable);
         }
     }
-    if (current(state)->type == TOKEN_LEFT_PARENTHESIS) {
-        advance(state);
+    if (token_state_current(state)->type == TOKEN_LEFT_PARENTHESIS) {
+        token_state_advance(state);
 
         expression_t* inner = expression_add_or_sub(state);
-        if (current(state)->type != TOKEN_RIGHT_PARENTHESIS) {
+        if (token_state_current(state)->type != TOKEN_RIGHT_PARENTHESIS) {
             // we need some sort of error callback here
             expression_free(inner);
             return NULL;
         }
-        advance(state);
+        token_state_advance(state);
         return expression_exponential(state, inner);
     }
 
@@ -342,10 +304,10 @@ static expression_t* expression_primary(expression_state_t* state) {
     return NULL;
 }
 
-static expression_t* expression_unary_plus_or_minus(expression_state_t* state) {
-    if (current(state)->type == TOKEN_PLUS || current(state)->type == TOKEN_MINUS) {
-        operator_t operator= current(state)->type == TOKEN_PLUS ? OPERATOR_ADD : OPERATOR_SUB;
-        advance(state);
+static expression_t* expression_unary_plus_or_minus(token_state_t* state) {
+    if (token_state_current(state)->type == TOKEN_PLUS || token_state_current(state)->type == TOKEN_MINUS) {
+        operator_t operator= token_state_current(state)->type == TOKEN_PLUS ? OPERATOR_ADD : OPERATOR_SUB;
+        token_state_advance(state);
 
         expression_t* inner = expression_unary_plus_or_minus(state);
         if (!inner) {
@@ -356,7 +318,7 @@ static expression_t* expression_unary_plus_or_minus(expression_state_t* state) {
     return expression_primary(state);
 }
 
-static expression_t* expression_mul_or_div(expression_state_t* state) {
+static expression_t* expression_mul_or_div(token_state_t* state) {
     // The first term in the multiplication or division can be an
     // expression of higher precedence, which are all contained by
     // unary plus or minus expressions
@@ -366,9 +328,9 @@ static expression_t* expression_mul_or_div(expression_state_t* state) {
     }
 
     // In the next step, we try to consume either a plus or minus sign
-    while (current(state)->type == TOKEN_ASTERISK || current(state)->type == TOKEN_SLASH) {
-        operator_t operator= current(state)->type == TOKEN_ASTERISK ? OPERATOR_MUL : OPERATOR_DIV;
-        advance(state);
+    while (token_state_current(state)->type == TOKEN_ASTERISK || token_state_current(state)->type == TOKEN_SLASH) {
+        operator_t operator= token_state_current(state)->type == TOKEN_ASTERISK ? OPERATOR_MUL : OPERATOR_DIV;
+        token_state_advance(state);
 
         // On the right side of the expression, we again try to parse an expression
         // of higher precedence
@@ -384,7 +346,7 @@ static expression_t* expression_mul_or_div(expression_state_t* state) {
     return left;
 }
 
-static expression_t* expression_add_or_sub(expression_state_t* state) {
+static expression_t* expression_add_or_sub(token_state_t* state) {
     // The first term in the addition or subtraction can be an
     // expression of higher precedence, they are all handled by
     // multiplication or division as it is next in the
@@ -395,9 +357,9 @@ static expression_t* expression_add_or_sub(expression_state_t* state) {
     }
 
     // In the next step, we try to consume either a plus or minus sign
-    while (current(state)->type == TOKEN_PLUS || current(state)->type == TOKEN_MINUS) {
-        operator_t operator= current(state)->type == TOKEN_PLUS ? OPERATOR_ADD : OPERATOR_SUB;
-        advance(state);
+    while (token_state_current(state)->type == TOKEN_PLUS || token_state_current(state)->type == TOKEN_MINUS) {
+        operator_t operator= token_state_current(state)->type == TOKEN_PLUS ? OPERATOR_ADD : OPERATOR_SUB;
+        token_state_advance(state);
 
         // On the right side of the plus or minus sign, we again try to parse an expression of higher precedence
         expression_t* right = expression_mul_or_div(state);
@@ -413,7 +375,7 @@ static expression_t* expression_add_or_sub(expression_state_t* state) {
 }
 
 expression_t* expression_compile(token_t* begin, token_t* end) {
-    expression_state_t state = { 0 };
+    token_state_t state = { 0 };
     state.current = begin;
     state.end = end;
     return expression_add_or_sub(&state);
@@ -457,4 +419,5 @@ f64 expression_evaluate(expression_t* self, map_t* symbol_table) {
         case EXPRESSION_EXPONENTIAL:
             return exponential_expression_evaluate(self, symbol_table);
     }
+    return 0.0;
 }

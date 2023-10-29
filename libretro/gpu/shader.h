@@ -25,7 +25,7 @@
 #define RETRO_SHADER_H
 
 #include "texture.h"
-#include "utility.h"
+#include "util/utility.h"
 
 typedef struct shader {
     u32 handle;

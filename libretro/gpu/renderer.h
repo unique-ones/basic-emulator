@@ -31,10 +31,7 @@
 #include "glyph.h"
 #include "shader.h"
 
-enum {
-    QUAD_VERTICES = 4,
-    QUAD_INDICES = 6
-};
+enum { QUAD_VERTICES = 4, QUAD_INDICES = 6 };
 
 typedef struct render_command {
     struct render_command* prev;
@@ -57,9 +54,7 @@ render_command_t* render_command_new(vertex_t* vertices, u32* indices);
  */
 void render_command_free(render_command_t* self);
 
-enum {
-    RENDER_GROUP_COMMANDS_MAX = 512
-};
+enum { RENDER_GROUP_COMMANDS_MAX = 512 };
 
 typedef struct render_group {
     // linked list of render commands

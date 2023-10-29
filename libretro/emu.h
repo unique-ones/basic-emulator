@@ -26,12 +26,13 @@
 
 #include <GLFW/glfw3.h>
 
-#include "map.h"
-#include "renderer.h"
-#include "stack.h"
-#include "text.h"
+#include "gpu/renderer.h"
+#include "prog.h"
+#include "util/map.h"
+#include "util/stack.h"
+#include "util/text.h"
 
-#define EMULATOR_MEMORY_SIZE (64 * 1024)
+enum { EMULATOR_MEMORY_SIZE = 0x10000 };
 
 typedef enum emulator_state { EMULATOR_STATE_INPUT = 0, EMULATOR_STATE_EXECUTION = 1 } emulator_state_t;
 typedef enum emulator_mode { EMULATOR_MODE_TEXT = 0, EMULATOR_MODE_GRAPHICS = 1 } emulator_mode_t;
@@ -40,16 +41,9 @@ typedef struct emulator {
     emulator_state_t state;
     emulator_mode_t mode;
     renderer_t* renderer;
-
-    map_t* symbols;
-    map_t* lines;
-    stack_t* stack;
-
+    program_t program;
     text_cursor_t text;
     text_queue_t* history;
-
-    s32 last_key;
-    u8* memory;
 } emulator_t;
 
 /**

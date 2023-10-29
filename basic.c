@@ -1,7 +1,5 @@
 #include <libretro/retro.h>
 
-#include "libretro/arch/time.h"
-
 int main(int argc, char** argv) {
     display_t display;
     display_create(&display, "Emulator", 800, 600);
