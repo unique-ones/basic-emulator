@@ -1,3 +1,26 @@
+//
+// MIT License
+//
+// Copyright (c) 2023 Elias Engelbert Plank
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -23,6 +46,20 @@ render_group_t* render_group_new(void) {
     self->end = NULL;
     self->commands = 0;
     self->mutex = mutex_new();
+
+    vertex_array_create(&self->vertex_array);
+    vertex_buffer_create(&self->vertex_buffer);
+    index_buffer_create(&self->index_buffer);
+
+    // attributes are usually `attrib_position`, `attrib_color`, `attrib_texture`
+    static shader_type_t attributes[] = { FLOAT3, FLOAT3, FLOAT2 };
+    static vertex_buffer_layout_t layout;
+    layout.attributes = attributes;
+    layout.count = STACK_ARRAY_SIZE(attributes);
+
+    vertex_buffer_layout(&self->vertex_buffer, &layout);
+    vertex_array_vertex_buffer(&self->vertex_array, &self->vertex_buffer);
+    vertex_array_index_buffer(&self->vertex_array, &self->index_buffer);
     return self;
 }
 
@@ -45,6 +82,9 @@ void render_group_clear(render_group_t* self) {
 void render_group_free(render_group_t* self) {
     render_group_clear(self);
     mutex_free(self->mutex);
+    index_buffer_destroy(&self->index_buffer);
+    vertex_buffer_destroy(&self->vertex_buffer);
+    vertex_array_destroy(&self->vertex_array);
     free(self);
 }
 
@@ -79,7 +119,7 @@ static void renderer_draw_indexed(vertex_array_t* vertex_array, shader_t* shader
     glDrawElements(mode, (s32) vertex_array->index_buffer->count, GL_UNSIGNED_INT, NULL);
 }
 
-void renderer_clear() {
+void renderer_clear(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -91,20 +131,6 @@ void renderer_create(renderer_t* self, const char* font) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    vertex_array_create(&self->vertex_array);
-    vertex_buffer_create(&self->vertex_buffer);
-    index_buffer_create(&self->index_buffer);
-
-    // attributes are usually `attrib_position`, `attrib_color`, `attrib_texture`
-    shader_type_t attributes[] = { FLOAT3, FLOAT3, FLOAT2 };
-    vertex_buffer_layout_t layout;
-    layout.attributes = attributes;
-    layout.count = STACK_ARRAY_SIZE(attributes);
-
-    vertex_buffer_layout(&self->vertex_buffer, &layout);
-    vertex_array_vertex_buffer(&self->vertex_array, &self->vertex_buffer);
-    vertex_array_index_buffer(&self->vertex_array, &self->index_buffer);
-
     shader_create(&self->glyph_shader, "assets/glyph_vertex.glsl", "assets/glyph_fragment.glsl");
     self->glyph_group = render_group_new();
     self->glyphs = glyph_cache_new(font);
@@ -114,27 +140,23 @@ void renderer_create(renderer_t* self, const char* font) {
 }
 
 void renderer_destroy(renderer_t* self) {
-    index_buffer_destroy(&self->index_buffer);
-    vertex_buffer_destroy(&self->vertex_buffer);
-    vertex_array_destroy(&self->vertex_array);
-
     shader_destroy(&self->glyph_shader);
     render_group_free(self->glyph_group);
     glyph_cache_free(self->glyphs);
-
     shader_destroy(&self->quad_shader);
     render_group_free(self->quad_group);
 }
 
 void renderer_begin_batch(renderer_t* self) {
-    if (self->glyph_group->commands > 0 || self->quad_group->commands > 0) {
-        renderer_end_batch(self);
-    }
     render_group_clear(self->glyph_group);
     render_group_clear(self->quad_group);
 }
 
-static void renderer_group_end_batch(renderer_t* self, render_group_t* group) {
+static void renderer_group_end_batch(render_group_t* group, shader_t* shader) {
+    if (group->commands == 0) {
+        return;
+    }
+    
     mutex_lock(group->mutex);
     vertex_t* vertices = (vertex_t*) malloc(4 * sizeof(vertex_t) * group->commands);
     u32* indices = (u32*) malloc(6 * sizeof(u32) * group->commands);
@@ -146,22 +168,22 @@ static void renderer_group_end_batch(renderer_t* self, render_group_t* group) {
         insert_index++;
     }
 
-    vertex_buffer_data(&self->vertex_buffer, vertices, group->commands * 4 * sizeof(vertex_t));
+    vertex_buffer_data(&group->vertex_buffer, vertices, group->commands * 4 * (u32) sizeof(vertex_t));
     free(vertices);
 
-    index_buffer_data(&self->index_buffer, indices, group->commands * 6);
+    index_buffer_data(&group->index_buffer, indices, group->commands * 6);
     free(indices);
 
-    renderer_draw_indexed(&self->vertex_array, &self->glyph_shader, GL_TRIANGLES);
+    renderer_draw_indexed(&group->vertex_array, shader, GL_TRIANGLES);
     mutex_unlock(group->mutex);
 }
 
 void renderer_end_batch(renderer_t* self) {
-    renderer_group_end_batch(self, self->quad_group);
+    renderer_group_end_batch(self->quad_group, &self->quad_shader);
 
     texture_bind(&self->glyphs->atlas, 0);
     shader_uniform_sampler(&self->glyph_shader, "uniform_glyph_atlas", 0);
-    renderer_group_end_batch(self, self->glyph_group);
+    renderer_group_end_batch(self->glyph_group, &self->glyph_shader);
 }
 
 void renderer_draw_quad(renderer_t* self, f32vec2_t* position, f32vec2_t* size, f32vec3_t* color) {

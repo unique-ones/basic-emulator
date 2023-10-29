@@ -1,3 +1,26 @@
+//
+// MIT License
+//
+// Copyright (c) 2023 Elias Engelbert Plank
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
@@ -159,6 +182,13 @@ static token_type_t tokenize_trivial_to_type(char current) {
     }
 }
 
+static bool string_view_equal(const char* first, u32 first_size, const char* second, u32 second_size) {
+    if (first_size != second_size) {
+        return false;
+    }
+    return strncmp(first, second, first_size) == 0;
+}
+
 token_list_t* tokenize(char* data, u32 length) {
     token_list_t* list = token_list_new();
     string_iterator_t iterator;
@@ -187,7 +217,15 @@ token_list_t* tokenize(char* data, u32 length) {
                 string_iterator_advance(&iterator);
             }
             u32 end_index = iterator.index;
-            token_list_push(list, TOKEN_TEXT, lexeme, end_index - begin_index);
+            u32 length = end_index - begin_index;
+            
+            if (string_view_equal(lexeme, length, "CLEAR", 5)) {
+                token_list_push(list, TOKEN_CLEAR, lexeme, length);    
+            } else if (string_view_equal(lexeme, length, "LET", 3)) {
+                token_list_push(list, TOKEN_LET, lexeme, length);
+            } else {
+                token_list_push(list, TOKEN_IDENTIFIER, lexeme, length);
+            }
             continue;
         }
 

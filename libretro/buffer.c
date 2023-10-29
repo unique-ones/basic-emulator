@@ -1,3 +1,26 @@
+//
+// MIT License
+//
+// Copyright (c) 2023 Elias Engelbert Plank
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include <stdio.h>
 
 #include "buffer.h"
@@ -72,11 +95,6 @@ static s32 vertex_buffer_layout_stride(vertex_buffer_layout_t* layout) {
         stride += shader_type_stride(attribute);
     }
     return stride;
-}
-
-static bool frame_buffer_is_valid(frame_buffer_t* buffer) {
-    frame_buffer_bind(buffer);
-    return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 }
 
 void vertex_buffer_create(vertex_buffer_t* self) {
@@ -188,11 +206,22 @@ bool frame_buffer_create(frame_buffer_t* self, s32 width, s32 height) {
     return frame_buffer_invalidate(self);
 }
 
+void frame_buffer_destroy(frame_buffer_t* self) {
+    glDeleteFramebuffers(1, &self->handle);
+    glDeleteTextures(1, &self->texture_handle);
+    glDeleteRenderbuffers(1, &self->render_handle);
+}
+
+static bool frame_buffer_is_valid(frame_buffer_t* buffer) {
+    frame_buffer_bind(buffer);
+    return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+}
+
 bool frame_buffer_invalidate(frame_buffer_t* self) {
     if (self->handle) {
         glDeleteFramebuffers(1, &self->handle);
-        glDeleteTextures(1, &self->handle);
-        glDeleteRenderbuffers(1, &self->handle);
+        glDeleteTextures(1, &self->texture_handle);
+        glDeleteRenderbuffers(1, &self->render_handle);
     }
 
     glGenFramebuffers(1, &self->handle);
@@ -219,7 +248,7 @@ bool frame_buffer_invalidate(frame_buffer_t* self) {
 }
 
 bool frame_buffer_resize(frame_buffer_t* self, s32 width, s32 height) {
-    if (width <= 0 || height <= 0) {
+    if (width <= 0 || height <= 0 || (width == self->width && height == self->height)) {
         return false;
     }
     self->width = width;
@@ -236,6 +265,6 @@ void frame_buffer_bind_texture(frame_buffer_t* self, u32 slot) {
     glBindTextureUnit(slot, self->texture_handle);
 }
 
-void frame_buffer_unbind() {
+void frame_buffer_unbind(void) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

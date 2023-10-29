@@ -1,3 +1,26 @@
+//
+// MIT License
+//
+// Copyright (c) 2023 Elias Engelbert Plank
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #ifndef RETRO_RENDERER_H
 #define RETRO_RENDERER_H
 
@@ -7,7 +30,6 @@
 #include "buffer.h"
 #include "glyph.h"
 #include "shader.h"
-#include "text.h"
 
 enum {
     QUAD_VERTICES = 4,
@@ -40,9 +62,17 @@ enum {
 };
 
 typedef struct render_group {
+    // linked list of render commands
     render_command_t* begin;
     render_command_t* end;
     u32 commands;
+
+    // drawing data
+    vertex_array_t vertex_array;
+    vertex_buffer_t vertex_buffer;
+    index_buffer_t index_buffer;
+
+    // synchronisation
     mutex_t* mutex;
 } render_group_t;
 
@@ -72,10 +102,6 @@ void render_group_free(render_group_t* self);
 void render_group_push(render_group_t* self, vertex_t* vertices, u32* indices);
 
 typedef struct renderer {
-    vertex_array_t vertex_array;
-    vertex_buffer_t vertex_buffer;
-    index_buffer_t index_buffer;
-
     shader_t glyph_shader;
     render_group_t* glyph_group;
     glyph_cache_t* glyphs;
@@ -142,15 +168,24 @@ void renderer_draw_symbol(renderer_t* self, glyph_info_t* symbol, f32vec2_t* pos
 /**
  * @brief draws the specified text at the given position
  * @param self renderer handle
- * @param length length of the text
  * @param position position were the text shall be drawn
  * @param color color for the text
  * @param scale scale of the text
  * @param fmt text that shall be drawn
+ * @param ... variadic arguments
  */
 void renderer_draw_text(renderer_t* self, f32vec2_t* position, f32vec3_t* color, f32 scale, const char* fmt, ...);
 
-
+/**
+ * @brief draws the cursor and the specified text at the given position
+ * @param self renderer handle
+ * @param position position where the text shall be drawn
+ * @param color color for the text
+ * @param scale scale of the text
+ * @param cursor_index index of the cursor
+ * @param fmt text that shall be drawn
+ * @param ... variadic arguments
+ */
 void renderer_draw_text_with_cursor(renderer_t* self,
                                     f32vec2_t* position,
                                     f32vec3_t* color,
