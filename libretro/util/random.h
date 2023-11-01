@@ -21,21 +21,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef RETRO_RANDOM_H
-#define RETRO_RANDOM_H
+#ifndef RETRO_UTIL_RANDOM_H
+#define RETRO_UTIL_RANDOM_H
 
 #include "types.h"
 
-/**
- * @brief seed the random number generator
- * @param seed the seed
- */
+/// Seeds the random number generator
+/// @param seed The seed value
 void random_seed(u64 seed);
 
-/**
- * @brief retrieve a random number
- * @return random number
- */
+/// Retrieves a unsigned 64 bit random number
+/// @return The random number
 u64 random_u64(void);
 
-#endif// RETRO_RANDOM_H
+#endif// RETRO_UTIL_RANDOM_H

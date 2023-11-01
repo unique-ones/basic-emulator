@@ -25,6 +25,7 @@
 
 #include "../thread.h"
 
+/// Creates a new thread with the specified runner
 thread_t thread_create(thread_runner runner, void* arg) {
     thread_t thread = CreateThread(NULL, 0, runner, arg, 0, NULL);
     return thread;
@@ -34,22 +35,26 @@ typedef struct mutex {
     HANDLE handle;
 } mutex_t;
 
+/// Creates a new mutex
 mutex_t* mutex_new(void) {
     mutex_t* self = (mutex_t*) malloc(sizeof(mutex_t));
     self->handle = CreateMutexA(NULL, FALSE, NULL);
     return self;
 }
 
+/// Frees the mutex
 void mutex_free(mutex_t* self) {
     CloseHandle(self->handle);
     self->handle = INVALID_HANDLE_VALUE;
     free(self);
 }
 
+/// Exclusively locks the mutex
 void mutex_lock(mutex_t* self) {
     WaitForSingleObject(self->handle, INFINITE);
 }
 
+/// Unlocks the mutex
 void mutex_unlock(mutex_t* self) {
     ReleaseMutex(self->handle);
 }

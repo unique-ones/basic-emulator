@@ -21,10 +21,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef RETRO_RENDERER_H
-#define RETRO_RENDERER_H
-
-#include <string.h>
+#ifndef RETRO_GPU_RENDERER_H
+#define RETRO_GPU_RENDERER_H
 
 #include "arch/thread.h"
 #include "buffer.h"
@@ -33,29 +31,39 @@
 
 enum { QUAD_VERTICES = 4, QUAD_INDICES = 6 };
 
+/// Forward declare render command
+typedef struct render_command render_command_t;
+
+/// A render command enables lazy drawing, i.e. submitting draw data
+/// without rendering it immediately. It is grouped together by a so
+/// called render group, and sent to the GPU in one batch when necessary.
+///
+/// Due to the render group being a linked list, each render command
+/// stores the previous and next command.
 typedef struct render_command {
-    struct render_command* prev;
-    struct render_command* next;
+    render_command_t* prev;
+    render_command_t* next;
     vertex_t vertices[QUAD_VERTICES];
     u32 indices[QUAD_INDICES];
 } render_command_t;
 
-/**
- * @brief create a new render command
- * @param vertices list of vertices, must be exactly 4
- * @param indices list of indices, must be exactly 6
- * @return render command instance
- */
+/// Creates a new render command
+/// @param vertices A list of vertices, must be exactly 4
+/// @param indices A list of indices, must be exactly 6
+/// @return A new render command instance
 render_command_t* render_command_new(vertex_t* vertices, u32* indices);
 
-/**
- * @brief free the specified render command instance
- * @param self render command
- */
+/// Frees the specified render command instance
+/// @param self The render command
 void render_command_free(render_command_t* self);
 
 enum { RENDER_GROUP_COMMANDS_MAX = 512 };
 
+/// A render group enables the drawing of data, while synchronizing
+/// state in order to behave safe in a concurrent context. Each render
+/// group consists of a linked list of render commands, with a render
+/// command being one draw call. In the context of the basic emulator,
+/// a draw call is usually a quad or a glyph.
 typedef struct render_group {
     // linked list of render commands
     render_command_t* begin;
@@ -71,29 +79,23 @@ typedef struct render_group {
     mutex_t* mutex;
 } render_group_t;
 
-/**
- * @brief create a new render group
- * @return render group
- */
+/// Creates a new render group
+/// @return A new render group
 render_group_t* render_group_new(void);
 
-/**
- * @brief clear the specified render group (i.e. delete the commands)
- * @param self render group
- */
+/// Clears the specified render group (i.e. deletes the commands)
+/// @param self The render group handle
 void render_group_clear(render_group_t* self);
 
-/**
- * @brief free the specified render group (i.e. delete the commands and free memory)
- * @param self render group
- */
+/// Frees the specified render group (i.e. delete the commands and free memory)
+/// @param self The render group handle
 void render_group_free(render_group_t* self);
 
-/**
- * @brief push a set of vertices and indices to the render group
- * @note blocks while there are too many commands in the render group
- * @param self render group
- */
+/// Pushes a set of vertices and indices to the render group
+/// @note blocks while there are too many commands in the render group
+/// @param self The render group handle
+/// @param vertices The vertex data, must be exactly 4
+/// @param indices The indices data, must be exactly 6
 void render_group_push(render_group_t* self, vertex_t* vertices, u32* indices);
 
 typedef struct renderer {
@@ -105,82 +107,62 @@ typedef struct renderer {
     render_group_t* quad_group;
 } renderer_t;
 
-/**
- * @brief clears the currently bound frame buffer
- */
+/// Clears the currently bound frame buffer
 void renderer_clear(void);
 
-/**
- * @brief sets the clear color
- * @param color color value
- */
+/// Sets the clear color
+/// @param color The color value for clear calls
 void renderer_clear_color(f32vec4_t* color);
 
-/**
- * @brief creates a new renderer and initializes its pipeline
- * @param self renderer handle
- * @param font font handle
- */
+/// Creates a new renderer and initializes its pipeline
+/// @param self The renderer handle
+/// @param font The font path
 void renderer_create(renderer_t* self, const char* font);
 
-/**
- * @brief destroys the specified renderer
- * @param self renderer handle
- */
+/// Destroys the specified renderer
+/// @param self The renderer handle
 void renderer_destroy(renderer_t* self);
 
-/**
- * @brief begins a renderer batch
- * @param self renderer handle
- */
+/// Begins a renderer batch by resetting all render groups
+/// @param self The renderer handle
 void renderer_begin_batch(renderer_t* self);
 
-/**
- * @brief ends a renderer batch
- * @param self renderer handle
- */
+/// Ends a renderer batch by submitting the commands of all render groups
+/// @param self The renderer handle
 void renderer_end_batch(renderer_t* self);
 
-/**
- * @brief draws a quad at the given position
- * @param self renderer handle
- * @param position position where the quad shall be drawn
- * @param size size of the quad
- * @param color color of the quad
- */
+/// Draws a quad at the given position
+/// @param self The renderer handle
+/// @param position The position where the quad shall be drawn
+/// @param size The size of the quad
+/// @param color The color of the quad
 void renderer_draw_quad(renderer_t* self, f32vec2_t* position, f32vec2_t* size, f32vec3_t* color);
 
-/**
- * @brief draws the specified symbol at the given position
- * @param self renderer handle
- * @param symbol symbol that shall be drawn
- * @param position position were the symbol shall be drawn
- * @param color color for the symbol
- * @param scale scale of the text
- */
+/// Draws the specified symbol at the given position
+/// @param self The renderer handle
+/// @param symbol The symbol that shall be drawn
+/// @param position The position were the symbol shall be drawn
+/// @param color The color for the symbol
+/// @param scale The scale of the text
 void renderer_draw_symbol(renderer_t* self, glyph_info_t* symbol, f32vec2_t* position, f32vec3_t* color, f32 scale);
 
-/**
- * @brief draws the specified text at the given position
- * @param self renderer handle
- * @param position position were the text shall be drawn
- * @param color color for the text
- * @param scale scale of the text
- * @param fmt text that shall be drawn
- * @param ... variadic arguments
- */
+/// Draws the specified text at the given position
+/// @param self The renderer handle
+/// @param position The position were the text shall be drawn
+/// @param color The color for the text
+/// @param scale The scale of the text
+/// @param fmt The format text that shall be drawn
+/// @param ... The variadic arguments
 void renderer_draw_text(renderer_t* self, f32vec2_t* position, f32vec3_t* color, f32 scale, const char* fmt, ...);
 
-/**
- * @brief draws the cursor and the specified text at the given position
- * @param self renderer handle
- * @param position position where the text shall be drawn
- * @param color color for the text
- * @param scale scale of the text
- * @param cursor_index index of the cursor
- * @param fmt text that shall be drawn
- * @param ... variadic arguments
- */
+/// Draws the cursor and the specified text at the given position
+/// @param self The renderer handle
+/// @param position The position where the text shall be drawn
+/// @param color The color for the text
+/// @param scale The scale of the text
+/// @param cursor_index The index of the cursor
+/// @param fmt The format text that shall be drawn
+/// @param ... The variadic arguments
 void renderer_draw_text_with_cursor(renderer_t* self,
                                     f32vec2_t* position,
                                     f32vec3_t* color,
@@ -189,4 +171,4 @@ void renderer_draw_text_with_cursor(renderer_t* self,
                                     const char* fmt,
                                     ...);
 
-#endif// RETRO_RENDERER_H
+#endif// RETRO_GPU_RENDERER_H

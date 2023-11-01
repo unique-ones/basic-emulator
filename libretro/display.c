@@ -26,12 +26,14 @@
 #include <stdlib.h>
 
 #include "display.h"
-#include "utility.h"
+#include "util/utility.h"
 
+/// Callback for framebuffer resize events
 static void display_framebuffer_callback(GLFWwindow* handle, s32 width, s32 height) {
     glViewport(0, 0, width, height);
 }
 
+/// Converts OpenGL severities to human readable strings
 static const char* severity_string(u32 severity) {
     switch (severity) {
         case GL_DEBUG_SEVERITY_HIGH: {
@@ -52,6 +54,7 @@ static const char* severity_string(u32 severity) {
     }
 }
 
+/// OpenGL error callback function
 static void
 display_error_callback(u32 source, u32 type, u32 id, u32 severity, s32 length, const char* message, const void* user) {
     if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
@@ -65,6 +68,7 @@ display_error_callback(u32 source, u32 type, u32 id, u32 severity, s32 length, c
     }
 }
 
+/// Creates a new window and a corresponding OpenGL context
 bool display_create(display_t* self, const char* title, s32 width, s32 height) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -97,16 +101,24 @@ bool display_create(display_t* self, const char* title, s32 width, s32 height) {
     return true;
 }
 
+/// Sets the argument that gets passed to every callback
+void display_callback_argument(display_t* self, void* arg) {
+    glfwSetWindowUserPointer(self->handle, arg);
+}
+
+/// Updates the title of the window
 void display_title(display_t* self, const char* title) {
     glfwSetWindowTitle(self->handle, title);
     self->title = title;
 }
 
+/// Destroys the window
 void display_destroy(display_t* self) {
     glfwDestroyWindow(self->handle);
     glfwTerminate();
 }
 
+/// Swaps front and back buffer
 f64 display_update_frame(display_t* self) {
     glfwSwapBuffers(self->handle);
     f64 time = glfwGetTime();
@@ -115,23 +127,23 @@ f64 display_update_frame(display_t* self) {
     return frame_time;
 }
 
+/// Polls for incoming events
 void display_update_input(display_t* self) {
     glfwPollEvents();
     glfwGetWindowSize(self->handle, &self->width, &self->height);
 }
 
+/// Checks if the window should be closed or not
 bool display_running(display_t* self) {
     return self->running && !glfwWindowShouldClose(self->handle);
 }
 
-void display_callback_argument(display_t* self, void* arg) {
-    glfwSetWindowUserPointer(self->handle, arg);
-}
-
+/// Sets the key callback for the display
 void display_key_callback(display_t* self, GLFWkeyfun callback) {
     glfwSetKeyCallback(self->handle, callback);
 }
 
+/// Sets the char callback for the display
 void display_char_callback(display_t* self, GLFWcharfun callback) {
     glfwSetCharCallback(self->handle, callback);
 }

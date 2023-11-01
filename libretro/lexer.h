@@ -60,19 +60,15 @@ typedef struct token {
     u32 length;
 } token_t;
 
-/**
- * @brief creates a new token instance
- * @param type type of the token
- * @param lexeme string of the token
- * @param length length of the lexeme
- * @return token instance
- */
+/// Creates a new token instance
+/// @param type The type of the token
+/// @param lexeme The string of the token
+/// @param length The length of the lexeme
+/// @return A new token instance
 token_t* token_new(token_type_t type, char* lexeme, u32 length);
 
-/**
- * @brief free the specified token instance
- * @param self token instance
- */
+/// Frees the specified token instance
+/// @param self The token instance
 void token_free(token_t* self);
 
 typedef struct token_list {
@@ -81,77 +77,57 @@ typedef struct token_list {
     u32 tokens;
 } token_list_t;
 
-/**
- * @brief create a new token list instance
- * @return token list
- */
+/// Creates a new token list instance
+/// @return A new token list
 token_list_t* token_list_new(void);
 
-/**
- * @brief clear the specified token list (i.e. delete all tokens)
- * @param self token list instance
- */
+/// Clears the specified token list (i.e. deletes all tokens)
+/// @param self The token list instance
 void token_list_clear(token_list_t* self);
 
-/**
- * @brief free the specified token list (i.e. delete tokens and free list)
- * @param self token list instance
- */
+/// Frees the specified token list (i.e. deletes tokens and free list)
+/// @param self The token list instance
 void token_list_free(token_list_t* self);
 
-/**
- * @brief push a token to the specified token list
- * @param self token list instance
- * @param type type of the token
- * @param lexeme string of the token
- * @param length length of the lexeme
- */
+/// Pushes a token to the specified token list
+/// @param self The token list instance
+/// @param type The type of the token
+/// @param lexeme The string of the token
+/// @param length The length of the lexeme
 void token_list_push(token_list_t* self, token_type_t type, char* lexeme, u32 length);
 
-/**
- * @brief tokenize the specified data
- * @param data string that shall be tokenized
- * @param length length of the string
- * @return token list
- */
+/// Tokenizes the specified data
+/// @param data The string that shall be tokenized
+/// @param length The length of the string
+/// @return A new token list
 token_list_t* tokenize(char* data, u32 length);
 
-typedef struct token_state {
+typedef struct token_iterator {
     token_t* current;
     token_t* end;
-} token_state_t;
+} token_iterator_t;
 
-/**
- * @brief checks if the token state reached the end
- * @param state the token state
- * @return boolean that indicates whether the state is at the end
- */
-bool token_state_end(token_state_t* state);
+/// Checks if the token iterator reached the end
+/// @param self The token iterator
+/// @return A boolean that indicates whether the iterator is at the end
+bool token_iterator_end(token_iterator_t* self);
 
-/**
- * @brief returns an invalid token
- * @return invalid token
- */
-token_t* token_state_invalid(void);
+/// Returns an invalid token
+/// @return An invalid token
+token_t* token_iterator_invalid(void);
 
-/**
- * @brief retrieves the current token
- * @param state the token state
- * @return current token
- */
-token_t* token_state_current(token_state_t* state);
+/// Retrieves the current token
+/// @param self The token iterator
+/// @return The current token
+token_t* token_iterator_current(token_iterator_t* self);
 
-/**
- * @brief retrieves the next token
- * @param state the token state
- * @return next token
- */
-token_t* token_state_next(token_state_t* state);
+/// Retrieves the next token
+/// @param self The token iterator
+/// @return The next token
+token_t* token_iterator_next(token_iterator_t* self);
 
-/**
- * @brief advances the token cursor by one
- * @param state the token state
- */
-void token_state_advance(token_state_t* state);
+/// Advances the token cursor by one
+/// @param self The token iterator
+void token_iterator_advance(token_iterator_t* self);
 
 #endif// RETRO_LEXER_H

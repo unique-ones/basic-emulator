@@ -38,19 +38,28 @@ typedef void* (*thread_runner)(void*);
 
 #endif
 
-/**
- * create a new thread with the specified runner
- * @param runner runner for the thread
- * @param arg arguments that are passed to the runner
- * @return thread
- */
+/// Creates a new thread with the specified runner
+/// @param runner The runner function for the thread
+/// @param arg The argument that is passed to the runner
+/// @return A thread handle
 thread_t thread_create(thread_runner runner, void* arg);
 
 typedef struct mutex mutex_t;
 
+/// Creates a new mutex
+/// @return A new mutex
 mutex_t* mutex_new(void);
+
+/// Frees the mutex
+/// @param self The mutex handle
 void mutex_free(mutex_t* self);
+
+/// Exclusively locks the mutex
+/// @param self The mutex handle
 void mutex_lock(mutex_t* self);
+
+/// Unlocks the mutex
+/// @param self The mutex handle
 void mutex_unlock(mutex_t* self);
 
 #endif// RETRO_ARCH_THREAD_H

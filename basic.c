@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
         f64 frame_time = display_update_frame(&display);
         if (fps_display_counter++ == 10000) {
             f64 fps = 1.0 / frame_time;
-            char fps_text_buffer[128];
+            char fps_text_buffer[128] = { 0 };
             snprintf(fps_text_buffer, sizeof fps_text_buffer, "Basic Emulator - %d FPS", (int) fps);
             display_title(&display, fps_text_buffer);
             fps_display_counter = 0;

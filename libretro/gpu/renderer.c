@@ -23,10 +23,12 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "arch/time.h"
 #include "renderer.h"
 
+/// Creates a new render command
 render_command_t* render_command_new(vertex_t* vertices, u32* indices) {
     render_command_t* self = (render_command_t*) malloc(sizeof(render_command_t));
     self->prev = NULL;
@@ -36,10 +38,12 @@ render_command_t* render_command_new(vertex_t* vertices, u32* indices) {
     return self;
 }
 
+/// Frees the specified render command instance
 void render_command_free(render_command_t* self) {
     free(self);
 }
 
+/// Creates a new render group
 render_group_t* render_group_new(void) {
     render_group_t* self = (render_group_t*) malloc(sizeof(render_group_t));
     self->begin = NULL;
@@ -63,6 +67,7 @@ render_group_t* render_group_new(void) {
     return self;
 }
 
+/// Clears the specified render group (i.e. deletes the commands)
 void render_group_clear(render_group_t* self) {
     mutex_lock(self->mutex);
     render_command_t* it = self->begin;
@@ -79,6 +84,7 @@ void render_group_clear(render_group_t* self) {
     mutex_unlock(self->mutex);
 }
 
+/// Frees the specified render group (i.e. delete the commands and free memory)
 void render_group_free(render_group_t* self) {
     render_group_clear(self);
     mutex_free(self->mutex);
@@ -88,6 +94,7 @@ void render_group_free(render_group_t* self) {
     free(self);
 }
 
+/// Pushes a set of vertices and indices to the render group
 void render_group_push(render_group_t* self, vertex_t* vertices, u32* indices) {
     while (self->commands >= RENDER_GROUP_COMMANDS_MAX)
         ;
@@ -114,20 +121,24 @@ void render_group_push(render_group_t* self, vertex_t* vertices, u32* indices) {
     mutex_unlock(self->mutex);
 }
 
+/// Submits an actual indexed OpenGL draw call to the GPU
 static void renderer_draw_indexed(vertex_array_t* vertex_array, shader_t* shader, u32 mode) {
     shader_bind(shader);
     vertex_array_bind(vertex_array);
     glDrawElements(mode, (s32) vertex_array->index_buffer->count, GL_UNSIGNED_INT, NULL);
 }
 
+/// Clears the currently bound frame buffer
 void renderer_clear(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+/// Sets the clear color
 void renderer_clear_color(f32vec4_t* color) {
     glClearColor(color->x, color->y, color->z, color->w);
 }
 
+/// Creates a new renderer and initializes its pipeline
 void renderer_create(renderer_t* self, const char* font) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -140,6 +151,7 @@ void renderer_create(renderer_t* self, const char* font) {
     self->quad_group = render_group_new();
 }
 
+/// Destroys the specified renderer
 void renderer_destroy(renderer_t* self) {
     shader_destroy(&self->glyph_shader);
     render_group_free(self->glyph_group);
@@ -148,11 +160,13 @@ void renderer_destroy(renderer_t* self) {
     render_group_free(self->quad_group);
 }
 
+/// Begins a renderer batch by resetting all render groups
 void renderer_begin_batch(renderer_t* self) {
     render_group_clear(self->glyph_group);
     render_group_clear(self->quad_group);
 }
 
+/// Submits the specified render group and issues an indexed draw call
 static void renderer_group_end_batch(render_group_t* group, shader_t* shader) {
     if (group->commands == 0) {
         return;
@@ -179,6 +193,7 @@ static void renderer_group_end_batch(render_group_t* group, shader_t* shader) {
     mutex_unlock(group->mutex);
 }
 
+/// Ends a renderer batch by submitting the commands of all render groups
 void renderer_end_batch(renderer_t* self) {
     renderer_group_end_batch(self->quad_group, &self->quad_shader);
 
@@ -187,6 +202,7 @@ void renderer_end_batch(renderer_t* self) {
     renderer_group_end_batch(self->glyph_group, &self->glyph_shader);
 }
 
+/// Draws a quad at the given position
 void renderer_draw_quad(renderer_t* self, f32vec2_t* position, f32vec2_t* size, f32vec3_t* color) {
     vertex_t vertices[] = { { { position->x, position->y, 0.0f }, *color, { 0.0f, 1.0f } },
                             { { position->x, position->y + size->y, 0.0f }, *color, { 0.0f, 0.0f } },
@@ -199,6 +215,7 @@ void renderer_draw_quad(renderer_t* self, f32vec2_t* position, f32vec2_t* size, 
     render_group_push(self->quad_group, vertices, indices);
 }
 
+/// Draws the specified symbol at the given position
 void renderer_draw_symbol(renderer_t* self, glyph_info_t* symbol, f32vec2_t* position, f32vec3_t* color, f32 scale) {
     // clang-format off
     f32vec2_t scaled_size = { symbol->size.x * scale, symbol->size.y * scale };
@@ -220,6 +237,7 @@ void renderer_draw_symbol(renderer_t* self, glyph_info_t* symbol, f32vec2_t* pos
     render_group_push(self->glyph_group, vertices, indices);
 }
 
+/// Draws the specified text at the given position
 void renderer_draw_text(renderer_t* self, f32vec2_t* position, f32vec3_t* color, f32 scale, const char* fmt, ...) {
     char text_buffer[0x1000];
     va_list list;
@@ -250,6 +268,7 @@ void renderer_draw_text(renderer_t* self, f32vec2_t* position, f32vec3_t* color,
     *position = position_iterator;
 }
 
+/// Draws an input indicator
 static void renderer_draw_indicator(renderer_t* self, f32vec2_t* position, f32vec3_t* color, f32 scale) {
     // first we draw the input indicator
     glyph_info_t input_indicator_info;
@@ -258,6 +277,7 @@ static void renderer_draw_indicator(renderer_t* self, f32vec2_t* position, f32ve
     position->x += input_indicator_info.advance.x * scale;
 }
 
+/// Draws the cursor and the specified text at the given position
 void renderer_draw_text_with_cursor(renderer_t* self,
                                     f32vec2_t* position,
                                     f32vec3_t* color,

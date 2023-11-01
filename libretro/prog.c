@@ -26,20 +26,22 @@
 
 #include <stdlib.h>
 
-void program_create(program_t* program, u32 memory_size) {
-    program->symbols = map_new();
-    program->lines = map_new();
-    program->memory = (u8*) malloc(memory_size);
-    program->last_key = -1;
+/// Creates a program which serves as the handle between emulator and AST
+void program_create(program_t* self, u32 memory_size) {
+    self->symbols = map_new();
+    self->lines = map_new();
+    self->memory = (u8*) malloc(memory_size);
+    self->last_key = -1;
 }
 
-void program_destroy(program_t* program) {
-    map_free(program->lines);
-    program->lines = NULL;
+/// Destroys the program and all its data
+void program_destroy(program_t* self) {
+    map_free(self->lines);
+    self->lines = NULL;
 
-    map_free(program->symbols);
-    program->symbols = NULL;
+    map_free(self->symbols);
+    self->symbols = NULL;
 
-    free(program->memory);
-    program->memory = NULL;
+    free(self->memory);
+    self->memory = NULL;
 }

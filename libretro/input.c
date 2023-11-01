@@ -26,8 +26,9 @@
 #include <string.h>
 
 #include "input.h"
-#include "math.h"
+#include "util/math.h"
 
+/// Creates an input buffer
 void input_buffer_create(input_buffer_t* self, u32 capacity) {
     self->fill = 0;
     self->cursor = 0;
@@ -36,10 +37,12 @@ void input_buffer_create(input_buffer_t* self, u32 capacity) {
     self->submit = false;
 }
 
+/// Destroys the input buffer and frees its data
 void input_buffer_destroy(input_buffer_t* self) {
     free(self->data);
 }
 
+/// Inserts a character into the input buffer
 bool input_buffer_emplace(input_buffer_t* self, char data) {
     if (input_buffer_is_full(self)) {
         return false;
@@ -50,6 +53,7 @@ bool input_buffer_emplace(input_buffer_t* self, char data) {
     return true;
 }
 
+/// Reorders the input buffer (i.e. compactifies)
 static void input_buffer_reorder(input_buffer_t* buffer) {
     for (s32 i = 0; i < buffer->fill; i++) {
         char* current = buffer->data + i;
@@ -63,6 +67,7 @@ static void input_buffer_reorder(input_buffer_t* buffer) {
     }
 }
 
+/// Removes data at the cursor, reorders buffer to be continuous in memory
 bool input_buffer_remove(input_buffer_t* self) {
     if (self->fill == 0 || self->cursor == 0) {
         return false;
@@ -72,10 +77,12 @@ bool input_buffer_remove(input_buffer_t* self) {
     return true;
 }
 
+/// Advances the cursor by the specified offset
 void input_buffer_advance_cursor(input_buffer_t* self, s32 offset) {
     self->cursor = s32_clamp(self->cursor + offset, 0, self->fill);
 }
 
+/// Checks if the input buffer is full
 bool input_buffer_is_full(input_buffer_t* self) {
     return self->fill == (s32) self->capacity;
 }

@@ -34,12 +34,14 @@
 #include "stmt.h"
 #include "util/random.h"
 
+/// Finalizes an emulator pass by destroying associated data
 static void emulator_pass_finish(emulator_t* self) {
     text_queue_push(self->history, self->text.data, (u32) self->text.fill);
     text_cursor_clear(&self->text);
     self->state = EMULATOR_STATE_INPUT;
 }
 
+/// Runs an emulator pass
 static void emulator_pass(emulator_t* self) {
     // step 1: tokenize
     token_list_t* tokens = tokenize(self->text.data, (u32) self->text.fill);
@@ -76,54 +78,23 @@ static void emulator_pass(emulator_t* self) {
 }
 
 #ifdef LIBRETRO_PLATFORM_WIN32
+
+/// Win32 specific emulator pass (thread param)
 static unsigned long emulator_pass_platform(void* self) {
     emulator_pass(self);
     return 0;
 }
 #else
+
+/// Unix specific emulator pass (thread param)
 static void* emulator_pass_platform(void* self) {
     emulator_pass(self);
     return NULL;
 }
 #endif
 
-static f64 emulator_abs(f64 x) {
-    return fabs(x);
-}
-
-static f64 emulator_floor(f64 x) {
-    return floor(x);
-}
-
-static f64 emulator_sin(f64 x) {
-    return sin(x);
-}
-
-static f64 emulator_atan(f64 x) {
-    return atan(x);
-}
-
-static f64 emulator_log(f64 x) {
-    return log(x);
-}
-
-static f64 emulator_sqrt(f64 x) {
-    return sqrt(x);
-}
-
-static f64 emulator_cos(f64 x) {
-    return cos(x);
-}
-
-static f64 emulator_tan(f64 x) {
-    return tan(x);
-}
-
-static f64 emulator_exp(f64 x) {
-    return exp(x);
-}
-
-static f64 emulator_rnd(f64 x) {
+/// Random number generation as of applesoft basic
+static f64 rnd(f64 x) {
     static f64 previous = 0.5;
     if (x == 0.0) {
         return previous;
@@ -132,11 +103,12 @@ static f64 emulator_rnd(f64 x) {
         random_seed(time(NULL));
     }
 
-    previous = (f64) (random_u64()) / (f64) RAND_MAX;
+    previous = (f64) (random_u64()) / (f64) UINT64_MAX;
     return previous;
 }
 
-static f64 emulator_sgn(f64 x) {
+/// Retrieves the sign of the specified number
+static f64 sgn(f64 x) {
     if (x > 0.0) {
         return 1.0;
     }
@@ -146,16 +118,15 @@ static f64 emulator_sgn(f64 x) {
     return 0.0;
 }
 
+/// Adds all builtin symbols to the emulator symbol table
 static void emulator_add_builtin_symbols(emulator_t* self) {
     // available math functions
-    static function_definition_t builtin[] = {
-        { "ABS", 1, { .func1 = emulator_abs } },   { "ATN", 1, { .func1 = emulator_atan } },
-        { "COS", 1, { .func1 = emulator_cos } },   { "EXP", 1, { .func1 = emulator_exp } },
-        { "INT", 1, { .func1 = emulator_floor } }, { "LOG", 1, { .func1 = emulator_log } },
-        { "RND", 1, { .func1 = emulator_rnd } },   { "SGN", 1, { .func1 = emulator_sgn } },
-        { "SIN", 1, { .func1 = emulator_sin } },   { "SQR", 1, { .func1 = emulator_sqrt } },
-        { "TAN", 1, { .func1 = emulator_tan } }
-    };
+    static function_definition_t builtin[] = { { "ABS", 1, { .func1 = fabs } },  { "ATN", 1, { .func1 = atan } },
+                                               { "COS", 1, { .func1 = cos } },   { "EXP", 1, { .func1 = exp } },
+                                               { "INT", 1, { .func1 = floor } }, { "LOG", 1, { .func1 = log } },
+                                               { "RND", 1, { .func1 = rnd } },   { "SGN", 1, { .func1 = sgn } },
+                                               { "SIN", 1, { .func1 = sin } },   { "SQR", 1, { .func1 = sqrt } },
+                                               { "TAN", 1, { .func1 = tan } } };
 
     for (u32 index = 0; index < STACK_ARRAY_SIZE(builtin); ++index) {
         function_definition_t* function = builtin + index;
@@ -163,6 +134,7 @@ static void emulator_add_builtin_symbols(emulator_t* self) {
     }
 }
 
+/// Creates a new emulator instance
 void emulator_create(emulator_t* self, renderer_t* renderer) {
     self->state = EMULATOR_STATE_INPUT;
     self->mode = EMULATOR_MODE_TEXT;
@@ -174,18 +146,21 @@ void emulator_create(emulator_t* self, renderer_t* renderer) {
     self->history = text_queue_new();
 }
 
+/// Destroys the emulator and frees all its associated data
 void emulator_destroy(emulator_t* self) {
     program_destroy(&self->program);
     text_cursor_destroy(&self->text);
     text_queue_free(self->history);
 }
 
+/// Runs an emulation pass
 void emulator_run(emulator_t* self) {
     self->state = EMULATOR_STATE_EXECUTION;
     self->text.submit = false;
     thread_create(emulator_pass_platform, self);
 }
 
+/// Key callback handler for handling GLFW key input
 void emulator_key_callback(GLFWwindow* handle, s32 key, s32 scancode, s32 action, s32 mods) {
     if (action != GLFW_PRESS && action != GLFW_REPEAT) {
         return;
@@ -219,6 +194,7 @@ void emulator_key_callback(GLFWwindow* handle, s32 key, s32 scancode, s32 action
     }
 }
 
+/// Char callback handler for handling GLFW char input
 void emulator_char_callback(GLFWwindow* handle, u32 unicode) {
     emulator_t* self = glfwGetWindowUserPointer(handle);
     if (self) {

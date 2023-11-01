@@ -31,6 +31,7 @@ typedef struct map_entry {
     void* data;
 } map_entry_t;
 
+/// Allocates a new map instance
 map_t* map_new(void) {
     map_t* self = (map_t*) malloc(sizeof(map_t));
     for (u32 i = 0; i < MAP_BUCKET_COUNT; ++i) {
@@ -39,6 +40,7 @@ map_t* map_new(void) {
     return self;
 }
 
+/// Frees the map and its buckets
 void map_free(map_t* self) {
     for (u32 i = 0; i < MAP_BUCKET_COUNT; ++i) {
         list_t* bucket = self->buckets[i];
@@ -53,14 +55,16 @@ void map_free(map_t* self) {
     free(self);
 }
 
+/// Checks if two map entries are equal
 static bool map_entry_equal(const void* a, const void* b) {
     map_entry_t* first = (map_entry_t*) a;
     map_entry_t* second = (map_entry_t*) b;
     return strcmp(first->key, second->key) == 0;
 }
 
+/// Inserts the specified key-value pair into the map
 void map_insert(map_t* self, const char* key, void* value) {
-    u32 bucket_index = hash(key, strlen(key)) % MAP_BUCKET_COUNT;
+    u32 bucket_index = hash(key, (u32) strlen(key)) % MAP_BUCKET_COUNT;
     list_t* bucket = self->buckets[bucket_index];
 
     map_entry_t* data = (map_entry_t*) malloc(sizeof(map_entry_t));
@@ -75,6 +79,7 @@ void map_insert(map_t* self, const char* key, void* value) {
     }
 }
 
+/// Tries to find a key-value pair where the key matches with the specified entry
 void* map_find(map_t* self, const char* key) {
     u32 bucket_index = hash(key, strlen(key)) % MAP_BUCKET_COUNT;
     list_t* bucket = self->buckets[bucket_index];
@@ -89,10 +94,12 @@ void* map_find(map_t* self, const char* key) {
     }
 }
 
+/// Retrieves the first 16 bits of the data string
 static u32 hash_get16bits(const char* data) {
     return (((u32) (data[1])) << 8) + (u32) data[0];
 }
 
+/// Computes hash of byte array
 u32 hash(const char* data, u32 size) {
     if (size == 0 || data == NULL) {
         return 0;

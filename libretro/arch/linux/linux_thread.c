@@ -26,6 +26,7 @@
 
 #include "../thread.h"
 
+/// Creates a new thread with the specified runner
 thread_t thread_create(thread_runner runner, void* arg) {
     pthread_t thread;
     pthread_create(&thread, NULL, runner, arg);
@@ -36,21 +37,25 @@ typedef struct mutex {
     pthread_mutex_t handle;
 } mutex_t;
 
+/// Creates a new mutex
 mutex_t* mutex_new(void) {
     mutex_t* self = (mutex_t*) malloc(sizeof(mutex_t));
     pthread_mutex_init(&self->handle, NULL);
     return self;
 }
 
+/// Frees the mutex
 void mutex_free(mutex_t* self) {
     pthread_mutex_destroy(&self->handle);
     free(self);
 }
 
+/// Exclusively locks the mutex
 void mutex_lock(mutex_t* self) {
     pthread_mutex_lock(&self->handle);
 }
 
+/// Unlocks the mutex
 void mutex_unlock(mutex_t* self) {
     pthread_mutex_unlock(&self->handle);
 }

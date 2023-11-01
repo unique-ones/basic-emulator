@@ -21,28 +21,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef RETRO_COLLECTIONS_H
-#define RETRO_COLLECTIONS_H
+#ifndef RETRO_UTIL_LIST_H
+#define RETRO_UTIL_LIST_H
 
 #include "types.h"
 
+/// Forward declare node
+typedef struct node node_t;
+
 typedef struct node {
-    struct node* prev;
-    struct node* next;
+    node_t* prev;
+    node_t* next;
     void* data;
 } node_t;
 
-/**
- * @brief allocate a new node instance
- * @param data data to be wrapped in a node
- * @return reference to node
- */
+/// Allocates a new node instance
+/// @param data The data to be wrapped in a node
+/// @return A reference to node
 node_t* node_new(void* data);
 
-/**
- * @brief free all associated data with the node except the data
- * @param self reference to node
- */
+/// Frees all associated data with the node except the data
+/// @param self A reference to node
 void node_free(node_t* self);
 
 typedef struct list {
@@ -54,62 +53,46 @@ typedef struct list {
 
 typedef bool (*list_equal_function_t)(const void*, const void*);
 
-/**
- * @brief allocate a new list instance
- * @return reference to list
- */
+/// Allocates a new list instance
+/// @return A new list instance
 list_t* list_new(void);
 
-/**
- * @brief free all data associated with the list and call node_free on each node
- * @param self reference to list
- */
+/// Frees all data associated with the list
+/// @param self The list handle
 void list_free(list_t* self);
 
-/**
- * @brief insert a node at the specified index
- * @param self reference to list
- * @param idx index to insert node at
- * @param data data which is to be inserted
- */
+/// Inserts a node at the specified index
+/// @param self The list handle
+/// @param idx The index to insert node at
+/// @param data The data which is to be inserted
 void list_insert(list_t* self, u32 idx, void* data);
 
-/**
- * @brief get the data of the node at the specified index in the list
- * @param self reference to the list
- * @param idx index of node
- * @return data of the node at the specified index
- */
+/// Retrieves the data of the node at the specified index in the list
+/// @param self The list handle
+/// @param idx The index of node
+/// @return The data of the node at the specified index, or NULL
 void* list_at(list_t* self, u32 idx);
 
-/**
- * @brief append data to the list
- * @param self reference to the list
- * @param data reference to the data which is to be appended
- */
+/// Appends the data to the list
+/// @param self The list handle
+/// @param data The data which is to be appended
 void list_append(list_t* self, void* data);
 
-/**
- * @brief set the first node of the list
- * @param self reference to the list
- * @param data reference to the data
- */
+/// Sets the first node of the list
+/// @param self The list handle
+/// @param data The data
 void list_set_head(list_t* self, void* data);
 
-/**
- * @brief alias to list_append
- * @param self reference to the list
- * @param data reference to the data which is set as the tail (appended)
- */
+/// Alias to list_append
+/// @param self The list handle
+/// @param data The data which is set as the tail (appended)
 void list_set_tail(list_t* self, void* data);
 
-/**
- * @brief tries to find the specified data using the specified compare function
- * @param self reference to the list
- * @param data reference to the data which shall be found
- * @param compare compare function
- * @return node of the found data, NULL on failure
- */
+/// Tries to find the specified data using the specified equal function
+/// @param self The list handle
+/// @param data The data which shall be found
+/// @param equal The equality check function
+/// @return The node of the found data or NULL on failure
 node_t* list_find(list_t* self, void* data, list_equal_function_t equal);
 
-#endif// RETRO_COLLECTIONS_H
+#endif// RETRO_UTIL_LIST_H

@@ -27,6 +27,7 @@
 
 #include "lexer.h"
 
+/// Creates a new token instance
 token_t* token_new(token_type_t type, char* lexeme, u32 length) {
     token_t* self = (token_t*) malloc(sizeof(token_t));
     self->prev = NULL;
@@ -38,6 +39,7 @@ token_t* token_new(token_type_t type, char* lexeme, u32 length) {
     return self;
 }
 
+/// Frees the specified token instance
 void token_free(token_t* self) {
     self->prev = NULL;
     self->next = NULL;
@@ -46,6 +48,7 @@ void token_free(token_t* self) {
     free(self);
 }
 
+/// Creates a new token list instance
 token_list_t* token_list_new(void) {
     token_list_t* self = (token_list_t*) malloc(sizeof(token_list_t));
     self->begin = NULL;
@@ -54,6 +57,7 @@ token_list_t* token_list_new(void) {
     return self;
 }
 
+/// Clears the specified token list (i.e. deletes all tokens)
 void token_list_clear(token_list_t* self) {
     token_t* it = self->begin;
     token_t* tmp;
@@ -67,15 +71,19 @@ void token_list_clear(token_list_t* self) {
     self->end = NULL;
     self->tokens = 0;
 }
+
+/// Frees the specified token list (i.e. deletes tokens and free list)
 void token_list_free(token_list_t* self) {
     token_list_clear(self);
     free(self);
 }
 
+/// Pushes a token to the specified token list
 void token_list_push(token_list_t* self, token_type_t type, char* lexeme, u32 length) {
     token_t* token = token_new(type, lexeme, length);
     if (self->begin == NULL) {
         self->begin = token;
+        self->end = token;
         token->prev = NULL;
         self->tokens++;
         return;
@@ -98,30 +106,36 @@ typedef struct string_iterator {
     u32 index;
 } string_iterator_t;
 
+/// Creates a string iterator
 static void string_iterator_create(string_iterator_t* self, char* base, u32 length) {
     self->base = base;
     self->length = length;
     self->index = 0;
 }
 
+/// Advances the string iterator by one
 static void string_iterator_advance(string_iterator_t* self) {
     if (self->index < self->length - 1) {
         self->index++;
     }
 }
 
+/// Retrieves the current char of the iterator
 static char string_iterator_current(string_iterator_t* self) {
     return self->base[self->index];
 }
 
+/// Retrieves the next char of the iterator
 static char string_iterator_next(string_iterator_t* self) {
     return self->base[self->index + 1];
 }
 
+/// Checks if the iterator is at the end
 static bool string_iterator_end(string_iterator_t* self) {
     return self->index == self->length - 1;
 }
 
+/// Checks if the specified char is a trivial token
 static bool tokenize_is_trivial_token(char current) {
     switch (current) {
         case ':':
@@ -145,6 +159,7 @@ static bool tokenize_is_trivial_token(char current) {
     }
 }
 
+/// Converts a trivial token to the corresponding token type
 static token_type_t tokenize_trivial_to_type(char current) {
     switch (current) {
         case ':':
@@ -182,6 +197,7 @@ static token_type_t tokenize_trivial_to_type(char current) {
     }
 }
 
+/// Checks if two string views are equal
 static bool string_view_equal(const char* first, u32 first_size, const char* second, u32 second_size) {
     if (first_size != second_size) {
         return false;
@@ -189,6 +205,7 @@ static bool string_view_equal(const char* first, u32 first_size, const char* sec
     return strncmp(first, second, first_size) == 0;
 }
 
+/// Tokenizes the specified data
 token_list_t* tokenize(char* data, u32 length) {
     token_list_t* list = token_list_new();
     string_iterator_t iterator;
@@ -253,11 +270,13 @@ token_list_t* tokenize(char* data, u32 length) {
     return list;
 }
 
-bool token_state_end(token_state_t* state) {
-    return state->current == state->end;
+/// Checks if the token iterator reached the end
+bool token_iterator_end(token_iterator_t* self) {
+    return self->current == self->end;
 }
 
-token_t* token_state_invalid(void) {
+/// Returns an invalid token
+token_t* token_iterator_invalid(void) {
     static token_t token = { 0 };
     token.type = TOKEN_INVALID;
     token.lexeme = "";
@@ -267,22 +286,27 @@ token_t* token_state_invalid(void) {
     return &token;
 }
 
-token_t* token_state_current(token_state_t* state) {
-    if (state->current) {
-        return state->current;
+/// Retrieves the current token
+token_t* token_iterator_current(token_iterator_t* self) {
+    if (self->current) {
+        return self->current;
     }
-    return token_state_invalid();
+    return token_iterator_invalid();
 }
 
-token_t* token_state_next(token_state_t* state) {
-    if (!token_state_end(state)) {
-        return state->current->next;
+/// Retrieves the next token
+token_t* token_iterator_next(token_iterator_t* self) {
+    if (!token_iterator_end(self)) {
+        return self->current->next;
     }
-    return token_state_invalid();
+    return token_iterator_invalid();
 }
 
-void token_state_advance(token_state_t* state) {
-    if (!token_state_end(state)) {
-        state->current = state->current->next;
+/// Advances the token cursor by one
+void token_iterator_advance(token_iterator_t* self) {
+    if (!token_iterator_end(self)) {
+        self->current = self->current->next;
+    } else {
+        self->current = token_iterator_invalid();
     }
 }

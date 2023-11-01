@@ -46,40 +46,30 @@ typedef struct emulator {
     text_queue_t* history;
 } emulator_t;
 
-/**
- * @brief allocates a new emulator instance
- * @param self reference to emulator instance
- */
+/// Creates a new emulator instance
+/// @param self The emulator instance
+/// @param renderer The renderer of the emulator
 void emulator_create(emulator_t* self, renderer_t* renderer);
 
-/**
- * @brief deallocates the emulator and frees all its associated data
- * @param self reference to emulator instance
- */
+/// Destroys the emulator and frees all its associated data
+/// @param self The emulator instance
 void emulator_destroy(emulator_t* self);
 
-/**
- * @brief run an emulation pass
- * @param self emulator instance
- */
+/// Runs an emulation pass
+/// @param self The emulator instance
 void emulator_run(emulator_t* self);
 
-/**
- * @brief key callback handler for handling key input
- * @param handle glfw window handle
- * @param key key that is currently pressed
- * @param scancode scancode of the key
- * @param action action that indicates if the key is pressed or released
- * @param mods don't know about this one
- */
+/// Key callback handler for handling GLFW key input
+/// @param handle The glfw window handle
+/// @param key The key that is currently pressed
+/// @param scancode The scancode of the key
+/// @param action The action that indicates if the key is pressed or released
+/// @param mods I don't know about this one
 void emulator_key_callback(GLFWwindow* handle, s32 key, s32 scancode, s32 action, s32 mods);
 
-/**
- * @brief char callback handler for handling key input
- * @param handle glfw window handle
- * @param unicode character in unicode
- */
+/// Char callback handler for handling GLFW char input
+/// @param handle The glfw window handle
+/// @param unicode The character in unicode
 void emulator_char_callback(GLFWwindow* handle, u32 unicode);
-
 
 #endif// RETRO_EMU_H

@@ -33,7 +33,13 @@ typedef struct program {
     u8* memory;
 } program_t;
 
-void program_create(program_t* program, u32 memory_size);
-void program_destroy(program_t* program);
+/// Creates a program which serves as the handle between emulator and AST
+/// @param self The program handle
+/// @param memory_size The desired size of the program memory
+void program_create(program_t* self, u32 memory_size);
+
+/// Destroys the program and all its data
+/// @param self The program handle
+void program_destroy(program_t* self);
 
 #endif// RETRO_PROG_H

@@ -21,8 +21,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef RETRO_COLLECTIONS_STACK_H
-#define RETRO_COLLECTIONS_STACK_H
+#ifndef RETRO_UTIL_STACK_H
+#define RETRO_UTIL_STACK_H
 
 #include "types.h"
 
@@ -32,45 +32,33 @@ typedef struct stack {
     u32 capacity;
 } stack_t;
 
-/**
- * @brief allocates a new stack
- * @param capacity initial capacity
- * @return allocated stack instance
- */
+/// Allocates a new stack
+/// @param capacity The initial capacity
+/// @return A new stack instance
 stack_t* stack_new(u32 capacity);
 
-/**
- * @brief resizes the stack's capacity
- * @param self reference to stack instance
- * @param capacity new capacity
- */
+/// Grows the stack's capacity
+/// @param self The stack handle
+/// @param capacity The new capacity
 void stack_grow(stack_t* self, u32 capacity);
 
-/**
- * @brief frees the stack entries except for the data itself
- * @param self reference to stack instance
- */
+/// Frees the stack entries except for the data itself
+/// @param self The stack handle
 void stack_free(stack_t* self);
 
-/**
- * @brief pushes the specified data onto the stack
- * @param self reference to stack instance
- * @param data reference to the data
- */
+/// Pushes the specified data onto the stack
+/// @param self The stack handle
+/// @param data The data
 void stack_push(stack_t* self, void* data);
 
-/**
- * @brief pops data from the stack
- * @param self reference to stack instance
- * @return top-most data
- */
+/// Pops data from the stack
+/// @param self The stack handle
+/// @return The top-most data
 void* stack_pop(stack_t* self);
 
-/**
- * @brief peek the top element
- * @param self reference to stack instance
- * @return top-most data
- */
+/// Peeks the top element
+/// @param self The stack handle
+/// @return The top-most data
 void* stack_peek(stack_t* self);
 
-#endif// RETRO_COLLECTIONS_STACK_H
+#endif// RETRO_UTIL_STACK_H

@@ -21,13 +21,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef RETRO_GLYPH_H
-#define RETRO_GLYPH_H
+#ifndef RETRO_GPU_GLYPH_H
+#define RETRO_GPU_GLYPH_H
 
-#include "math.h"
 #include "texture.h"
+#include "util/math.h"
 
-#define FONT_SIZE 48.0f
+enum { FONT_SIZE = 48 };
 
 typedef struct glyph_info {
     f32vec2_t size;
@@ -42,25 +42,19 @@ typedef struct glyph_cache {
     glyph_info_t info[128];
 } glyph_cache_t;
 
-/**
- * @brief creates a glyph self for the specified font
- * @param path path to the .ttf font file
- * @return bool
- */
+/// Creates a glyph cache for the specified font
+/// @param path The path to the TrueType font file
+/// @return A new glyph cache
 glyph_cache_t* glyph_cache_new(const char* path);
 
-/**
- * @brief destroys the glyph self and its glyph atlas
- * @param self cache handle
- */
+/// Destroys the glyph cache and its glyph atlas
+/// @param self The glyph cache handle
 void glyph_cache_free(glyph_cache_t* self);
 
-/**
- * @brief fetches the specified symbol from the glyph self
- * @param self cache handle
- * @param info glyph info handle
- * @param symbol symbol that shall be fetched
- */
+/// Fetches the specified symbol from the glyph cache
+/// @param self The glyph cache handle
+/// @param info The glyph info handle where the data is placed into
+/// @param symbol The symbol that shall be fetched
 void glyph_cache_acquire(glyph_cache_t* self, glyph_info_t* info, char symbol);
 
-#endif// RETRO_GLYPH_H
+#endif// RETRO_GPU_GLYPH_H

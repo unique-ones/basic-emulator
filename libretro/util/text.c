@@ -29,6 +29,7 @@
 #include "math.h"
 #include "text.h"
 
+/// Creates a text cursor with the specified capacity
 void text_cursor_create(text_cursor_t* self, u32 capacity) {
     self->fill = 0;
     self->cursor = 0;
@@ -37,10 +38,12 @@ void text_cursor_create(text_cursor_t* self, u32 capacity) {
     self->submit = false;
 }
 
+/// Destroys the text cursor and frees its data
 void text_cursor_destroy(text_cursor_t* self) {
     free(self->data);
 }
 
+/// Inserts a character into the text cursor buffer at the cursor position
 bool text_cursor_emplace(text_cursor_t* self, char data) {
     if (text_cursor_is_full(self)) {
         return false;
@@ -51,6 +54,7 @@ bool text_cursor_emplace(text_cursor_t* self, char data) {
     return true;
 }
 
+/// Reorders the text cursor and compactifies the buffer
 static void text_cursor_reorder(text_cursor_t* buffer) {
     for (s32 i = 0; i < buffer->fill; i++) {
         char* current = buffer->data + i;
@@ -64,6 +68,7 @@ static void text_cursor_reorder(text_cursor_t* buffer) {
     }
 }
 
+/// Removes data at the cursor, reorders buffer to be continuous in memory
 bool text_cursor_remove(text_cursor_t* self) {
     if (self->fill == 0 || self->cursor == 0) {
         return false;
@@ -73,13 +78,17 @@ bool text_cursor_remove(text_cursor_t* self) {
     return true;
 }
 
+/// Advances the cursor by the specified offset
 void text_cursor_advance(text_cursor_t* self, s32 offset) {
     self->cursor = s32_clamp(self->cursor + offset, 0, self->fill);
 }
 
+/// Checks if the text cursor buffer is full
 bool text_cursor_is_full(text_cursor_t* self) {
     return self->fill == (s32) self->capacity;
 }
+
+/// Clears the buffer of the text cursor
 void text_cursor_clear(text_cursor_t* self) {
     memset(self->data, 0, self->capacity);
     self->cursor = 0;
@@ -87,7 +96,7 @@ void text_cursor_clear(text_cursor_t* self) {
     self->submit = false;
 }
 
-
+/// Creates a new text entry
 text_entry_t* text_entry_new(char* data, u32 length) {
     text_entry_t* self = (text_entry_t*) malloc(sizeof(text_entry_t));
     self->prev = NULL;
@@ -100,6 +109,7 @@ text_entry_t* text_entry_new(char* data, u32 length) {
     return self;
 }
 
+/// Frees the text entry
 void text_entry_free(text_entry_t* self) {
     free(self->data);
     self->prev = NULL;
@@ -109,6 +119,7 @@ void text_entry_free(text_entry_t* self) {
     free(self);
 }
 
+/// Creates a new text queue
 text_queue_t* text_queue_new(void) {
     text_queue_t* self = (text_queue_t*) malloc(sizeof(text_queue_t));
     self->begin = NULL;
@@ -117,11 +128,13 @@ text_queue_t* text_queue_new(void) {
     return self;
 }
 
+/// Frees the text queue
 void text_queue_free(text_queue_t* self) {
     text_queue_clear(self);
     free(self);
 }
 
+/// Clears the text queue
 void text_queue_clear(text_queue_t* self) {
     text_entry_t* it = self->begin;
     text_entry_t* tmp;
@@ -136,6 +149,7 @@ void text_queue_clear(text_queue_t* self) {
     self->entries = 0;
 }
 
+/// Pushes data to the text queue
 void text_queue_push(text_queue_t* self, char* data, u32 length) {
     text_entry_t* entry = text_entry_new(data, length);
     if (self->begin == NULL) {
@@ -156,6 +170,7 @@ void text_queue_push(text_queue_t* self, char* data, u32 length) {
     self->entries++;
 }
 
+/// Pushes format strings to the text queue
 void text_queue_push_format(text_queue_t* self, const char* fmt, ...) {
     char buffer[1024];
     va_list list;

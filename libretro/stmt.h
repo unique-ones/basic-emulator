@@ -35,18 +35,14 @@ typedef struct line_statement {
     statement_t* statement;
 } line_statement_t;
 
-/**
- * @brief creates a new line statement
- * @param line the line for the statement
- * @param statement the statement after the line
- * @return a new statement
- */
+/// Creates a new line statement
+/// @param line The line for the statement
+/// @param statement The statement after the line
+/// @return A new statement
 statement_t* line_statement_new(u32 line, statement_t* statement);
 
-/**
- * @brief frees the line statement
- * @param self line statement
- */
+/// Frees the line statement
+/// @param self The line statement
 void line_statement_free(statement_t* self);
 
 typedef struct let_statement {
@@ -54,18 +50,14 @@ typedef struct let_statement {
     expression_t* initializer;
 } let_statement_t;
 
-/**
- * @brief creates a new let statement
- * @param name the name of the variable
- * @param initializer the initializer value of the variable
- * @return a new statement
- */
+/// Creates a new let statement
+/// @param name The name of the variable
+/// @param initializer The initializer value of the variable
+/// @return A new statement
 statement_t* let_statement_new(token_t name, expression_t* initializer);
 
-/**
- * @brief frees the let statement
- * @param self let statement
- */
+/// Frees the let statement
+/// @param self The let statement
 void let_statement_free(statement_t* self);
 
 typedef struct clear_statement {
@@ -87,25 +79,19 @@ typedef struct statement {
     };
 } statement_t;
 
-/**
- * @brief compile a statement from a list of tokens
- * @param begin the first token in the statement
- * @param end the last token in the statement
- * @return the statement or nil if the statement where invalid
- */
+/// Compiles a statement from a list of tokens
+/// @param begin The first token in the statement
+/// @param end The last token in the statement
+/// @return The statement or nil if the statement where invalid
 statement_t* statement_compile(token_t* begin, token_t* end);
 
-/**
- * @brief free the statement
- * @param self the statement
- */
+/// Frees the statement
+/// @param self The statement
 void statement_free(statement_t* self);
 
-/**
- * @brief executes the statement
- * @param self the statement
- * @param program the program state
- */
+/// Executes the statement
+/// @param self The statement
+/// @param program The program state
 void statement_execute(statement_t* self, program_t* program);
 
 #endif// RETRO_STMT_H

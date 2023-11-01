@@ -21,20 +21,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef RETRO_UTILITY_H
-#define RETRO_UTILITY_H
+#ifndef RETRO_UTIL_UTILITY_H
+#define RETRO_UTIL_UTILITY_H
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "types.h"
 
-/**
- * @brief reads the entire file into the specified buffer
- * @param buffer buffer where the content of the file is copied to
- * @param path path to the file
- * @return bool
- */
+/// Reads the entire file into the specified buffer
+/// @param buffer The buffer where the content of the file is copied to
+/// @param path The path to the file
+/// @return Boolean value that indicates whether the file could be read
 bool file_read(binary_buffer_t* buffer, const char* path);
 
-#endif// RETRO_UTILITY_H
+#endif// RETRO_UTIL_UTILITY_H

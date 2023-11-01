@@ -27,6 +27,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+/// Creates a glyph cache for the specified font
 glyph_cache_t* glyph_cache_new(const char* path) {
     glyph_cache_t* self = (glyph_cache_t*) malloc(sizeof(glyph_cache_t));
 
@@ -108,11 +109,13 @@ glyph_cache_t* glyph_cache_new(const char* path) {
     return self;
 }
 
+/// Destroys the glyph cache and its glyph atlas
 void glyph_cache_free(glyph_cache_t* self) {
     texture_destroy(&self->atlas);
     free(self);
 }
 
+/// Fetches the specified symbol from the glyph cache
 void glyph_cache_acquire(glyph_cache_t* self, glyph_info_t* info, char symbol) {
     glyph_info_t* fetched = (self->info + symbol - 32);
     info->size = fetched->size;

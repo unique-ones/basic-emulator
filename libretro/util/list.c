@@ -26,6 +26,7 @@
 
 #include "list.h"
 
+/// Allocates a new node instance
 node_t* node_new(void* data) {
     node_t* self = (node_t*) malloc(sizeof(node_t));
     self->prev = NULL;
@@ -34,11 +35,13 @@ node_t* node_new(void* data) {
     return self;
 }
 
+/// Frees all associated data with the node except the data
 void node_free(node_t* self) {
     free(self);
 }
 
-list_t* list_new() {
+/// Allocates a new list instance
+list_t* list_new(void) {
     list_t* self = (list_t*) malloc(sizeof(list_t));
     self->head = NULL;
     self->tail = NULL;
@@ -47,6 +50,7 @@ list_t* list_new() {
     return self;
 }
 
+/// Frees all data associated with the list
 void list_free(list_t* self) {
     node_t* it = self->head;
     node_t* tmp;
@@ -60,6 +64,7 @@ void list_free(list_t* self) {
     free(self);
 }
 
+/// Appends the data to the list
 void list_append(list_t* self, void* data) {
     node_t* node = node_new(data);
 
@@ -82,6 +87,7 @@ void list_append(list_t* self, void* data) {
     self->length++;
 }
 
+/// Sets the first node of the list
 void list_set_head(list_t* self, void* data) {
     node_t* node = node_new(data);
 
@@ -96,10 +102,12 @@ void list_set_head(list_t* self, void* data) {
     self->length++;
 }
 
+/// Alias to list_append
 void list_set_tail(list_t* self, void* data) {
     list_append(self, data);
 }
 
+/// Inserts a node at the specified index
 void list_insert(list_t* self, u32 idx, void* data) {
     if (self->head == NULL) {
         list_set_head(self, data);
@@ -120,6 +128,7 @@ void list_insert(list_t* self, u32 idx, void* data) {
     self->length++;
 }
 
+/// Retrieves the data of the node at the specified index in the list
 void* list_at(list_t* self, u32 idx) {
     if (self->head == NULL || idx >= self->length) {
         return NULL;
@@ -144,6 +153,7 @@ void* list_at(list_t* self, u32 idx) {
     return temp != NULL && iterator == iterator_limit ? temp->data : NULL;
 }
 
+/// Tries to find the specified data using the specified equal function
 node_t* list_find(list_t* self, void* data, list_equal_function_t equal) {
     if (self->head == NULL || data == NULL || equal == NULL) {
         return NULL;

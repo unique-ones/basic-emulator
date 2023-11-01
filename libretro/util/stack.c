@@ -25,6 +25,10 @@
 
 #include "stack.h"
 
+
+#include <assert.h>
+
+/// Allocates a new stack
 stack_t* stack_new(u32 capacity) {
     stack_t* self = (stack_t*) malloc(sizeof(stack_t));
     self->capacity = capacity;
@@ -33,11 +37,18 @@ stack_t* stack_new(u32 capacity) {
     return self;
 }
 
+/// Grows the stack's capacity
 void stack_grow(stack_t* self, u32 capacity) {
-    self->data = (void**) realloc(self->data, capacity * sizeof(void*));
-    self->capacity = capacity;
+    void** new_data = (void**) realloc(self->data, capacity * sizeof(void*));
+    if (new_data) {
+        self->data = new_data;
+        self->capacity = capacity;
+    } else {
+        assert(false && "realloc failed");
+    }
 }
 
+/// Frees the stack entries except for the data itself
 void stack_free(stack_t* self) {
     free(self->data);
     self->capacity = 0;
@@ -45,6 +56,7 @@ void stack_free(stack_t* self) {
     free(self);
 }
 
+/// Pushes the specified data onto the stack
 void stack_push(stack_t* self, void* data) {
     if (self->size == self->capacity) {
         // If we run out of memory, allocate twice the capacity
@@ -53,6 +65,7 @@ void stack_push(stack_t* self, void* data) {
     self->data[self->size++] = data;
 }
 
+/// Pops data from the stack
 void* stack_pop(stack_t* self) {
     if (self->size == 0) {
         return NULL;
@@ -60,6 +73,7 @@ void* stack_pop(stack_t* self) {
     return self->data[--(self->size)];
 }
 
+/// Peeks the top element
 void* stack_peek(stack_t* self) {
     if (self->size == 0) {
         return NULL;

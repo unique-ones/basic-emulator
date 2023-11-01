@@ -25,6 +25,7 @@
 
 #include "buffer.h"
 
+/// Converts a shader type to its stride in bytes
 static s32 shader_type_stride(shader_type_t type) {
     switch (type) {
         case INT:
@@ -48,6 +49,7 @@ static s32 shader_type_stride(shader_type_t type) {
     }
 }
 
+/// Converts a shader type to its OpenGL base type
 static s32 shader_type_opengl(shader_type_t type) {
     switch (type) {
         case INT:
@@ -65,6 +67,7 @@ static s32 shader_type_opengl(shader_type_t type) {
     }
 }
 
+/// Calculates the number of primitives in a shader type
 static s32 shader_type_primitives(shader_type_t type) {
     switch (type) {
         case INT:
@@ -88,6 +91,7 @@ static s32 shader_type_primitives(shader_type_t type) {
     }
 }
 
+/// Calculates the total stride of a vertex buffer layout
 static s32 vertex_buffer_layout_stride(vertex_buffer_layout_t* layout) {
     s32 stride = 0;
     for (u32 i = 0; i < layout->count; i++) {
@@ -97,6 +101,7 @@ static s32 vertex_buffer_layout_stride(vertex_buffer_layout_t* layout) {
     return stride;
 }
 
+/// Creates a vertex buffer on the gpu
 void vertex_buffer_create(vertex_buffer_t* self) {
     self->handle = 0;
     self->layout = NULL;
@@ -104,52 +109,64 @@ void vertex_buffer_create(vertex_buffer_t* self) {
     glBindBuffer(GL_ARRAY_BUFFER, self->handle);
 }
 
+/// Destroys the vertex buffer
 void vertex_buffer_destroy(vertex_buffer_t* self) {
     glDeleteBuffers(1, &self->handle);
     self->layout = NULL;
 }
 
+/// Sets the data for the vertex buffer
 void vertex_buffer_data(vertex_buffer_t* self, const void* data, u32 size) {
     glBindBuffer(GL_ARRAY_BUFFER, self->handle);
     glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
 }
 
+/// Sets the attribute layout for the specified buffer
 void vertex_buffer_layout(vertex_buffer_t* self, vertex_buffer_layout_t* layout) {
     self->layout = layout;
 }
 
+/// Binds the vertex buffer
 void vertex_buffer_bind(vertex_buffer_t* self) {
     glBindBuffer(GL_ARRAY_BUFFER, self->handle);
 }
 
-void vertex_buffer_unbind() {
+/// Unbinds the currently bound vertex buffer
+void vertex_buffer_unbind(void) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+/// Creates an index buffer on the gpu
 void index_buffer_create(index_buffer_t* self) {
     self->handle = 0;
     self->count = 0;
     glGenBuffers(1, &self->handle);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self->handle);
 }
+
+/// Destroys the index buffer
 void index_buffer_destroy(index_buffer_t* self) {
     glDeleteBuffers(1, &self->handle);
 }
 
+/// Sets the data for the specified index buffer
 void index_buffer_data(index_buffer_t* self, const u32* data, u32 count) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self->handle);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr) (count * sizeof count), data, GL_DYNAMIC_DRAW);
     self->count = count;
 }
 
+/// Binds the specified buffer
 void index_buffer_bind(index_buffer_t* self) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self->handle);
 }
 
-void index_buffer_unbind() {
+/// Unbinds the currently bound index buffer
+void index_buffer_unbind(void) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+/// Creates a new vertex array
 void vertex_array_create(vertex_array_t* self) {
     self->handle = 0;
     self->vertex_buffer = NULL;
@@ -158,10 +175,12 @@ void vertex_array_create(vertex_array_t* self) {
     glBindVertexArray(self->handle);
 }
 
+/// Destroys the vertex array
 void vertex_array_destroy(vertex_array_t* self) {
     glDeleteVertexArrays(1, &self->handle);
 }
 
+/// Sets the vertex buffer for the vertex array, this sets all the specified attributes
 void vertex_array_vertex_buffer(vertex_array_t* self, vertex_buffer_t* vertex_buffer) {
     glBindVertexArray(self->handle);
     vertex_buffer_bind(vertex_buffer);
@@ -183,20 +202,24 @@ void vertex_array_vertex_buffer(vertex_array_t* self, vertex_buffer_t* vertex_bu
     self->vertex_buffer = vertex_buffer;
 }
 
+/// Sets the index buffer for the vertex array
 void vertex_array_index_buffer(vertex_array_t* self, index_buffer_t* index_buffer) {
     glBindVertexArray(self->handle);
     index_buffer_bind(index_buffer);
     self->index_buffer = index_buffer;
 }
 
+/// Binds the vertex array
 void vertex_array_bind(vertex_array_t* self) {
     glBindVertexArray(self->handle);
 }
 
-void vertex_array_unbind() {
+/// Unbinds the currently bound vertex array
+void vertex_array_unbind(void) {
     glBindVertexArray(0);
 }
 
+/// Creates a frame buffer of specified size
 bool frame_buffer_create(frame_buffer_t* self, s32 width, s32 height) {
     self->handle = 0;
     self->texture_handle = 0;
@@ -206,17 +229,20 @@ bool frame_buffer_create(frame_buffer_t* self, s32 width, s32 height) {
     return frame_buffer_invalidate(self);
 }
 
+/// Destroys the frame buffer
 void frame_buffer_destroy(frame_buffer_t* self) {
     glDeleteFramebuffers(1, &self->handle);
     glDeleteTextures(1, &self->texture_handle);
     glDeleteRenderbuffers(1, &self->render_handle);
 }
 
+/// Checks if the frame buffer is complete
 static bool frame_buffer_is_valid(frame_buffer_t* buffer) {
     frame_buffer_bind(buffer);
     return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 }
 
+/// Invalidates the frame buffer, this needs to be called whenever the frame buffer is resized
 bool frame_buffer_invalidate(frame_buffer_t* self) {
     if (self->handle) {
         glDeleteFramebuffers(1, &self->handle);
@@ -240,13 +266,14 @@ bool frame_buffer_invalidate(frame_buffer_t* self) {
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, self->render_handle);
 
     if (!frame_buffer_is_valid(self)) {
-        fprintf(stderr, "invalid frame self\n");
+        fprintf(stderr, "invalid frame buffer\n");
         return false;
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return true;
 }
 
+/// Resizes the frame buffer
 bool frame_buffer_resize(frame_buffer_t* self, s32 width, s32 height) {
     if (width <= 0 || height <= 0 || (width == self->width && height == self->height)) {
         return false;
@@ -256,15 +283,18 @@ bool frame_buffer_resize(frame_buffer_t* self, s32 width, s32 height) {
     return frame_buffer_invalidate(self);
 }
 
+/// Binds the specified frame buffer for rendering
 void frame_buffer_bind(frame_buffer_t* self) {
     glBindFramebuffer(GL_FRAMEBUFFER, self->handle);
     glViewport(0, 0, self->width, self->height);
 }
 
+/// Binds the texture of the frame buffer at the specified sampler slot
 void frame_buffer_bind_texture(frame_buffer_t* self, u32 slot) {
     glBindTextureUnit(slot, self->texture_handle);
 }
 
+/// Unbinds the currently bound frame buffer
 void frame_buffer_unbind(void) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

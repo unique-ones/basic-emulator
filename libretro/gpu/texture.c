@@ -3,6 +3,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+/// Loads a texture from the given path and uploads it to the gpu
 bool texture_create(texture_t* self, const char* path) {
     self->handle = 0;
     self->width = 0;
@@ -26,15 +27,18 @@ bool texture_create(texture_t* self, const char* path) {
     return false;
 }
 
+/// Destroys the specified texture and its data
 void texture_destroy(texture_t* self) {
     free(self->data);
     glDeleteTextures(1, &self->handle);
 }
 
+/// Binds the texture to the sampler at the specified slot
 void texture_bind(texture_t* self, u32 slot) {
     glBindTextureUnit(slot, self->handle);
 }
 
+/// Unbinds the currently bound texture at the specified sampler slot
 void texture_unbind(u32 slot) {
     glBindTextureUnit(slot, 0);
 }

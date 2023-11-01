@@ -21,8 +21,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef RETRO_STATE_H
-#define RETRO_STATE_H
+#ifndef RETRO_INPUT_H
+#define RETRO_INPUT_H
 
 #include "types.h"
 
@@ -34,45 +34,33 @@ typedef struct input_buffer {
     bool submit;
 } input_buffer_t;
 
-/**
- * @brief creates an input buffer
- * @param self buffer handle
- * @param capacity capacity of the input buffer
- */
+/// Creates an input buffer
+/// @param self The buffer handle
+/// @param capacity The capacity of the input buffer
 void input_buffer_create(input_buffer_t* self, u32 capacity);
 
-/**
- * @brief destroys the input buffer and frees its data
- * @param self buffer handle
- */
+/// Destroys the input buffer and frees its data
+/// @param self The buffer handle
 void input_buffer_destroy(input_buffer_t* self);
 
-/**
- * @brief inserts a character into the input buffer
- * @param self buffer handle
- * @param data data
- * @return bool
- */
+/// Inserts a character into the input buffer
+/// @param self The buffer handle
+/// @param data The data
+/// @return A boolean value that indicates whether data could be emplaced
 bool input_buffer_emplace(input_buffer_t* self, char data);
 
-/**
- * @brief removes data at the cursor, reorders buffer to be continuous in memory
- * @param self buffer handle
- * @return bool
- */
+/// Removes data at the cursor, reorders buffer to be continuous in memory
+/// @param self The buffer handle
+/// @return A boolean value that indicates whether a char could be removed
 bool input_buffer_remove(input_buffer_t* self);
 
-/**
- * @brief advances the cursor by the specified offset
- * @param self input buffer handle
- * @param offset offset
- */
+/// Advances the cursor by the specified offset
+/// @param self The input buffer handle
+/// @param offset The offset
 void input_buffer_advance_cursor(input_buffer_t* self, s32 offset);
 
-/**
- * @brief checks if the input buffer is full
- * @return bool
- */
+/// Checks if the input buffer is full
+/// @return A boolean value that indicates whether the input buffer is full or not
 bool input_buffer_is_full(input_buffer_t* self);
 
-#endif// RETRO_STATE_H
+#endif// RETRO_INPUT_H
