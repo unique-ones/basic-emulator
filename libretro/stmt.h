@@ -36,38 +36,38 @@ typedef struct line_statement {
 } line_statement_t;
 
 /// Creates a new line statement
+/// @param arena The arena for allocations
 /// @param line The line for the statement
 /// @param statement The statement after the line
 /// @return A new statement
-statement_t* line_statement_new(u32 line, statement_t* statement);
-
-/// Frees the line statement
-/// @param self The line statement
-void line_statement_free(statement_t* self);
+statement_t* line_statement_new(arena_t* arena, u32 line, statement_t* statement);
 
 typedef struct let_statement {
-    token_t name;
+    expression_t* variable;
     expression_t* initializer;
 } let_statement_t;
 
 /// Creates a new let statement
-/// @param name The name of the variable
+/// @param arena The arena for allocations
+/// @param variable The variable
 /// @param initializer The initializer value of the variable
 /// @return A new statement
-statement_t* let_statement_new(token_t name, expression_t* initializer);
+statement_t* let_statement_new(arena_t* arena, expression_t* variable, expression_t* initializer);
 
-/// Frees the let statement
-/// @param self The let statement
-void let_statement_free(statement_t* self);
+typedef struct print_statement {
+    expression_t* printable;
+} print_statement_t;
 
-typedef struct clear_statement {
-    token_t name;
-} clear_statement_t;
+/// Creates a new print statement
+/// @param arena The arena for allocations
+/// @param printable The printable expression
+/// @return A new statement
+statement_t* print_statement_new(arena_t* arena, expression_t* printable);
 
 typedef enum statement_type {
     STATEMENT_LINE,
     STATEMENT_LET,
-    STATEMENT_CLEAR,
+    STATEMENT_PRINT,
 } statement_type_t;
 
 typedef struct statement {
@@ -75,19 +75,16 @@ typedef struct statement {
     union {
         line_statement_t line;
         let_statement_t let;
-        clear_statement_t clear;
+        print_statement_t print;
     };
 } statement_t;
 
 /// Compiles a statement from a list of tokens
+/// @param arena The arena for allocations
 /// @param begin The first token in the statement
 /// @param end The last token in the statement
 /// @return The statement or nil if the statement where invalid
-statement_t* statement_compile(token_t* begin, token_t* end);
-
-/// Frees the statement
-/// @param self The statement
-void statement_free(statement_t* self);
+statement_t* statement_compile(arena_t* arena, token_t* begin, token_t* end);
 
 /// Executes the statement
 /// @param self The statement

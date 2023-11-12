@@ -37,43 +37,45 @@
 /// Finalizes an emulator pass by destroying associated data
 static void emulator_pass_finish(emulator_t* self) {
     text_queue_push(self->history, self->text.data, (u32) self->text.fill);
+    text_queue_clear(self->program.output);
     text_cursor_clear(&self->text);
     self->state = EMULATOR_STATE_INPUT;
 }
 
 /// Runs an emulator pass
 static void emulator_pass(emulator_t* self) {
-    // step 1: tokenize
+    // Parse user input
     token_list_t* tokens = tokenize(self->text.data, (u32) self->text.fill);
-
-    // step 2: parse into statement
-    statement_t* statement = statement_compile(tokens->begin, tokens->end);
-    if (statement) {
-        statement_free(statement);
-    }
-
-    // free tokens
+    statement_t* statement = statement_compile(&self->arena, tokens->begin, tokens->end);
     token_list_free(tokens);
 
-    // step 3: execute
-    // the text output queue servers as our
-    // print buffer, which will be sent to the renderer
-    // after every command execution
-    text_queue_t* output = text_queue_new();
-    text_queue_push_format(output, "foobar");
-
-    // drawing of the output queue
-    f32vec2_t position_iterator = { 0.0f, 0.0f };
-    for (text_entry_t* it = output->begin; it; it = it->next) {
-        renderer_draw_text(self->renderer, &position_iterator, &(f32vec3_t){ 0.0f, 0.0f, 1.0f }, 0.5f, it->data);
+    f32vec2_t position = { 0.0f, 0.0f };
+    if (!statement) {
+        // show user the error
+        static f32vec3_t err = { 1.0f, 0.0f, 0.0f };
+        renderer_draw_text(self->renderer, &position, &err, 0.5f, "unable to parse statement!\n");
+    } else {
+        // if we encounter the RUN statement, we must iterate over all the lines
+        // currently, this is not implemented. therefore, we only execute one
+        // statement at a time.
+        statement_execute(statement, &self->program);
+        if (self->program.no_wait) {
+            emulator_pass_finish(self);
+            return;
+        }
     }
+
+    text_queue_t* output = self->program.output;
+    for (text_entry_t* it = output->begin; it != NULL; it = it->next) {
+        static f32vec3_t msg = { 1.0f, 0.55f, 0.0f };
+        renderer_draw_text(self->renderer, &position, &msg, 0.5f, "%.*s", it->length, it->data);
+    }
+
     while (self->program.last_key != GLFW_KEY_ESCAPE) {
         // here we waste time
         time_sleep(10);
     }
-    text_queue_free(output);
 
-    // cleanup state
     emulator_pass_finish(self);
 }
 
@@ -144,6 +146,7 @@ void emulator_create(emulator_t* self, renderer_t* renderer) {
 
     text_cursor_create(&self->text, 128);
     self->history = text_queue_new();
+    self->arena = arena_identity(ALIGNMENT8);
 }
 
 /// Destroys the emulator and frees all its associated data
@@ -151,6 +154,7 @@ void emulator_destroy(emulator_t* self) {
     program_destroy(&self->program);
     text_cursor_destroy(&self->text);
     text_queue_free(self->history);
+    arena_destroy(&self->arena);
 }
 
 /// Runs an emulation pass

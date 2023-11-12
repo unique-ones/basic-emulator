@@ -32,6 +32,9 @@ void program_create(program_t* self, u32 memory_size) {
     self->lines = map_new();
     self->memory = (u8*) malloc(memory_size);
     self->last_key = -1;
+    self->no_wait = false;
+    self->output = text_queue_new();
+    self->objects = arena_identity(ALIGNMENT8);
 }
 
 /// Destroys the program and all its data
@@ -44,4 +47,9 @@ void program_destroy(program_t* self) {
 
     free(self->memory);
     self->memory = NULL;
+
+    text_queue_free(self->output);
+    self->output = NULL;
+
+    arena_destroy(&self->objects);
 }

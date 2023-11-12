@@ -234,14 +234,14 @@ token_list_t* tokenize(char* data, u32 length) {
                 string_iterator_advance(&iterator);
             }
             u32 end_index = iterator.index;
-            u32 length = end_index - begin_index;
+            u32 lexeme_length = end_index - begin_index;
 
-            if (string_view_equal(lexeme, length, "CLEAR", 5)) {
-                token_list_push(list, TOKEN_CLEAR, lexeme, length);
-            } else if (string_view_equal(lexeme, length, "LET", 3)) {
-                token_list_push(list, TOKEN_LET, lexeme, length);
+            if (string_view_equal(lexeme, lexeme_length, "PRINT", 5)) {
+                token_list_push(list, TOKEN_PRINT, lexeme, lexeme_length);
+            } else if (string_view_equal(lexeme, lexeme_length, "LET", 3)) {
+                token_list_push(list, TOKEN_LET, lexeme, lexeme_length);
             } else {
-                token_list_push(list, TOKEN_IDENTIFIER, lexeme, length);
+                token_list_push(list, TOKEN_IDENTIFIER, lexeme, lexeme_length);
             }
             continue;
         }

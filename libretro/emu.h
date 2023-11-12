@@ -44,6 +44,7 @@ typedef struct emulator {
     program_t program;
     text_cursor_t text;
     text_queue_t* history;
+    arena_t arena;
 } emulator_t;
 
 /// Creates a new emulator instance

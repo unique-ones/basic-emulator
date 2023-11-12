@@ -103,7 +103,6 @@ void render_group_push(render_group_t* self, vertex_t* vertices, u32* indices) {
     render_command_t* command = render_command_new(vertices, indices);
     if (self->begin == NULL) {
         self->begin = command;
-        command->prev = NULL;
         self->commands++;
         mutex_unlock(self->mutex);
         return;
@@ -121,11 +120,26 @@ void render_group_push(render_group_t* self, vertex_t* vertices, u32* indices) {
     mutex_unlock(self->mutex);
 }
 
+/// Creates the post processing pipeline
+void post_processing_create(post_processing_t* self) {
+    frame_buffer_create(&self->frame, 800, 600);
+    self->group = render_group_new();
+    shader_create(&self->shader, "assets/processing_vertex.glsl", "assets/processing_fragment.glsl");
+}
+
+/// Destroys the post processing pipeline
+void post_processing_destroy(post_processing_t* self) {
+    shader_destroy(&self->shader);
+    render_group_free(self->group);
+    frame_buffer_destroy(&self->frame);
+}
+
 /// Submits an actual indexed OpenGL draw call to the GPU
 static void renderer_draw_indexed(vertex_array_t* vertex_array, shader_t* shader, u32 mode) {
-    shader_bind(shader);
     vertex_array_bind(vertex_array);
+    shader_bind(shader);
     glDrawElements(mode, (s32) vertex_array->index_buffer->count, GL_UNSIGNED_INT, NULL);
+    vertex_array_unbind();
 }
 
 /// Clears the currently bound frame buffer
@@ -149,6 +163,7 @@ void renderer_create(renderer_t* self, const char* font) {
 
     shader_create(&self->quad_shader, "assets/quad_vertex.glsl", "assets/quad_fragment.glsl");
     self->quad_group = render_group_new();
+    post_processing_create(&self->post);
 }
 
 /// Destroys the specified renderer
@@ -158,6 +173,7 @@ void renderer_destroy(renderer_t* self) {
     glyph_cache_free(self->glyphs);
     shader_destroy(&self->quad_shader);
     render_group_free(self->quad_group);
+    post_processing_destroy(&self->post);
 }
 
 /// Begins a renderer batch by resetting all render groups
@@ -167,26 +183,28 @@ void renderer_begin_batch(renderer_t* self) {
 }
 
 /// Submits the specified render group and issues an indexed draw call
-static void renderer_group_end_batch(render_group_t* group, shader_t* shader) {
+static void render_group_submit(render_group_t* group, shader_t* shader) {
     if (group->commands == 0) {
         return;
     }
 
     mutex_lock(group->mutex);
-    vertex_t* vertices = (vertex_t*) malloc(4 * sizeof(vertex_t) * group->commands);
-    u32* indices = (u32*) malloc(6 * sizeof(u32) * group->commands);
+    u32 vertices_size = QUAD_VERTICES * sizeof(vertex_t);
+    u32 indices_size = QUAD_INDICES * sizeof(u32);
+    vertex_t* vertices = (vertex_t*) malloc((u64) vertices_size * group->commands);
+    u32* indices = (u32*) malloc((u64) indices_size * group->commands);
 
     u32 insert_index = 0;
     for (render_command_t* it = group->begin; it != NULL; it = it->next) {
-        memcpy((u8*) vertices + 4 * sizeof(vertex_t) * insert_index, it->vertices, sizeof it->vertices);
-        memcpy((u8*) indices + 6 * sizeof(u32) * insert_index, it->indices, sizeof it->indices);
+        memcpy((u8*) vertices + (ptrdiff_t) (vertices_size * insert_index), it->vertices, vertices_size);
+        memcpy((u8*) indices + (ptrdiff_t) (indices_size * insert_index), it->indices, indices_size);
         insert_index++;
     }
 
-    vertex_buffer_data(&group->vertex_buffer, vertices, group->commands * 4 * (u32) sizeof(vertex_t));
+    vertex_buffer_data(&group->vertex_buffer, vertices, group->commands * vertices_size);
     free(vertices);
 
-    index_buffer_data(&group->index_buffer, indices, group->commands * 6);
+    index_buffer_data(&group->index_buffer, indices, group->commands * QUAD_INDICES);
     free(indices);
 
     renderer_draw_indexed(&group->vertex_array, shader, GL_TRIANGLES);
@@ -195,11 +213,11 @@ static void renderer_group_end_batch(render_group_t* group, shader_t* shader) {
 
 /// Ends a renderer batch by submitting the commands of all render groups
 void renderer_end_batch(renderer_t* self) {
-    renderer_group_end_batch(self->quad_group, &self->quad_shader);
+    render_group_submit(self->quad_group, &self->quad_shader);
 
     texture_bind(&self->glyphs->atlas, 0);
     shader_uniform_sampler(&self->glyph_shader, "uniform_glyph_atlas", 0);
-    renderer_group_end_batch(self->glyph_group, &self->glyph_shader);
+    render_group_submit(self->glyph_group, &self->glyph_shader);
 }
 
 /// Draws a quad at the given position
@@ -292,7 +310,6 @@ void renderer_draw_text_with_cursor(renderer_t* self,
     va_end(list);
 
     f32vec2_t position_iterator = *position;
-    renderer_begin_batch(self);
     renderer_draw_indicator(self, &position_iterator, color, scale);
 
     // then we fetch the cursor glyph
@@ -328,9 +345,36 @@ void renderer_draw_text_with_cursor(renderer_t* self,
             renderer_draw_symbol(self, &cursor_info, &position_iterator, color, scale);
         }
     }
-
-    texture_bind(&self->glyphs->atlas, 0);
-    shader_uniform_sampler(&self->glyph_shader, "uniform_glyph_atlas", 0);
-    renderer_end_batch(self);
     *position = position_iterator;
+}
+
+/// Captures all following draw commands into a frame buffer
+void renderer_begin_capture(renderer_t* self) {
+    frame_buffer_bind(&self->post.frame);
+}
+
+/// Ends the capture of draw commands
+void renderer_end_capture(renderer_t* self) {
+    // unbind frame buffer in order to actually render stuff now
+    frame_buffer_unbind();
+    renderer_clear();
+    render_group_clear(self->post.group);
+
+    f32vec2_t size = { (f32) self->post.frame.width, (f32) self->post.frame.height };
+    f32vec3_t color = { 1.0f, 1.0f, 1.0f };
+
+    // clang-format off
+    vertex_t vertices[] = {
+        { .position = { 0.0f, 0.0f, 0.0f }, .color = color, { 0.0f, 1.0f } },
+        { .position = { 0.0f, size.y, 0.0f }, .color = color, { 0.0f, 0.0f } },
+        { .position = { size.x, size.y, 0.0f }, .color = color, { 1.0f, 0.0f } },
+        { .position = { size.x, 0.0f, 0.0f }, .color = color, { 1.0f, 1.0f } }
+    };
+    // clang-format on
+    u32 indices[] = { 0, 1, 2, 2, 0, 3 };
+
+    render_group_push(self->post.group, vertices, indices);
+    frame_buffer_bind_texture(&self->post.frame, 0);
+    shader_uniform_sampler(&self->post.shader, "uniform_frame", 0);
+    render_group_submit(self->post.group, &self->post.shader);
 }

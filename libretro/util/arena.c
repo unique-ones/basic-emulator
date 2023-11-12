@@ -91,7 +91,7 @@ void arena_destroy(arena_t* arena) {
 }
 
 /// Allocates a block of memory in the specified arena
-u8* arena_alloc(arena_t* arena, u32 size) {
+void* arena_alloc(arena_t* arena, u32 size) {
     u32 aligned_size = arena_alignment_size(arena, size);
 
     bool back_swap = false;

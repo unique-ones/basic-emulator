@@ -20,6 +20,7 @@ load_paths = {
     {
         { 
     	    {"./libretro", .relative = true, .recursive = true, },
+    	    {"./assets", .relative = true, .recursive = true, },
     	    {"./extern", .relative = true, .recursive = true, },
     	    {".", .relative = true, .recursive = false, }
     	}, 
@@ -28,6 +29,7 @@ load_paths = {
     {
         { 
     	    {"./libretro", .relative = true, .recursive = true, },
+            {"./assets", .relative = true, .recursive = true, },
     	    {"./extern", .relative = true, .recursive = true, },
     	    {".", .relative = true, .recursive = false, }
     	}, 
@@ -40,24 +42,28 @@ command_list = {
         .out = "*configure*", .footer_panel = true, .save_dirty_files = true, .cursor_at_end = true,
         .cmd = {
             {"./configure-lin-64 debug && ./configure-lin-64 release", .os = "linux"},
+            {"configure-win-64.bat debug & configure-win-64.bat release", .os="win"}
         },
     },
     { .name = "build",
         .out = "*compile*", .footer_panel = true, .save_dirty_files = true, .cursor_at_end = false,
         .cmd = {
-            {"make -C build/lin-64-debug && make -C build/lin-64-release", .os = "linux"},
+            {"cmake --build --preset=win-64-app", .os = "linux"},
+            {"cmake --build --preset=win-64-app", .os = "win"}
         },
     },
     { .name = "run-debug",
         .out = "*run*", .footer_panel = true, .save_dirty_files = false, .cursor_at_end = true,
         .cmd = {         
-            {"build/lin-64-debug/basic", .os = "linux"}                    
+            {"build/lin-64-debug/basic", .os = "linux"},
+            {".\build\win-64-debug\basic.exe", .os = "win"}
         },
     },
     { .name = "run-release",
         .out = "*run*", .footer_panel = true, .save_dirty_files = false, .cursor_at_end = true,
         .cmd = {         
-            {"build/lin-64-release/basic", .os = "linux"}                    
+            {"build/lin-64-release/basic", .os = "linux"},
+            {".\build\win-64-release\basic.exe", .os = "win"}
         },
     },
 };

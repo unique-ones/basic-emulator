@@ -24,35 +24,32 @@
 #include "stmt.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 /// Creates a new line statement
-statement_t* line_statement_new(u32 line, statement_t* statement) {
-    statement_t* self = (statement_t*) malloc(sizeof(statement_t));
+statement_t* line_statement_new(arena_t* arena, u32 line, statement_t* statement) {
+    statement_t* self = (statement_t*) arena_alloc(arena, sizeof(statement_t));
     self->type = STATEMENT_LINE;
     self->line.line = line;
     self->line.statement = statement;
     return self;
 }
 
-/// Frees the line statement
-void line_statement_free(statement_t* self) {
-    statement_free(self->line.statement);
-    free(self);
-}
-
 /// Creates a new let statement
-statement_t* let_statement_new(token_t name, expression_t* initializer) {
-    statement_t* self = (statement_t*) malloc(sizeof(statement_t));
+statement_t* let_statement_new(arena_t* arena, expression_t* variable, expression_t* initializer) {
+    statement_t* self = (statement_t*) arena_alloc(arena, sizeof(statement_t));
     self->type = STATEMENT_LET;
-    self->let.name = name;
+    self->let.variable = variable;
     self->let.initializer = initializer;
     return self;
 }
 
-/// Frees the let statement
-void let_statement_free(statement_t* self) {
-    expression_free(self->let.initializer);
-    free(self);
+/// Creates a new print statement
+statement_t* print_statement_new(arena_t* arena, expression_t* printable) {
+    statement_t* self = (statement_t*) arena_alloc(arena, sizeof(statement_t));
+    self->type = STATEMENT_PRINT;
+    self->print.printable = printable;
+    return self;
 }
 
 /// Checks if the given token type matches the current token in the state
@@ -66,10 +63,10 @@ static bool match_next(token_iterator_t* state, token_type_t type) {
 }
 
 /// Compiles a statement from the token state
-static statement_t* statement(token_iterator_t* state);
+static statement_t* statement(arena_t* arena, token_iterator_t* state);
 
 /// Compiles a line statement from the token state
-static statement_t* statement_line(token_iterator_t* state) {
+static statement_t* statement_line(arena_t* arena, token_iterator_t* state) {
     if (match_next(state, TOKEN_NUMBER)) {
         return NULL;
     }
@@ -81,15 +78,15 @@ static statement_t* statement_line(token_iterator_t* state) {
     char* line_end = line_begin + line_token->length;
     u32 line = strtoul(line_begin, &line_end, 10);
 
-    statement_t* stmt = statement(state);
+    statement_t* stmt = statement(arena, state);
     if (stmt) {
-        return line_statement_new(line, stmt);
+        return line_statement_new(arena, line, stmt);
     }
     return NULL;
 }
 
 /// Compiles a let statement from the token state
-static statement_t* statement_let(token_iterator_t* state) {
+static statement_t* statement_let(arena_t* arena, token_iterator_t* state) {
     if (match(state, TOKEN_LET)) {
         token_iterator_advance(state);
     }
@@ -98,47 +95,86 @@ static statement_t* statement_let(token_iterator_t* state) {
         token_iterator_advance(state);
         token_iterator_advance(state);
 
-        expression_t* initializer = expression_compile(state->current, state->end);
+        expression_t* initializer = expression_compile(arena, state->current, state->end);
         if (initializer == NULL) {
             return NULL;
         }
-        return let_statement_new(*identifier_token, initializer);
+        expression_t* variable = variable_expression_new(arena, identifier_token->lexeme, identifier_token->length);
+        if (variable == NULL) {
+            return NULL;
+        }
+        return let_statement_new(arena, variable, initializer);
     }
     return NULL;
 }
 
-/// Compiles a statement from the token state
-static statement_t* statement(token_iterator_t* state) {
-    if (match(state, TOKEN_NUMBER)) {
-        return statement_line(state);
+/// Compiles a print statement
+static statement_t* statement_print(arena_t* arena, token_iterator_t* state) {
+    token_iterator_advance(state);
+    expression_t* printable = expression_compile(arena, state->current, state->end);
+    if (printable == NULL) {
+        return NULL;
     }
+    return print_statement_new(arena, printable);
+}
+
+/// Compiles a statement from the token state
+static statement_t* statement(arena_t* arena, token_iterator_t* state) {
+    // Statement at line
+    if (match(state, TOKEN_NUMBER)) {
+        return statement_line(arena, state);
+    }
+
+    // Assignment
     if (match(state, TOKEN_IDENTIFIER) || match(state, TOKEN_LET)) {
-        return statement_let(state);
+        return statement_let(arena, state);
+    }
+
+    // Printing
+    if (match(state, TOKEN_PRINT)) {
+        return statement_print(arena, state);
     }
     return NULL;
 }
 
 /// Compiles a statement from a list of tokens
-statement_t* statement_compile(token_t* begin, token_t* end) {
+statement_t* statement_compile(arena_t* arena, token_t* begin, token_t* end) {
     token_iterator_t state = { 0 };
     state.current = begin;
     state.end = end;
-    return statement(&state);
+    return statement(arena, &state);
 }
 
-/// Frees the statement
-void statement_free(statement_t* self) {
-    switch (self->type) {
-        case STATEMENT_LINE:
-            line_statement_free(self);
-            break;
-        case STATEMENT_LET:
-            let_statement_free(self);
-            break;
-        case STATEMENT_CLEAR:
-            break;
-    }
+/// Executes a line statement
+static void statement_line_execute(statement_t* self, program_t* program) {
+    program->no_wait = true;
+}
+
+/// Executes a line statement
+static void statement_let_execute(statement_t* self, program_t* program) {
+    expression_t* var = self->let.variable;
+    map_insert(program->symbols, var->variable.name, self->let.initializer);
+    program->no_wait = true;
+}
+
+/// Executes a line statement
+static void statement_print_execute(statement_t* self, program_t* program) {
+    f64 result = expression_evaluate(self->print.printable, program->symbols);
+    text_queue_push_format(program->output, "%lf", result);
+    program->no_wait = false;
 }
 
 /// Executes the statement
-void statement_execute(statement_t* self, program_t* program) { }
+void statement_execute(statement_t* self, program_t* program) {
+    switch (self->type) {
+        case STATEMENT_LINE:
+            statement_line_execute(self, program);
+            break;
+        case STATEMENT_LET:
+            statement_let_execute(self, program);
+            break;
+        case STATEMENT_PRINT:
+            statement_print_execute(self, program);
+            break;
+    }
+}

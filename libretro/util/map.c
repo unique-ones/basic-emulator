@@ -26,8 +26,14 @@
 
 #include "map.h"
 
+typedef enum map_entry_key_type { KEY_TYPE_STRING, KEY_TYPE_NUMBER } map_entry_key_type_t;
+
 typedef struct map_entry {
-    const char* key;
+    map_entry_key_type_t type;
+    union {
+        const char* key;
+        u32 key_number;
+    };
     void* data;
 } map_entry_t;
 
@@ -57,8 +63,14 @@ void map_free(map_t* self) {
 
 /// Checks if two map entries are equal
 static bool map_entry_equal(const void* a, const void* b) {
-    map_entry_t* first = (map_entry_t*) a;
-    map_entry_t* second = (map_entry_t*) b;
+    const map_entry_t* first = (const map_entry_t*) a;
+    const map_entry_t* second = (const map_entry_t*) b;
+    if (first->type != second->type) {
+        return false;
+    }
+    if (first->type == KEY_TYPE_NUMBER && first->key_number != second->key_number) {
+        return false;
+    }
     return strcmp(first->key, second->key) == 0;
 }
 
@@ -68,7 +80,26 @@ void map_insert(map_t* self, const char* key, void* value) {
     list_t* bucket = self->buckets[bucket_index];
 
     map_entry_t* data = (map_entry_t*) malloc(sizeof(map_entry_t));
+    data->type = KEY_TYPE_STRING;
     data->key = key;
+    data->data = value;
+
+    node_t* find_result = list_find(bucket, data, map_entry_equal);
+    if (find_result) {
+        find_result->data = data;
+    } else {
+        list_append(bucket, data);
+    }
+}
+
+/// Inserts the specified key-value pair into the map
+void map_insert_number(map_t* self, u32 key, void* value) {
+    u32 bucket_index = key % MAP_BUCKET_COUNT;
+    list_t* bucket = self->buckets[bucket_index];
+
+    map_entry_t* data = (map_entry_t*) malloc(sizeof(map_entry_t));
+    data->type = KEY_TYPE_NUMBER;
+    data->key_number = key;
     data->data = value;
 
     node_t* find_result = list_find(bucket, data, map_entry_equal);
@@ -84,7 +115,22 @@ void* map_find(map_t* self, const char* key) {
     u32 bucket_index = hash(key, strlen(key)) % MAP_BUCKET_COUNT;
     list_t* bucket = self->buckets[bucket_index];
 
-    map_entry_t find_entry = { key, NULL };
+    map_entry_t find_entry = { KEY_TYPE_STRING, { .key = key }, NULL };
+    node_t* find_result = list_find(bucket, &find_entry, map_entry_equal);
+    if (find_result) {
+        map_entry_t* entry = find_result->data;
+        return entry->data;
+    } else {
+        return NULL;
+    }
+}
+
+/// Tries to find a key-value pair where the key matches with the specified entry
+void* map_find_number(map_t* self, u32 key) {
+    u32 bucket_index = key % MAP_BUCKET_COUNT;
+    list_t* bucket = self->buckets[bucket_index];
+
+    map_entry_t find_entry = { KEY_TYPE_NUMBER, { .key_number = key }, NULL };
     node_t* find_result = list_find(bucket, &find_entry, map_entry_equal);
     if (find_result) {
         map_entry_t* entry = find_result->data;

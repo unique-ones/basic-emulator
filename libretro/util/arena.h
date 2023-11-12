@@ -77,8 +77,8 @@ void arena_destroy(arena_t* arena);
 /// Allocates a block of memory in the specified arena
 /// @param arena The arena
 /// @param size The size of the requested block
-/// @return Memory u8*
-u8* arena_alloc(arena_t* arena, u32 size);
+/// @return Memory
+void* arena_alloc(arena_t* arena, u32 size);
 
 
 #endif// RETRO_UTILS_ARENA_H

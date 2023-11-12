@@ -46,11 +46,23 @@ void map_free(map_t* self);
 /// @param value The value that shall be inserted
 void map_insert(map_t* self, const char* key, void* value);
 
+/// Inserts the specified key-value pair into the map
+/// @param self The map handle
+/// @param key The key under which the value will be placed
+/// @param value The value that shall be inserted
+void map_insert_number(map_t* self, u32 key, void* value);
+
 /// Tries to find a key-value pair where the key matches with the specified entry
 /// @param self The map handle
 /// @param key The key for which the value shall be found
 /// @return A reference to the found value or NULL
 void* map_find(map_t* self, const char* key);
+
+/// Tries to find a key-value pair where the key matches with the specified entry
+/// @param self The map handle
+/// @param key The key for which the value shall be found
+/// @return A reference to the found value or NULL
+void* map_find_number(map_t* self, u32 key);
 
 /// Super fast hash function by paul hsieh
 /// @cite http://www.azillionmonkeys.com/qed/hash.html

@@ -26,6 +26,7 @@
 
 #include "lexer.h"
 #include "types.h"
+#include "util/arena.h"
 #include "util/map.h"
 
 typedef enum expression_type {
@@ -48,14 +49,11 @@ typedef struct unary_expression {
 } unary_expression_t;
 
 /// Creates a new unary expression instance
+/// @param arena The arena for the allocation
 /// @param operator The operator
 /// @param expression The expression
 /// @return A new expression instance
-expression_t* unary_expression_new(operator_t operator, expression_t * expression);
-
-/// Frees the specified unary expression and its inner expression
-/// @param self The expression instance
-void unary_expression_free(expression_t* self);
+expression_t* unary_expression_new(arena_t* arena, operator_t operator, expression_t * expression);
 
 /// Evaluates the unary expression
 /// @param self The expression instance
@@ -70,15 +68,12 @@ typedef struct binary_expression {
 } binary_expression_t;
 
 /// Creates a new binary expression instance
+/// @param arena The arena for allocations
 /// @param left left expression
 /// @param right right expression
 /// @param operator binary operator
 /// @return A new expression instance
-expression_t* binary_expression_new(expression_t* left, expression_t* right, operator_t operator);
-
-/// Frees the specified binary expression and its inner expressions
-/// @param self The expression instance
-void binary_expression_free(expression_t* self);
+expression_t* binary_expression_new(arena_t* arena, expression_t* left, expression_t* right, operator_t operator);
 
 /// Evaluates the binary expression
 /// @param self The expression instance
@@ -92,14 +87,11 @@ typedef struct variable_expression {
 } variable_expression_t;
 
 /// Creates a new variable expression instance
+/// @param arena The arena for allocations
 /// @param name The name of the variable
 /// @param length The length of the variable name
 /// @return A new expression instance
-expression_t* variable_expression_new(char* name, u32 length);
-
-/// Frees the specified variable expression
-/// @param self The expression instance
-void variable_expression_free(expression_t* self);
+expression_t* variable_expression_new(arena_t* arena, char* name, u32 length);
 
 /// Evaluates the variable expression
 /// @param self The expression instance
@@ -114,13 +106,10 @@ typedef struct function_parameter {
 } function_parameter_t;
 
 /// Creates a new function parameter instance
+/// @param arena The arena for allocations
 /// @param expression The expression
 /// @return A new function parameter instance
-function_parameter_t* function_parameter_new(expression_t* expression);
-
-/// Frees the specified function parameter
-/// @param self The function parameter instance
-void function_parameter_free(function_parameter_t* self);
+function_parameter_t* function_parameter_new(arena_t* arena, expression_t* expression);
 
 typedef struct function_expression {
     char* name;
@@ -141,19 +130,17 @@ typedef struct function_definition {
 } function_definition_t;
 
 /// Creates a new function expression instance
+/// @param arena The arena for allocations
 /// @param name The name of the function
 /// @param length The length of the function name
 /// @return A new expression instance
-expression_t* function_expression_new(char* name, u32 length);
-
-/// Frees the specified function expression
-/// @param self The expression instance
-void function_expression_free(expression_t* self);
+expression_t* function_expression_new(arena_t* arena, char* name, u32 length);
 
 /// Pushes a parameter to the specified function expression
+/// @param arena The arena for allocations
 /// @param self The expression instance
 /// @param parameter The parameter
-void function_expression_push(expression_t* self, expression_t* parameter);
+void function_expression_push(arena_t* arena, expression_t* self, expression_t* parameter);
 
 /// Retrieves the parameter at the specified index
 /// @param self The expression instance
@@ -167,13 +154,10 @@ function_parameter_t* function_expression_get_parameter(expression_t* self, u32 
 f64 function_expression_evaluate(expression_t* self, map_t* symbol_table);
 
 /// Creates a new number expression instance
+/// @param arena The arena for allocations
 /// @param number The number
 /// @return A new expression instance
-expression_t* number_expression_new(f64 number);
-
-/// Frees the specified number expression instance
-/// @param self The expression instance
-void number_expression_free(expression_t* self);
+expression_t* number_expression_new(arena_t* arena, f64 number);
 
 /// Evaluates the specified number expression
 /// @param self The expression instance
@@ -186,14 +170,11 @@ typedef struct exponential_expression {
 } exponential_expression_t;
 
 /// Creates a new exponential expression instance
+/// @param arena The arena for allocations
 /// @param base The base of the exponential expression
 /// @param exponent The exponent of the exponential expression
 /// @return A new expression instance
-expression_t* exponential_expression_new(expression_t* base, expression_t* exponent);
-
-/// Frees the specified exponential expression
-/// @param self The expression instance
-void exponential_expression_free(expression_t* self);
+expression_t* exponential_expression_new(arena_t* arena, expression_t* base, expression_t* exponent);
 
 /// Evaluates the specified exponential expression
 /// @param self The expression instance
@@ -215,14 +196,11 @@ typedef struct expression {
 } expression_t;
 
 /// Compiles an expression from a list of tokens
+/// @param arena The arena for allocations
 /// @param begin The first token
 /// @param end The last token
 /// @return The resulting expression
-expression_t* expression_compile(token_t* begin, token_t* end);
-
-/// Frees the specified expression instance
-/// @param self expression instance
-void expression_free(expression_t* self);
+expression_t* expression_compile(arena_t* arena, token_t* begin, token_t* end);
 
 /// Evaluates the specified expression
 /// @param self The expression instance

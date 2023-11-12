@@ -24,13 +24,20 @@
 #ifndef RETRO_PROG_H
 #define RETRO_PROG_H
 
+#include "util/arena.h"
 #include "util/map.h"
+#include "util/text.h"
 
 typedef struct program {
     map_t* symbols;
     map_t* lines;
-    s32 last_key;
     u8* memory;
+    text_queue_t* output;
+
+    bool no_wait;
+    s32 last_key;
+
+    arena_t objects;
 } program_t;
 
 /// Creates a program which serves as the handle between emulator and AST

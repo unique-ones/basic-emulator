@@ -85,7 +85,7 @@ bool shader_create(shader_t* self, const char* vertex, const char* fragment) {
         glDeleteProgram(handle);
         glDeleteProgram(vertex_program);
         glDeleteProgram(fragment_program);
-        fprintf(stderr, "self linking failed: %.*s\n", failure_info.size, failure_info.data);
+        fprintf(stderr, "shader linking failed: %.*s\n", failure_info.size, failure_info.data);
         free(failure_info.data);
         failure_info.size = 0;
         return false;
@@ -108,7 +108,7 @@ bool shader_create(shader_t* self, const char* vertex, const char* fragment) {
 
             glGetActiveUniform(handle, i, uniform_length, &length, &size, &data_type, uniform_name.data);
             s32 location = glGetUniformLocation(handle, uniform_name.data);
-            fprintf(stderr, "self [%s, %s] uniform %.*s has location %d\n", vertex, fragment, uniform_name.size,
+            fprintf(stderr, "shader [%s, %s] uniform %.*s has location %d\n", vertex, fragment, uniform_name.size,
                     uniform_name.data, location);
         }
         free(uniform_name.data);

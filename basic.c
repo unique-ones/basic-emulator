@@ -1,4 +1,5 @@
 #include <libretro/retro.h>
+#include <stdio.h>
 
 int main(int argc, char** argv) {
     display_t display;
@@ -16,13 +17,18 @@ int main(int argc, char** argv) {
     display_callback_argument(&display, &emulator);
     display_key_callback(&display, emulator_key_callback);
     display_char_callback(&display, emulator_char_callback);
-    
+
     u32 fps_display_counter = 0;
     while (display_running(&display)) {
         f32mat4_t orthogonal;
         f32mat4_create_orthogonal(&orthogonal, 0.0f, (f32) display.width, (f32) display.height, 0.0f);
         shader_uniform_f32mat4(&renderer.glyph_shader, "uniform_transform", &orthogonal);
         shader_uniform_f32mat4(&renderer.quad_shader, "uniform_transform", &orthogonal);
+        shader_uniform_f32mat4(&renderer.post.shader, "uniform_transform", &orthogonal);
+
+        // frame buffer requires resize
+        frame_buffer_resize(&renderer.post.frame, display.width, display.height);
+        renderer_begin_capture(&renderer);
         renderer_clear();
 
         // stage 1
@@ -31,7 +37,7 @@ int main(int argc, char** argv) {
             // spin off executing thread
             emulator_run(&emulator);
         }
-        
+
         // stage 2, render graphics
         switch (emulator.state) {
             case EMULATOR_STATE_INPUT: {
@@ -39,13 +45,16 @@ int main(int argc, char** argv) {
                 f32vec2_t position_iterator = { 0.0f, 0.0f };
                 for (text_entry_t* it = emulator.history->begin; it; it = it->next) {
                     position_iterator.x = 0.0f;
+                    renderer_begin_batch(&renderer);
                     renderer_draw_text_with_cursor(&renderer, &position_iterator, &(f32vec3_t){ 0.0f, 0.8f, 0.0f },
                                                    0.5f, UINT32_MAX, "%.*s", it->length, it->data);
+                    renderer_end_batch(&renderer);
                 }
-                
                 position_iterator.x = 0.0f;
+                renderer_begin_batch(&renderer);
                 renderer_draw_text_with_cursor(&renderer, &position_iterator, &(f32vec3_t){ 0.0f, 1.0f, 0.0f }, 0.5f,
                                                emulator.text.cursor, "%.*s", emulator.text.fill, emulator.text.data);
+                renderer_end_batch(&renderer);
 
                 // should definitely document this more, here we must clear the render group,
                 // due to the fact that we might draw the emulator text output in the next frame,
@@ -61,7 +70,9 @@ int main(int argc, char** argv) {
                 break;
             }
         }
-        
+
+        renderer_end_capture(&renderer);
+
         // stage 3
         // check for incoming input
         display_update_input(&display);

@@ -48,8 +48,8 @@ typedef enum token_type {
     TOKEN_INVALID,
 
     // keywords
-    TOKEN_CLEAR,
     TOKEN_LET,
+    TOKEN_PRINT,
 } token_type_t;
 
 typedef struct token {

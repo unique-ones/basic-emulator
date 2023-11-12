@@ -98,13 +98,48 @@ void render_group_free(render_group_t* self);
 /// @param indices The indices data, must be exactly 6
 void render_group_push(render_group_t* self, vertex_t* vertices, u32* indices);
 
+typedef struct post_processing {
+    /// The frame buffer optionally captures all the draw
+    /// commands, this is primarily used for post processing
+    frame_buffer_t frame;
+
+    /// The post shader contains the drawing logic for
+    /// post processing
+    shader_t shader;
+
+    /// The post render group is responsible for post processing
+    /// draw calls
+    render_group_t* group;
+} post_processing_t;
+
+/// Creates the post processing pipeline
+/// @param self The post processing handle
+void post_processing_create(post_processing_t* self);
+
+/// Destroys the post processing pipeline
+/// @param self The post processing handle
+void post_processing_destroy(post_processing_t* self);
+
 typedef struct renderer {
+    /// The glyph shader contains the logic to render a glyph using the
+    /// unified glyph atlas
     shader_t glyph_shader;
+
+    /// The glyph group holds all glyph render commands, therefore
+    /// all text that is submitted to the GPU
     render_group_t* glyph_group;
+
+    /// All the glyphs
     glyph_cache_t* glyphs;
 
+    /// The quad shader contains the logic to render a quad
     shader_t quad_shader;
+
+    /// The quad group holds all the quad render commands
     render_group_t* quad_group;
+
+    /// All post processing related things
+    post_processing_t post;
 } renderer_t;
 
 /// Clears the currently bound frame buffer
@@ -170,5 +205,13 @@ void renderer_draw_text_with_cursor(renderer_t* self,
                                     u32 cursor_index,
                                     const char* fmt,
                                     ...);
+
+/// Captures all following draw commands into a frame buffer
+/// @param self The renderer handle
+void renderer_begin_capture(renderer_t* self);
+
+/// Ends the capture of draw commands
+/// @param self The renderer handle
+void renderer_end_capture(renderer_t* self);
 
 #endif// RETRO_GPU_RENDERER_H
