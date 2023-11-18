@@ -49,13 +49,13 @@ static void emulator_pass(emulator_t* self) {
     statement_t* statement = statement_compile(&self->arena, tokens->begin, tokens->end);
     token_list_free(tokens);
 
-    f32vec2_t position = { 0.0f, 0.0f };
+    f32vec2_t position = { 30.0f, 30.0f };
     if (!statement) {
         // show user the error
         static f32vec3_t err = { 1.0f, 0.0f, 0.0f };
-        renderer_draw_text(self->renderer, &position, &err, 0.5f, "unable to parse statement!\n");
+        renderer_draw_text(self->renderer, &position, &err, 0.5f, "ERROR: INVALID STATEMENT!\n");
     } else {
-        // if we encounter the RUN statement, we must iterate over all the lines
+        // if we encounter the RUN statement, we must iterate over all the lines.
         // currently, this is not implemented. therefore, we only execute one
         // statement at a time.
         statement_execute(statement, &self->program);

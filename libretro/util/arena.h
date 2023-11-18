@@ -45,6 +45,7 @@ typedef struct block {
     u8* base;
     block_t* before;
     u32 id;
+    bool temporary;
 } block_t;
 
 typedef struct arena {
@@ -54,6 +55,7 @@ typedef struct arena {
     release_func_t release;
     u32 blocks;
     u32 total_memory;
+    bool temporary;
 } arena_t;
 
 /// Creates a new memory arena
@@ -72,13 +74,24 @@ arena_t arena_identity(alignment_t alignment);
 
 /// Destroys the specified memory arena
 /// @param arena The arena
-void arena_destroy(arena_t* arena);
+void arena_destroy(arena_t* self);
 
 /// Allocates a block of memory in the specified arena
 /// @param arena The arena
 /// @param size The size of the requested block
 /// @return Memory
-void* arena_alloc(arena_t* arena, u32 size);
+void* arena_alloc(arena_t* self, u32 size);
+
+/// Begins a temporary scope where all subsequent allocations are freed after
+/// calling arena_end_temporary(). Note that previous allocations are not
+/// affected.
+/// @param self The arena
+void arena_begin_temporary(arena_t* self);
+
+/// Ends the temporary scope by freeing all memory allocations that are
+/// marked as temporary.
+/// @param self The arena
+void arena_end_temporary(arena_t* self);
 
 
 #endif// RETRO_UTILS_ARENA_H

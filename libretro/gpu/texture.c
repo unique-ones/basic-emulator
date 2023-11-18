@@ -18,8 +18,8 @@ bool texture_create(texture_t* self, const char* path) {
         glTextureStorage2D(self->handle, 1, GL_RGBA8, self->width, self->height);
         glTextureParameteri(self->handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTextureParameteri(self->handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTextureParameteri(self->handle, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTextureParameteri(self->handle, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTextureParameteri(self->handle, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTextureParameteri(self->handle, GL_TEXTURE_WRAP_T, GL_CLAMP);
         glTextureSubImage2D(self->handle, 0, 0, 0, self->width, self->height, GL_RGBA, GL_UNSIGNED_BYTE, self->data);
         glGenerateMipmap(GL_TEXTURE_2D);
         return true;

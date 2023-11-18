@@ -121,20 +121,26 @@ void vertex_array_bind(vertex_array_t* self);
 /// Unbinds the currently bound vertex array
 void vertex_array_unbind(void);
 
+typedef struct frame_buffer_specification {
+    s32 width;
+    s32 height;
+    s32 internal_format;
+    u32 pixel_type;
+    u32 pixel_format;
+} frame_buffer_specification_t;
+
 typedef struct frame_buffer {
     u32 handle;
     u32 texture_handle;
     u32 render_handle;
-    s32 width;
-    s32 height;
+    frame_buffer_specification_t spec;
 } frame_buffer_t;
 
 /// Creates a frame buffer of specified size
 /// @param self The frame buffer handle
-/// @param width The initial width
-/// @param height The initial height
+/// @param spec The frame buffer specification
 /// @return A boolean value that indicates whether the frame buffer could be created
-bool frame_buffer_create(frame_buffer_t* self, s32 width, s32 height);
+bool frame_buffer_create(frame_buffer_t* self, frame_buffer_specification_t* spec);
 
 /// Destroys the frame buffer
 /// @param self The frame buffer handle

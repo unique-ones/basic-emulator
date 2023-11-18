@@ -98,14 +98,23 @@ void render_group_free(render_group_t* self);
 /// @param indices The indices data, must be exactly 6
 void render_group_push(render_group_t* self, vertex_t* vertices, u32* indices);
 
-typedef struct post_processing {
-    /// The frame buffer optionally captures all the draw
-    /// commands, this is primarily used for post processing
-    frame_buffer_t frame;
+enum { BLOOM_MIPS = 6 };
 
-    /// The post shader contains the drawing logic for
-    /// post processing
-    shader_t shader;
+typedef struct post_processing {
+    // The frame is the actual post processing result
+    frame_buffer_t result;
+
+    // The mips
+    frame_buffer_t mips[BLOOM_MIPS];
+
+    // The shader that does downsampling
+    shader_t downsample_shader;
+
+    /// The shader that does upsampling
+    shader_t upsample_shader;
+
+    /// The shader that blends the post processing effects together
+    shader_t blending_shader;
 
     /// The post render group is responsible for post processing
     /// draw calls
@@ -138,6 +147,9 @@ typedef struct renderer {
     /// The quad group holds all the quad render commands
     render_group_t* quad_group;
 
+    /// The capture frame buffer
+    frame_buffer_t capture;
+
     /// All post processing related things
     post_processing_t post;
 } renderer_t;
@@ -165,6 +177,12 @@ void renderer_begin_batch(renderer_t* self);
 /// Ends a renderer batch by submitting the commands of all render groups
 /// @param self The renderer handle
 void renderer_end_batch(renderer_t* self);
+
+/// Indicate to the renderer that a resize is necessary
+/// @param self The renderer handle
+/// @param width The new width
+/// @param height The new height
+void renderer_resize(renderer_t* self, s32 width, s32 height);
 
 /// Draws a quad at the given position
 /// @param self The renderer handle

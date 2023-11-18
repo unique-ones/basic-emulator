@@ -220,12 +220,11 @@ void vertex_array_unbind(void) {
 }
 
 /// Creates a frame buffer of specified size
-bool frame_buffer_create(frame_buffer_t* self, s32 width, s32 height) {
+bool frame_buffer_create(frame_buffer_t* self, frame_buffer_specification_t* spec) {
     self->handle = 0;
     self->texture_handle = 0;
     self->render_handle = 0;
-    self->width = width;
-    self->height = height;
+    self->spec = *spec;
     return frame_buffer_invalidate(self);
 }
 
@@ -255,14 +254,17 @@ bool frame_buffer_invalidate(frame_buffer_t* self) {
 
     glGenTextures(1, &self->texture_handle);
     glBindTexture(GL_TEXTURE_2D, self->texture_handle);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, self->width, self->height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, self->spec.internal_format, self->spec.width, self->spec.height, 0,
+                 self->spec.pixel_format, self->spec.pixel_type, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self->texture_handle, 0);
 
     glGenRenderbuffers(1, &self->render_handle);
     glBindRenderbuffer(GL_RENDERBUFFER, self->render_handle);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, self->width, self->height);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, self->spec.width, self->spec.height);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, self->render_handle);
 
     if (!frame_buffer_is_valid(self)) {
@@ -275,18 +277,18 @@ bool frame_buffer_invalidate(frame_buffer_t* self) {
 
 /// Resizes the frame buffer
 bool frame_buffer_resize(frame_buffer_t* self, s32 width, s32 height) {
-    if (width <= 0 || height <= 0 || (width == self->width && height == self->height)) {
+    if (width <= 0 || height <= 0 || (width == self->spec.width && height == self->spec.height)) {
         return false;
     }
-    self->width = width;
-    self->height = height;
+    self->spec.width = width;
+    self->spec.height = height;
     return frame_buffer_invalidate(self);
 }
 
 /// Binds the specified frame buffer for rendering
 void frame_buffer_bind(frame_buffer_t* self) {
     glBindFramebuffer(GL_FRAMEBUFFER, self->handle);
-    glViewport(0, 0, self->width, self->height);
+    glViewport(0, 0, self->spec.width, self->spec.height);
 }
 
 /// Binds the texture of the frame buffer at the specified sampler slot

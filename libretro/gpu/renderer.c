@@ -122,16 +122,39 @@ void render_group_push(render_group_t* self, vertex_t* vertices, u32* indices) {
 
 /// Creates the post processing pipeline
 void post_processing_create(post_processing_t* self) {
-    frame_buffer_create(&self->frame, 800, 600);
+    frame_buffer_specification_t spec = { .width = 800,
+                                          .height = 600,
+                                          .internal_format = GL_RGBA16F,
+                                          .pixel_type = GL_FLOAT,
+                                          .pixel_format = GL_RGB };
+
+    frame_buffer_create(&self->result, &spec);
+
+    for (u32 i = 0; i < BLOOM_MIPS; ++i) {
+        frame_buffer_create(self->mips + i, &spec);
+        spec.width /= 2;
+        spec.height /= 2;
+    }
+
     self->group = render_group_new();
-    shader_create(&self->shader, "assets/processing_vertex.glsl", "assets/processing_fragment.glsl");
+    shader_create(&self->downsample_shader, "assets/vertex.glsl", "assets/bloom_downsample_fragment.glsl");
+    shader_create(&self->upsample_shader, "assets/vertex.glsl", "assets/bloom_upsample_fragment.glsl");
+    shader_create(&self->blending_shader, "assets/vertex.glsl", "assets/bloom_blending_fragment.glsl");
 }
 
 /// Destroys the post processing pipeline
 void post_processing_destroy(post_processing_t* self) {
-    shader_destroy(&self->shader);
+    shader_destroy(&self->downsample_shader);
+    shader_destroy(&self->upsample_shader);
+    shader_destroy(&self->blending_shader);
+
     render_group_free(self->group);
-    frame_buffer_destroy(&self->frame);
+
+    for (u32 i = 0; i < BLOOM_MIPS; ++i) {
+        frame_buffer_destroy(self->mips + i);
+    }
+
+    frame_buffer_destroy(&self->result);
 }
 
 /// Submits an actual indexed OpenGL draw call to the GPU
@@ -163,6 +186,14 @@ void renderer_create(renderer_t* self, const char* font) {
 
     shader_create(&self->quad_shader, "assets/quad_vertex.glsl", "assets/quad_fragment.glsl");
     self->quad_group = render_group_new();
+
+    frame_buffer_specification_t spec = { .width = 800,
+                                          .height = 600,
+                                          .internal_format = GL_RGBA16F,
+                                          .pixel_type = GL_FLOAT,
+                                          .pixel_format = GL_RGB };
+
+    frame_buffer_create(&self->capture, &spec);
     post_processing_create(&self->post);
 }
 
@@ -173,6 +204,7 @@ void renderer_destroy(renderer_t* self) {
     glyph_cache_free(self->glyphs);
     shader_destroy(&self->quad_shader);
     render_group_free(self->quad_group);
+    frame_buffer_destroy(&self->capture);
     post_processing_destroy(&self->post);
 }
 
@@ -218,6 +250,24 @@ void renderer_end_batch(renderer_t* self) {
     texture_bind(&self->glyphs->atlas, 0);
     shader_uniform_sampler(&self->glyph_shader, "uniform_glyph_atlas", 0);
     render_group_submit(self->glyph_group, &self->glyph_shader);
+}
+
+/// Indicate to the renderer that a resize is necessary
+void renderer_resize(renderer_t* self, s32 width, s32 height) {
+    f32mat4_t orthogonal;
+    f32mat4_create_orthogonal(&orthogonal, 0.0f, (f32) width, (f32) height, 0.0f);
+    shader_uniform_f32mat4(&self->glyph_shader, "uniform_transform", &orthogonal);
+    shader_uniform_f32mat4(&self->quad_shader, "uniform_transform", &orthogonal);
+    shader_uniform_f32mat4(&self->post.downsample_shader, "uniform_transform", &orthogonal);
+    shader_uniform_f32mat4(&self->post.upsample_shader, "uniform_transform", &orthogonal);
+    shader_uniform_f32mat4(&self->post.blending_shader, "uniform_transform", &orthogonal);
+
+    // frame buffer requires resize
+    frame_buffer_resize(&self->capture, width, height);
+    frame_buffer_resize(&self->post.result, width, height);
+    for (u32 i = 0; i < BLOOM_MIPS; ++i) {
+        frame_buffer_resize(self->post.mips + i, width, height);
+    }
 }
 
 /// Draws a quad at the given position
@@ -350,17 +400,16 @@ void renderer_draw_text_with_cursor(renderer_t* self,
 
 /// Captures all following draw commands into a frame buffer
 void renderer_begin_capture(renderer_t* self) {
-    frame_buffer_bind(&self->post.frame);
+    frame_buffer_bind(&self->capture);
 }
 
 /// Ends the capture of draw commands
 void renderer_end_capture(renderer_t* self) {
     // unbind frame buffer in order to actually render stuff now
     frame_buffer_unbind();
-    renderer_clear();
     render_group_clear(self->post.group);
 
-    f32vec2_t size = { (f32) self->post.frame.width, (f32) self->post.frame.height };
+    f32vec2_t size = { (f32) self->post.result.spec.width, (f32) self->post.result.spec.height };
     f32vec3_t color = { 1.0f, 1.0f, 1.0f };
 
     // clang-format off
@@ -373,8 +422,71 @@ void renderer_end_capture(renderer_t* self) {
     // clang-format on
     u32 indices[] = { 0, 1, 2, 2, 0, 3 };
 
+    // prepare screen-sized vertices for render passes
     render_group_push(self->post.group, vertices, indices);
-    frame_buffer_bind_texture(&self->post.frame, 0);
-    shader_uniform_sampler(&self->post.shader, "uniform_frame", 0);
-    render_group_submit(self->post.group, &self->post.shader);
+
+    // bind the capture frame buffer texture as a starting point
+    // for the downsamples
+    frame_buffer_bind_texture(&self->capture, 0);
+
+    // progressively downsample
+    for (u32 i = 0; i < BLOOM_MIPS; ++i) {
+        frame_buffer_t* mip = self->post.mips + i;
+
+        frame_buffer_bind(mip);
+        f32vec2_t resolution = { (f32) mip->spec.width, (f32) mip->spec.height };
+        shader_uniform_sampler(&self->post.downsample_shader, "uniform_frame", 0);
+        shader_uniform_f32vec2(&self->post.downsample_shader, "uniform_resolution", &resolution);
+
+        glViewport(0, 0, mip->spec.width, mip->spec.height);
+        render_group_submit(self->post.group, &self->post.downsample_shader);
+        frame_buffer_unbind();
+
+        // it is necessary to bind the current mip texture
+        // as the input for the next downsampling pass
+        frame_buffer_bind_texture(mip, 0);
+    }
+
+    // enable additive blending for the upsample pass. contrary
+    // to the downsample pass, where we have a seperate texture
+    // for each sample, we just render the progressive upsamples
+    // to one target, which is self->post.result
+    glBlendFunc(GL_ONE, GL_ONE);
+    glBlendEquation(GL_FUNC_ADD);
+    
+    // bind the result frame buffer for rendering
+    frame_buffer_bind(&self->post.result);
+    renderer_clear();
+
+    for (u32 i = 0; i < BLOOM_MIPS; ++i) {
+        frame_buffer_t* mip = self->post.mips + i;        
+        frame_buffer_bind_texture(mip, 0);
+        shader_uniform_sampler(&self->post.downsample_shader, "uniform_frame", 0);
+        shader_uniform_f32(&self->post.upsample_shader, "uniform_filter_radius", 1.0f);
+
+        glViewport(0, 0, mip->spec.width, mip->spec.height);
+        render_group_submit(self->post.group, &self->post.upsample_shader);
+    }
+    
+    // unbind result frame buffer for final drawing to the screen
+    frame_buffer_unbind();
+
+    // reset viewport and blending mode to it's original state
+    glViewport(0, 0, self->post.result.spec.width, self->post.result.spec.height);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    f32vec2_t curvature = { 4.0f, 4.0f };
+    f32vec2_t opacity = { 0.1f, 0.1f };
+    
+    frame_buffer_bind_texture(&self->capture, 0);
+    frame_buffer_bind_texture(&self->post.result, 1);
+    shader_uniform_sampler(&self->post.blending_shader, "uniform_capture", 0);
+    shader_uniform_sampler(&self->post.blending_shader, "uniform_bloom", 1);
+    shader_uniform_f32vec2(&self->post.blending_shader, "uniform_curvature", &curvature);
+    shader_uniform_f32vec2(&self->post.blending_shader, "uniform_resolution", &size);
+    shader_uniform_f32vec2(&self->post.blending_shader, "uniform_opacity", &opacity);
+    shader_uniform_f32(&self->post.blending_shader, "uniform_vignette_opacity", 1.0f);
+    shader_uniform_f32(&self->post.blending_shader, "uniform_vignette_roundness", 2.0f);
+    shader_uniform_f32(&self->post.blending_shader, "uniform_brightness", 2.0f);
+    render_group_submit(self->post.group, &self->post.blending_shader);
 }
