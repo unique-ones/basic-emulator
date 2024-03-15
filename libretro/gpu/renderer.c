@@ -180,11 +180,11 @@ void renderer_create(renderer_t* self, const char* font) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    shader_create(&self->glyph_shader, "assets/glyph_vertex.glsl", "assets/glyph_fragment.glsl");
+    shader_create(&self->glyph_shader, "assets/vertex.glsl", "assets/glyph_fragment.glsl");
     self->glyph_group = render_group_new();
     self->glyphs = glyph_cache_new(font);
 
-    shader_create(&self->quad_shader, "assets/quad_vertex.glsl", "assets/quad_fragment.glsl");
+    shader_create(&self->quad_shader, "assets/vertex.glsl", "assets/quad_fragment.glsl");
     self->quad_group = render_group_new();
 
     frame_buffer_specification_t spec = { .width = 800,
