@@ -29,13 +29,18 @@
 #include "util/arena.h"
 #include "util/map.h"
 
+enum {
+    EXPRESSION_IDENTIFIER_LENGTH = 64
+};
+
 typedef enum expression_type {
     EXPRESSION_BINARY,
     EXPRESSION_NUMBER,
     EXPRESSION_VARIABLE,
     EXPRESSION_FUNCTION,
     EXPRESSION_UNARY,
-    EXPRESSION_EXPONENTIAL
+    EXPRESSION_EXPONENTIAL,
+    EXPRESSION_STRING
 } expression_type_t;
 
 /// Forward declare expression
@@ -82,8 +87,7 @@ expression_t* binary_expression_new(arena_t* arena, expression_t* left, expressi
 f64 binary_expression_evaluate(expression_t* self, map_t* symbol_table);
 
 typedef struct variable_expression {
-    char* name;
-    u32 length;
+    char name[EXPRESSION_IDENTIFIER_LENGTH];
 } variable_expression_t;
 
 /// Creates a new variable expression instance
@@ -112,8 +116,7 @@ typedef struct function_parameter {
 function_parameter_t* function_parameter_new(arena_t* arena, expression_t* expression);
 
 typedef struct function_expression {
-    char* name;
-    u32 length;
+    char name[EXPRESSION_IDENTIFIER_LENGTH];
     function_parameter_t* first_parameter;
     function_parameter_t* last_parameter;
     u32 parameter_count;
@@ -182,16 +185,31 @@ expression_t* exponential_expression_new(arena_t* arena, expression_t* base, exp
 /// @return The resulting value
 f64 exponential_expression_evaluate(expression_t* self, map_t* symbol_table);
 
+typedef struct string_expression {
+    char* data;
+    u32 length;
+} string_expression_t;
+
+/// Creates a new string expression by storing the string in the provided arena
+/// @param arena The arena for allocations
+/// @param data A pointer to the string
+/// @param length The length of the string
+expression_t* string_expression_new(arena_t* arena, char* data, u32 length);
+
 /// What the fuck is this... we probably want to use shunting yard here at some point
 typedef struct expression {
     expression_type_t type;
     union {
+        // arthimetic expressions
         unary_expression_t unary;
         binary_expression_t binary;
         variable_expression_t variable;
         function_expression_t function;
         exponential_expression_t exponential;
         f64 number;
+        
+        // non-arithmetic expressions
+        string_expression_t string;
     };
 } expression_t;
 
@@ -207,5 +225,11 @@ expression_t* expression_compile(arena_t* arena, token_t* begin, token_t* end);
 /// @param symbol_table The symbol table
 /// @return The resulting value
 f64 expression_evaluate(expression_t* self, map_t* symbol_table);
+
+/// Checks if an expression is arithmetic
+/// @param self The expression instance
+/// @param A boolean value that indicates whether the expression
+///        is arithmetic or not
+bool expression_is_arithmetic(expression_t* self);
 
 #endif// RETRO_EXPR_H

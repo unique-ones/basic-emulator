@@ -152,7 +152,6 @@ static bool tokenize_is_trivial_token(char current) {
         case '<':
         case '^':
         case '$':
-        case '"':
             return true;
         default:
             return false;
@@ -190,8 +189,6 @@ static token_type_t tokenize_trivial_to_type(char current) {
             return TOKEN_CIRCUMFLEX;
         case '$':
             return TOKEN_DOLLAR;
-        case '"':
-            return TOKEN_QUOTE;
         default:
             return TOKEN_INVALID;
     }
@@ -226,6 +223,23 @@ token_list_t* tokenize(char* data, u32 length) {
             continue;
         }
 
+        // string-literals
+        if (string_iterator_current(&iterator) == '"') {
+            string_iterator_advance(&iterator);
+            char* lexeme = iterator.base + iterator.index;
+            u32 begin_index = iterator.index;
+
+            char previous = 0;
+            while (string_iterator_current(&iterator) != '"' || previous == '\\') {
+                previous = string_iterator_current(&iterator);
+                string_iterator_advance(&iterator);
+            }
+            u32 end_index = iterator.index;
+            u32 lexeme_length = end_index - begin_index;
+            token_list_push(list, TOKEN_STRING, lexeme, lexeme_length);
+        }
+
+
         // alphabetic characters
         if (isalpha(string_iterator_current(&iterator))) {
             char* lexeme = iterator.base + iterator.index;
@@ -240,6 +254,8 @@ token_list_t* tokenize(char* data, u32 length) {
                 token_list_push(list, TOKEN_PRINT, lexeme, lexeme_length);
             } else if (string_view_equal(lexeme, lexeme_length, "LET", 3)) {
                 token_list_push(list, TOKEN_LET, lexeme, lexeme_length);
+            } else if (string_view_equal(lexeme, lexeme_length, "RUN", 3)) {
+                token_list_push(list, TOKEN_RUN, lexeme, lexeme_length);
             } else {
                 token_list_push(list, TOKEN_IDENTIFIER, lexeme, lexeme_length);
             }

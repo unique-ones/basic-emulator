@@ -31,6 +31,7 @@ typedef enum token_type {
     TOKEN_NUMBER,
     TOKEN_NUMBER_FLOAT,
     TOKEN_QUOTE,
+    TOKEN_STRING,
     TOKEN_COLON,
     TOKEN_LEFT_PARENTHESIS,
     TOKEN_RIGHT_PARENTHESIS,
@@ -50,6 +51,7 @@ typedef enum token_type {
     // keywords
     TOKEN_LET,
     TOKEN_PRINT,
+    TOKEN_RUN
 } token_type_t;
 
 typedef struct token {

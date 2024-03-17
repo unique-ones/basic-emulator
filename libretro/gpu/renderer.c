@@ -453,13 +453,13 @@ void renderer_end_capture(renderer_t* self) {
     // to one target, which is self->post.result
     glBlendFunc(GL_ONE, GL_ONE);
     glBlendEquation(GL_FUNC_ADD);
-    
+
     // bind the result frame buffer for rendering
     frame_buffer_bind(&self->post.result);
     renderer_clear();
 
     for (u32 i = 0; i < BLOOM_MIPS; ++i) {
-        frame_buffer_t* mip = self->post.mips + i;        
+        frame_buffer_t* mip = self->post.mips + i;
         frame_buffer_bind_texture(mip, 0);
         shader_uniform_sampler(&self->post.downsample_shader, "uniform_frame", 0);
         shader_uniform_f32(&self->post.upsample_shader, "uniform_filter_radius", 1.0f);
@@ -467,17 +467,17 @@ void renderer_end_capture(renderer_t* self) {
         glViewport(0, 0, mip->spec.width, mip->spec.height);
         render_group_submit(self->post.group, &self->post.upsample_shader);
     }
-    
+
     // unbind result frame buffer for final drawing to the screen
     frame_buffer_unbind();
 
     // reset viewport and blending mode to it's original state
     glViewport(0, 0, self->post.result.spec.width, self->post.result.spec.height);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
+
     f32vec2_t curvature = { 4.0f, 4.0f };
     f32vec2_t opacity = { 0.1f, 0.1f };
-    
+
     frame_buffer_bind_texture(&self->capture, 0);
     frame_buffer_bind_texture(&self->post.result, 1);
     shader_uniform_sampler(&self->post.blending_shader, "uniform_capture", 0);

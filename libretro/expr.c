@@ -21,6 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -73,10 +74,7 @@ f64 binary_expression_evaluate(expression_t* self, map_t* symbol_table) {
 expression_t* variable_expression_new(arena_t* arena, char* name, u32 length) {
     expression_t* self = (expression_t*) arena_alloc(arena, sizeof(expression_t));
     self->type = EXPRESSION_VARIABLE;
-    self->variable.name = (char*) arena_alloc(arena, length + 1);
-    self->variable.length = length;
-    memcpy(self->variable.name, name, length);
-    self->variable.name[length] = 0;
+    memset(self->variable.name, 0, sizeof self->variable.name) < memcpy(self->variable.name, name, length);
     return self;
 }
 
@@ -103,11 +101,9 @@ expression_t* function_expression_new(arena_t* arena, char* name, u32 length) {
     expression_t* self = (expression_t*) arena_alloc(arena, sizeof(expression_t));
     self->type = EXPRESSION_FUNCTION;
 
-    self->function.name = (char*) arena_alloc(arena, length + 1);
+    memset(self->function.name, 0, sizeof self->function.name);
     memcpy(self->function.name, name, length);
-    self->function.name[length] = 0;
 
-    self->function.length = length;
     self->function.first_parameter = NULL;
     self->function.last_parameter = NULL;
     self->function.parameter_count = 0;
@@ -213,6 +209,16 @@ expression_t* exponential_expression_new(arena_t* arena, expression_t* base, exp
 f64 exponential_expression_evaluate(expression_t* self, map_t* symbol_table) {
     return pow(expression_evaluate(self->exponential.base, symbol_table),
                expression_evaluate(self->exponential.exponent, symbol_table));
+}
+
+/// Creates a new string expression by storing the string in the provided arena
+expression_t* string_expression_new(arena_t* arena, char* data, u32 length) {
+    expression_t* self = (expression_t*) arena_alloc(arena, sizeof(expression_t));
+    self->type = EXPRESSION_STRING;
+    self->string.data = arena_alloc(arena, length);
+    self->string.length = length;
+    memcpy(self->string.data, data, length);
+    return self;
 }
 
 
@@ -351,16 +357,26 @@ static expression_t* expression_add_or_sub(arena_t* arena, token_iterator_t* sta
     return left;
 }
 
+static expression_t* expression_arithmetic_or_final(arena_t* arena, token_iterator_t* state) {
+    token_t* current = token_iterator_current(state);
+    if (current->type == TOKEN_STRING) {
+        return string_expression_new(arena, current->lexeme, current->length);
+    }
+    return expression_add_or_sub(arena, state);
+}
+
 /// Compiles an expression from a list of tokens
 expression_t* expression_compile(arena_t* arena, token_t* begin, token_t* end) {
     token_iterator_t state = { 0 };
     state.current = begin;
     state.end = end;
-    return expression_add_or_sub(arena, &state);
+    return expression_arithmetic_or_final(arena, &state);
 }
 
 /// Evaluates the specified expression
 f64 expression_evaluate(expression_t* self, map_t* symbol_table) {
+    assert(expression_is_arithmetic(self) && "expression must be arithmetic for evaluation!");
+
     switch (self->type) {
         case EXPRESSION_BINARY:
             return binary_expression_evaluate(self, symbol_table);
@@ -374,6 +390,18 @@ f64 expression_evaluate(expression_t* self, map_t* symbol_table) {
             return unary_expression_evaluate(self, symbol_table);
         case EXPRESSION_EXPONENTIAL:
             return exponential_expression_evaluate(self, symbol_table);
+        default:
+            break;
     }
     return 0.0;
+}
+
+/// Checks if an expression is arithmetic
+bool expression_is_arithmetic(expression_t* self) {
+    switch (self->type) {
+        case EXPRESSION_STRING:
+            return false;
+        default:
+            return true;
+    }
 }

@@ -30,18 +30,6 @@
 
 typedef struct statement statement_t;
 
-typedef struct line_statement {
-    u32 line;
-    statement_t* statement;
-} line_statement_t;
-
-/// Creates a new line statement
-/// @param arena The arena for allocations
-/// @param line The line for the statement
-/// @param statement The statement after the line
-/// @return A new statement
-statement_t* line_statement_new(arena_t* arena, u32 line, statement_t* statement);
-
 typedef struct let_statement {
     expression_t* variable;
     expression_t* initializer;
@@ -49,10 +37,11 @@ typedef struct let_statement {
 
 /// Creates a new let statement
 /// @param arena The arena for allocations
+/// @param line The line of the statement
 /// @param variable The variable
 /// @param initializer The initializer value of the variable
-/// @return A new statement
-statement_t* let_statement_new(arena_t* arena, expression_t* variable, expression_t* initializer);
+/// @return A new let statement
+statement_t* let_statement_new(arena_t* arena, u32 line, expression_t* variable, expression_t* initializer);
 
 typedef struct print_statement {
     expression_t* printable;
@@ -60,22 +49,34 @@ typedef struct print_statement {
 
 /// Creates a new print statement
 /// @param arena The arena for allocations
+/// @param line The line of the statement
 /// @param printable The printable expression
-/// @return A new statement
-statement_t* print_statement_new(arena_t* arena, expression_t* printable);
+/// @return A new print statement
+statement_t* print_statement_new(arena_t* arena, u32 line, expression_t* printable);
+
+typedef struct run_statement {
+    char ignored;
+} run_statement_t;
+
+/// Creates a new run statement
+/// @param arena The arena for allocations
+/// @param line The line of the statement
+/// @return A new run statement
+statement_t* run_statement_new(arena_t* arena, u32 line);
 
 typedef enum statement_type {
-    STATEMENT_LINE,
     STATEMENT_LET,
     STATEMENT_PRINT,
+    STATEMENT_RUN,
 } statement_type_t;
 
 typedef struct statement {
+    u32 line;
     statement_type_t type;
     union {
-        line_statement_t line;
         let_statement_t let;
         print_statement_t print;
+        run_statement_t run;
     };
 } statement_t;
 
