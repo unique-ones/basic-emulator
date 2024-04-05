@@ -1,7 +1,30 @@
+//
+// MIT License
+//
+// Copyright (c) 2024 Elias Engelbert Plank
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include <libretro/retro.h>
 #include <stdio.h>
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     display_t display;
     display_create(&display, "Emulator", 800, 600);
 
@@ -24,7 +47,9 @@ int main(int argc, char** argv) {
     u32 fps_display_counter = 0;
     while (display_running(&display)) {
         renderer_resize(&renderer, display.width, display.height);
-        renderer_begin_capture(&renderer);
+        if (emulator.enable_crt) {
+            renderer_begin_capture(&renderer);
+        }
         renderer_clear();
 
         // stage 1
@@ -39,7 +64,7 @@ int main(int argc, char** argv) {
             case EMULATOR_STATE_INPUT: {
                 // history
                 f32vec2_t position_iterator = { 30.0f, 30.0f };
-                for (text_entry_t* it = emulator.history->begin; it; it = it->next) {
+                for (text_entry_t *it = emulator.history->begin; it; it = it->next) {
                     position_iterator.x = 30.0f;
                     renderer_begin_batch(&renderer);
                     renderer_draw_text(&renderer, &position_iterator, &amber_dimmed, 0.5f, "]%.*s", it->length,
@@ -67,7 +92,9 @@ int main(int argc, char** argv) {
             }
         }
 
-        renderer_end_capture(&renderer);
+        if (emulator.enable_crt) {
+            renderer_end_capture(&renderer);
+        }
 
         // stage 3
         // check for incoming input

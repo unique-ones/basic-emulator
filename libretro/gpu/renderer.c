@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (c) 2023 Elias Engelbert Plank
+// Copyright (c) 2024 Elias Engelbert Plank
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,8 @@
 #include "renderer.h"
 
 /// Creates a new render command
-render_command_t* render_command_new(vertex_t* vertices, u32* indices) {
-    render_command_t* self = (render_command_t*) malloc(sizeof(render_command_t));
+render_command_t *render_command_new(vertex_t *vertices, u32 *indices) {
+    render_command_t *self = (render_command_t *) malloc(sizeof(render_command_t));
     self->prev = NULL;
     self->next = NULL;
     memcpy(self->vertices, vertices, sizeof self->vertices);
@@ -39,13 +39,13 @@ render_command_t* render_command_new(vertex_t* vertices, u32* indices) {
 }
 
 /// Frees the specified render command instance
-void render_command_free(render_command_t* self) {
+void render_command_free(render_command_t *self) {
     free(self);
 }
 
 /// Creates a new render group
-render_group_t* render_group_new(void) {
-    render_group_t* self = (render_group_t*) malloc(sizeof(render_group_t));
+render_group_t *render_group_new(void) {
+    render_group_t *self = (render_group_t *) malloc(sizeof(render_group_t));
     self->begin = NULL;
     self->end = NULL;
     self->commands = 0;
@@ -68,12 +68,12 @@ render_group_t* render_group_new(void) {
 }
 
 /// Clears the specified render group (i.e. deletes the commands)
-void render_group_clear(render_group_t* self) {
+void render_group_clear(render_group_t *self) {
     mutex_lock(self->mutex);
-    render_command_t* it = self->begin;
+    render_command_t *it = self->begin;
 
     while (it != NULL) {
-        render_command_t* tmp = it;
+        render_command_t *tmp = it;
         it = it->next;
         render_command_free(tmp);
     }
@@ -85,7 +85,7 @@ void render_group_clear(render_group_t* self) {
 }
 
 /// Frees the specified render group (i.e. delete the commands and free memory)
-void render_group_free(render_group_t* self) {
+void render_group_free(render_group_t *self) {
     render_group_clear(self);
     mutex_free(self->mutex);
     index_buffer_destroy(&self->index_buffer);
@@ -95,12 +95,12 @@ void render_group_free(render_group_t* self) {
 }
 
 /// Pushes a set of vertices and indices to the render group
-void render_group_push(render_group_t* self, vertex_t* vertices, u32* indices) {
+void render_group_push(render_group_t *self, vertex_t *vertices, u32 *indices) {
     while (self->commands >= RENDER_GROUP_COMMANDS_MAX)
         ;
 
     mutex_lock(self->mutex);
-    render_command_t* command = render_command_new(vertices, indices);
+    render_command_t *command = render_command_new(vertices, indices);
     if (self->begin == NULL) {
         self->begin = command;
         self->commands++;
@@ -108,7 +108,7 @@ void render_group_push(render_group_t* self, vertex_t* vertices, u32* indices) {
         return;
     }
 
-    render_command_t* tmp = self->begin;
+    render_command_t *tmp = self->begin;
     while (tmp->next != NULL) {
         tmp = tmp->next;
     }
@@ -121,7 +121,7 @@ void render_group_push(render_group_t* self, vertex_t* vertices, u32* indices) {
 }
 
 /// Creates the post processing pipeline
-void post_processing_create(post_processing_t* self) {
+void post_processing_create(post_processing_t *self) {
     frame_buffer_specification_t spec = { .width = 800,
                                           .height = 600,
                                           .internal_format = GL_RGBA16F,
@@ -143,7 +143,7 @@ void post_processing_create(post_processing_t* self) {
 }
 
 /// Destroys the post processing pipeline
-void post_processing_destroy(post_processing_t* self) {
+void post_processing_destroy(post_processing_t *self) {
     shader_destroy(&self->downsample_shader);
     shader_destroy(&self->upsample_shader);
     shader_destroy(&self->blending_shader);
@@ -158,7 +158,7 @@ void post_processing_destroy(post_processing_t* self) {
 }
 
 /// Submits an actual indexed OpenGL draw call to the GPU
-static void renderer_draw_indexed(vertex_array_t* vertex_array, shader_t* shader, u32 mode) {
+static void renderer_draw_indexed(vertex_array_t *vertex_array, shader_t *shader, u32 mode) {
     vertex_array_bind(vertex_array);
     shader_bind(shader);
     glDrawElements(mode, (s32) vertex_array->index_buffer->count, GL_UNSIGNED_INT, NULL);
@@ -171,12 +171,12 @@ void renderer_clear(void) {
 }
 
 /// Sets the clear color
-void renderer_clear_color(f32vec4_t* color) {
+void renderer_clear_color(f32vec4_t *color) {
     glClearColor(color->x, color->y, color->z, color->w);
 }
 
 /// Creates a new renderer and initializes its pipeline
-void renderer_create(renderer_t* self, const char* font) {
+void renderer_create(renderer_t *self, const char *font) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -198,7 +198,7 @@ void renderer_create(renderer_t* self, const char* font) {
 }
 
 /// Destroys the specified renderer
-void renderer_destroy(renderer_t* self) {
+void renderer_destroy(renderer_t *self) {
     shader_destroy(&self->glyph_shader);
     render_group_free(self->glyph_group);
     glyph_cache_free(self->glyphs);
@@ -209,13 +209,13 @@ void renderer_destroy(renderer_t* self) {
 }
 
 /// Begins a renderer batch by resetting all render groups
-void renderer_begin_batch(renderer_t* self) {
+void renderer_begin_batch(renderer_t *self) {
     render_group_clear(self->glyph_group);
     render_group_clear(self->quad_group);
 }
 
 /// Submits the specified render group and issues an indexed draw call
-static void render_group_submit(render_group_t* group, shader_t* shader) {
+static void render_group_submit(render_group_t *group, shader_t *shader) {
     if (group->commands == 0) {
         return;
     }
@@ -223,13 +223,13 @@ static void render_group_submit(render_group_t* group, shader_t* shader) {
     mutex_lock(group->mutex);
     u32 vertices_size = QUAD_VERTICES * sizeof(vertex_t);
     u32 indices_size = QUAD_INDICES * sizeof(u32);
-    vertex_t* vertices = (vertex_t*) malloc((u64) vertices_size * group->commands);
-    u32* indices = (u32*) malloc((u64) indices_size * group->commands);
+    vertex_t *vertices = (vertex_t *) malloc((u64) vertices_size * group->commands);
+    u32 *indices = (u32 *) malloc((u64) indices_size * group->commands);
 
     u32 insert_index = 0;
-    for (render_command_t* it = group->begin; it != NULL; it = it->next) {
-        memcpy((u8*) vertices + (ptrdiff_t) (vertices_size * insert_index), it->vertices, vertices_size);
-        memcpy((u8*) indices + (ptrdiff_t) (indices_size * insert_index), it->indices, indices_size);
+    for (render_command_t *it = group->begin; it != NULL; it = it->next) {
+        memcpy((u8 *) vertices + (ptrdiff_t) (vertices_size * insert_index), it->vertices, vertices_size);
+        memcpy((u8 *) indices + (ptrdiff_t) (indices_size * insert_index), it->indices, indices_size);
         insert_index++;
     }
 
@@ -244,7 +244,7 @@ static void render_group_submit(render_group_t* group, shader_t* shader) {
 }
 
 /// Ends a renderer batch by submitting the commands of all render groups
-void renderer_end_batch(renderer_t* self) {
+void renderer_end_batch(renderer_t *self) {
     render_group_submit(self->quad_group, &self->quad_shader);
 
     texture_bind(&self->glyphs->atlas, 0);
@@ -253,7 +253,7 @@ void renderer_end_batch(renderer_t* self) {
 }
 
 /// Indicate to the renderer that a resize is necessary
-void renderer_resize(renderer_t* self, s32 width, s32 height) {
+void renderer_resize(renderer_t *self, s32 width, s32 height) {
     f32mat4_t orthogonal;
     f32mat4_create_orthogonal(&orthogonal, 0.0f, (f32) width, (f32) height, 0.0f);
     shader_uniform_f32mat4(&self->glyph_shader, "uniform_transform", &orthogonal);
@@ -271,7 +271,7 @@ void renderer_resize(renderer_t* self, s32 width, s32 height) {
 }
 
 /// Draws a quad at the given position
-void renderer_draw_quad(renderer_t* self, f32vec2_t* position, f32vec2_t* size, f32vec3_t* color) {
+void renderer_draw_quad(renderer_t *self, f32vec2_t *position, f32vec2_t *size, f32vec3_t *color) {
     vertex_t vertices[] = { { { position->x, position->y, 0.0f }, *color, { 0.0f, 1.0f } },
                             { { position->x, position->y + size->y, 0.0f }, *color, { 0.0f, 0.0f } },
                             { { position->x + size->x, position->y + size->y, 0.0f }, *color, { 1.0f, 0.0f } },
@@ -284,7 +284,7 @@ void renderer_draw_quad(renderer_t* self, f32vec2_t* position, f32vec2_t* size, 
 }
 
 /// Draws the specified symbol at the given position
-void renderer_draw_symbol(renderer_t* self, glyph_info_t* symbol, f32vec2_t* position, f32vec3_t* color, f32 scale) {
+void renderer_draw_symbol(renderer_t *self, glyph_info_t *symbol, f32vec2_t *position, f32vec3_t *color, f32 scale) {
     // clang-format off
     f32vec2_t scaled_size = { symbol->size.x * scale, symbol->size.y * scale };
     f32vec2_t scaled_position = {
@@ -306,7 +306,7 @@ void renderer_draw_symbol(renderer_t* self, glyph_info_t* symbol, f32vec2_t* pos
 }
 
 /// Draws the specified text at the given position
-void renderer_draw_text(renderer_t* self, f32vec2_t* position, f32vec3_t* color, f32 scale, const char* fmt, ...) {
+void renderer_draw_text(renderer_t *self, f32vec2_t *position, f32vec3_t *color, f32 scale, const char *fmt, ...) {
     char text_buffer[0x1000];
     va_list list;
     va_start(list, fmt);
@@ -337,7 +337,7 @@ void renderer_draw_text(renderer_t* self, f32vec2_t* position, f32vec3_t* color,
 }
 
 /// Draws an input indicator
-static void renderer_draw_indicator(renderer_t* self, f32vec2_t* position, f32vec3_t* color, f32 scale) {
+static void renderer_draw_indicator(renderer_t *self, f32vec2_t *position, f32vec3_t *color, f32 scale) {
     // first we draw the input indicator
     glyph_info_t input_indicator_info;
     glyph_cache_acquire(self->glyphs, &input_indicator_info, ']');
@@ -346,12 +346,12 @@ static void renderer_draw_indicator(renderer_t* self, f32vec2_t* position, f32ve
 }
 
 /// Draws the cursor and the specified text at the given position
-void renderer_draw_text_with_cursor(renderer_t* self,
-                                    f32vec2_t* position,
-                                    f32vec3_t* color,
+void renderer_draw_text_with_cursor(renderer_t *self,
+                                    f32vec2_t *position,
+                                    f32vec3_t *color,
                                     f32 scale,
                                     u32 cursor_index,
-                                    const char* fmt,
+                                    const char *fmt,
                                     ...) {
     char text_buffer[0x1000];
     va_list list;
@@ -399,12 +399,12 @@ void renderer_draw_text_with_cursor(renderer_t* self,
 }
 
 /// Captures all following draw commands into a frame buffer
-void renderer_begin_capture(renderer_t* self) {
+void renderer_begin_capture(renderer_t *self) {
     frame_buffer_bind(&self->capture);
 }
 
 /// Ends the capture of draw commands
-void renderer_end_capture(renderer_t* self) {
+void renderer_end_capture(renderer_t *self) {
     // unbind frame buffer in order to actually render stuff now
     frame_buffer_unbind();
     render_group_clear(self->post.group);
@@ -431,7 +431,7 @@ void renderer_end_capture(renderer_t* self) {
 
     // progressively downsample
     for (u32 i = 0; i < BLOOM_MIPS; ++i) {
-        frame_buffer_t* mip = self->post.mips + i;
+        frame_buffer_t *mip = self->post.mips + i;
 
         frame_buffer_bind(mip);
         f32vec2_t resolution = { (f32) mip->spec.width, (f32) mip->spec.height };
@@ -459,7 +459,7 @@ void renderer_end_capture(renderer_t* self) {
     renderer_clear();
 
     for (u32 i = 0; i < BLOOM_MIPS; ++i) {
-        frame_buffer_t* mip = self->post.mips + i;
+        frame_buffer_t *mip = self->post.mips + i;
         frame_buffer_bind_texture(mip, 0);
         shader_uniform_sampler(&self->post.downsample_shader, "uniform_frame", 0);
         shader_uniform_f32(&self->post.upsample_shader, "uniform_filter_radius", 1.0f);

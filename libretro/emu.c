@@ -34,8 +34,10 @@
 #include "stmt.h"
 #include "util/random.h"
 
+#include "GLFW/glfw3.h"
+
 /// Finalizes an emulator pass by destroying associated data
-static void emulator_pass_finish(emulator_t* self) {
+static void emulator_pass_finish(emulator_t *self) {
     text_queue_push(self->history, self->text.data, (u32) self->text.fill);
     text_queue_clear(self->program.output);
     text_cursor_clear(&self->text);
@@ -43,10 +45,10 @@ static void emulator_pass_finish(emulator_t* self) {
 }
 
 /// Runs an emulator pass
-static void emulator_pass(emulator_t* self) {
+static void emulator_pass(emulator_t *self) {
     // Parse user input
-    token_list_t* tokens = tokenize(self->text.data, (u32) self->text.fill);
-    statement_t* statement = statement_compile(&self->arena, tokens->begin, tokens->end);
+    token_list_t *tokens = tokenize(self->text.data, (u32) self->text.fill);
+    statement_t *statement = statement_compile(&self->arena, tokens->begin, tokens->end);
     token_list_free(tokens);
 
     f32vec2_t position = { 30.0f, 30.0f };
@@ -67,8 +69,8 @@ static void emulator_pass(emulator_t* self) {
         }
     }
 
-    text_queue_t* output = self->program.output;
-    for (text_entry_t* it = output->begin; it != NULL; it = it->next) {
+    text_queue_t *output = self->program.output;
+    for (text_entry_t *it = output->begin; it != NULL; it = it->next) {
         static f32vec3_t msg = { 1.0f, 0.55f, 0.0f };
         renderer_draw_text(self->renderer, &position, &msg, 0.5f, "%.*s", it->length, it->data);
     }
@@ -84,14 +86,14 @@ static void emulator_pass(emulator_t* self) {
 #ifdef LIBRETRO_PLATFORM_WIN32
 
 /// Win32 specific emulator pass (thread param)
-static unsigned long emulator_pass_platform(void* self) {
+static unsigned long emulator_pass_platform(void *self) {
     emulator_pass(self);
     return 0;
 }
 #else
 
 /// Unix specific emulator pass (thread param)
-static void* emulator_pass_platform(void* self) {
+static void *emulator_pass_platform(void *self) {
     emulator_pass(self);
     return NULL;
 }
@@ -123,7 +125,7 @@ static f64 sgn(f64 x) {
 }
 
 /// Adds all builtin symbols to the emulator symbol table
-static void emulator_add_builtin_symbols(emulator_t* self) {
+static void emulator_add_builtin_symbols(emulator_t *self) {
     // available math functions
     static function_definition_t builtin[] = { { "ABS", 1, { .func1 = fabs } },  { "ATN", 1, { .func1 = atan } },
                                                { "COS", 1, { .func1 = cos } },   { "EXP", 1, { .func1 = exp } },
@@ -133,13 +135,13 @@ static void emulator_add_builtin_symbols(emulator_t* self) {
                                                { "TAN", 1, { .func1 = tan } } };
 
     for (u32 index = 0; index < STACK_ARRAY_SIZE(builtin); ++index) {
-        function_definition_t* function = builtin + index;
+        function_definition_t *function = builtin + index;
         map_insert(self->program.symbols, function->name, function);
     }
 }
 
 /// Creates a new emulator instance
-void emulator_create(emulator_t* self, renderer_t* renderer) {
+void emulator_create(emulator_t *self, renderer_t *renderer) {
     self->state = EMULATOR_STATE_INPUT;
     self->mode = EMULATOR_MODE_TEXT;
     self->renderer = renderer;
@@ -149,10 +151,11 @@ void emulator_create(emulator_t* self, renderer_t* renderer) {
     text_cursor_create(&self->text, 128);
     self->history = text_queue_new();
     self->arena = arena_identity(ALIGNMENT8);
+    self->enable_crt = true;
 }
 
 /// Destroys the emulator and frees all its associated data
-void emulator_destroy(emulator_t* self) {
+void emulator_destroy(emulator_t *self) {
     program_destroy(&self->program);
     text_cursor_destroy(&self->text);
     text_queue_free(self->history);
@@ -160,22 +163,22 @@ void emulator_destroy(emulator_t* self) {
 }
 
 /// Runs an emulation pass
-void emulator_run(emulator_t* self) {
+void emulator_run(emulator_t *self) {
     self->state = EMULATOR_STATE_EXECUTION;
     self->text.submit = false;
     thread_create(emulator_pass_platform, self);
 }
 
 /// Key callback handler for handling GLFW key input
-void emulator_key_callback(GLFWwindow* handle, s32 key, s32 scancode, s32 action, s32 mods) {
+void emulator_key_callback(GLFWwindow *handle, s32 key, s32 scancode, s32 action, s32 mods) {
     if (action != GLFW_PRESS && action != GLFW_REPEAT) {
         return;
     }
-    emulator_t* self = glfwGetWindowUserPointer(handle);
+    emulator_t *self = glfwGetWindowUserPointer(handle);
     if (self) {
         self->program.last_key = key;
         if (self->state == EMULATOR_STATE_INPUT) {
-            text_cursor_t* text = &self->text;
+            text_cursor_t *text = &self->text;
             switch (key) {
                 case GLFW_KEY_LEFT:
                     text_cursor_advance(text, -1);
@@ -193,6 +196,9 @@ void emulator_key_callback(GLFWwindow* handle, s32 key, s32 scancode, s32 action
                     text_cursor_emplace(text, '\n');
                     text->submit = true;
                     break;
+                case GLFW_KEY_F2:
+                    self->enable_crt = !self->enable_crt;
+                    break;
                 default:
                     break;
             }
@@ -201,8 +207,8 @@ void emulator_key_callback(GLFWwindow* handle, s32 key, s32 scancode, s32 action
 }
 
 /// Char callback handler for handling GLFW char input
-void emulator_char_callback(GLFWwindow* handle, u32 unicode) {
-    emulator_t* self = glfwGetWindowUserPointer(handle);
+void emulator_char_callback(GLFWwindow *handle, u32 unicode) {
+    emulator_t *self = glfwGetWindowUserPointer(handle);
     if (self) {
         text_cursor_emplace(&self->text, (char) toupper((char) unicode));
     }

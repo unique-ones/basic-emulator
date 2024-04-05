@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (c) 2023 Elias Engelbert Plank
+// Copyright (c) 2024 Elias Engelbert Plank
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,13 @@
 
 #ifdef LIBRETRO_PLATFORM_WIN32
 
-typedef void* thread_t;
-typedef unsigned long (*thread_runner)(void*);
+typedef void *thread_t;
+typedef unsigned long (*thread_runner)(void *);
 
 #else
 
 typedef u32 thread_t;
-typedef void* (*thread_runner)(void*);
+typedef void *(*thread_runner)(void *);
 
 #endif
 
@@ -42,24 +42,24 @@ typedef void* (*thread_runner)(void*);
 /// @param runner The runner function for the thread
 /// @param arg The argument that is passed to the runner
 /// @return A thread handle
-thread_t thread_create(thread_runner runner, void* arg);
+thread_t thread_create(thread_runner runner, void *arg);
 
 typedef struct mutex mutex_t;
 
 /// Creates a new mutex
 /// @return A new mutex
-mutex_t* mutex_new(void);
+mutex_t *mutex_new(void);
 
 /// Frees the mutex
 /// @param self The mutex handle
-void mutex_free(mutex_t* self);
+void mutex_free(mutex_t *self);
 
 /// Exclusively locks the mutex
 /// @param self The mutex handle
-void mutex_lock(mutex_t* self);
+void mutex_lock(mutex_t *self);
 
 /// Unlocks the mutex
 /// @param self The mutex handle
-void mutex_unlock(mutex_t* self);
+void mutex_unlock(mutex_t *self);
 
 #endif// RETRO_ARCH_THREAD_H

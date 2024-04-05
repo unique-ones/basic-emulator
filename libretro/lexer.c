@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (c) 2023 Elias Engelbert Plank
+// Copyright (c) 2024 Elias Engelbert Plank
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,19 +28,19 @@
 #include "lexer.h"
 
 /// Creates a new token instance
-token_t* token_new(token_type_t type, char* lexeme, u32 length) {
-    token_t* self = (token_t*) malloc(sizeof(token_t));
+token_t *token_new(token_type_t type, char *lexeme, u32 length) {
+    token_t *self = (token_t *) malloc(sizeof(token_t));
     self->prev = NULL;
     self->next = NULL;
     self->type = type;
-    self->lexeme = (char*) malloc(length);
+    self->lexeme = (char *) malloc(length);
     self->length = length;
     memcpy(self->lexeme, lexeme, length);
     return self;
 }
 
 /// Frees the specified token instance
-void token_free(token_t* self) {
+void token_free(token_t *self) {
     self->prev = NULL;
     self->next = NULL;
     free(self->lexeme);
@@ -49,8 +49,8 @@ void token_free(token_t* self) {
 }
 
 /// Creates a new token list instance
-token_list_t* token_list_new(void) {
-    token_list_t* self = (token_list_t*) malloc(sizeof(token_list_t));
+token_list_t *token_list_new(void) {
+    token_list_t *self = (token_list_t *) malloc(sizeof(token_list_t));
     self->begin = NULL;
     self->end = NULL;
     self->tokens = 0;
@@ -58,9 +58,9 @@ token_list_t* token_list_new(void) {
 }
 
 /// Clears the specified token list (i.e. deletes all tokens)
-void token_list_clear(token_list_t* self) {
-    token_t* it = self->begin;
-    token_t* tmp;
+void token_list_clear(token_list_t *self) {
+    token_t *it = self->begin;
+    token_t *tmp;
 
     while (it != NULL) {
         tmp = it;
@@ -73,14 +73,14 @@ void token_list_clear(token_list_t* self) {
 }
 
 /// Frees the specified token list (i.e. deletes tokens and free list)
-void token_list_free(token_list_t* self) {
+void token_list_free(token_list_t *self) {
     token_list_clear(self);
     free(self);
 }
 
 /// Pushes a token to the specified token list
-void token_list_push(token_list_t* self, token_type_t type, char* lexeme, u32 length) {
-    token_t* token = token_new(type, lexeme, length);
+void token_list_push(token_list_t *self, token_type_t type, char *lexeme, u32 length) {
+    token_t *token = token_new(type, lexeme, length);
     if (self->begin == NULL) {
         self->begin = token;
         self->end = token;
@@ -89,7 +89,7 @@ void token_list_push(token_list_t* self, token_type_t type, char* lexeme, u32 le
         return;
     }
 
-    token_t* tmp = self->begin;
+    token_t *tmp = self->begin;
     while (tmp->next != NULL) {
         tmp = tmp->next;
     }
@@ -101,37 +101,37 @@ void token_list_push(token_list_t* self, token_type_t type, char* lexeme, u32 le
 }
 
 typedef struct string_iterator {
-    char* base;
+    char *base;
     u32 length;
     u32 index;
 } string_iterator_t;
 
 /// Creates a string iterator
-static void string_iterator_create(string_iterator_t* self, char* base, u32 length) {
+static void string_iterator_create(string_iterator_t *self, char *base, u32 length) {
     self->base = base;
     self->length = length;
     self->index = 0;
 }
 
 /// Advances the string iterator by one
-static void string_iterator_advance(string_iterator_t* self) {
+static void string_iterator_advance(string_iterator_t *self) {
     if (self->index < self->length - 1) {
         self->index++;
     }
 }
 
 /// Retrieves the current char of the iterator
-static char string_iterator_current(string_iterator_t* self) {
+static char string_iterator_current(string_iterator_t *self) {
     return self->base[self->index];
 }
 
 /// Retrieves the next char of the iterator
-static char string_iterator_next(string_iterator_t* self) {
+static char string_iterator_next(string_iterator_t *self) {
     return self->base[self->index + 1];
 }
 
 /// Checks if the iterator is at the end
-static bool string_iterator_end(string_iterator_t* self) {
+static bool string_iterator_end(string_iterator_t *self) {
     return self->index == self->length - 1;
 }
 
@@ -195,7 +195,7 @@ static token_type_t tokenize_trivial_to_type(char current) {
 }
 
 /// Checks if two string views are equal
-static bool string_view_equal(const char* first, u32 first_size, const char* second, u32 second_size) {
+static bool string_view_equal(const char *first, u32 first_size, const char *second, u32 second_size) {
     if (first_size != second_size) {
         return false;
     }
@@ -203,8 +203,8 @@ static bool string_view_equal(const char* first, u32 first_size, const char* sec
 }
 
 /// Tokenizes the specified data
-token_list_t* tokenize(char* data, u32 length) {
-    token_list_t* list = token_list_new();
+token_list_t *tokenize(char *data, u32 length) {
+    token_list_t *list = token_list_new();
     string_iterator_t iterator;
     string_iterator_create(&iterator, data, length);
     while (!string_iterator_end(&iterator)) {
@@ -226,7 +226,7 @@ token_list_t* tokenize(char* data, u32 length) {
         // string-literals
         if (string_iterator_current(&iterator) == '"') {
             string_iterator_advance(&iterator);
-            char* lexeme = iterator.base + iterator.index;
+            char *lexeme = iterator.base + iterator.index;
             u32 begin_index = iterator.index;
 
             char previous = 0;
@@ -242,7 +242,7 @@ token_list_t* tokenize(char* data, u32 length) {
 
         // alphabetic characters
         if (isalpha(string_iterator_current(&iterator))) {
-            char* lexeme = iterator.base + iterator.index;
+            char *lexeme = iterator.base + iterator.index;
             u32 begin_index = iterator.index;
             while (isalpha(string_iterator_current(&iterator))) {
                 string_iterator_advance(&iterator);
@@ -264,7 +264,7 @@ token_list_t* tokenize(char* data, u32 length) {
 
         // numbers
         if (isdigit(string_iterator_current(&iterator))) {
-            char* lexeme = iterator.base + iterator.index;
+            char *lexeme = iterator.base + iterator.index;
             token_type_t type = TOKEN_NUMBER;
             u32 begin_index = iterator.index;
             while (isdigit(string_iterator_current(&iterator))) {
@@ -287,12 +287,12 @@ token_list_t* tokenize(char* data, u32 length) {
 }
 
 /// Checks if the token iterator reached the end
-bool token_iterator_end(token_iterator_t* self) {
+bool token_iterator_end(token_iterator_t *self) {
     return self->current == self->end;
 }
 
 /// Returns an invalid token
-token_t* token_iterator_invalid(void) {
+token_t *token_iterator_invalid(void) {
     static token_t token = { 0 };
     token.type = TOKEN_INVALID;
     token.lexeme = "";
@@ -303,7 +303,7 @@ token_t* token_iterator_invalid(void) {
 }
 
 /// Retrieves the current token
-token_t* token_iterator_current(token_iterator_t* self) {
+token_t *token_iterator_current(token_iterator_t *self) {
     if (self->current) {
         return self->current;
     }
@@ -311,7 +311,7 @@ token_t* token_iterator_current(token_iterator_t* self) {
 }
 
 /// Retrieves the next token
-token_t* token_iterator_next(token_iterator_t* self) {
+token_t *token_iterator_next(token_iterator_t *self) {
     if (!token_iterator_end(self)) {
         return self->current->next;
     }
@@ -319,7 +319,7 @@ token_t* token_iterator_next(token_iterator_t* self) {
 }
 
 /// Advances the token cursor by one
-void token_iterator_advance(token_iterator_t* self) {
+void token_iterator_advance(token_iterator_t *self) {
     if (!token_iterator_end(self)) {
         self->current = self->current->next;
     } else {

@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (c) 2023 Elias Engelbert Plank
+// Copyright (c) 2024 Elias Engelbert Plank
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-
 #ifndef RETRO_STMT_H
 #define RETRO_STMT_H
 
@@ -31,8 +30,8 @@
 typedef struct statement statement_t;
 
 typedef struct let_statement {
-    expression_t* variable;
-    expression_t* initializer;
+    expression_t *variable;
+    expression_t *initializer;
 } let_statement_t;
 
 /// Creates a new let statement
@@ -41,10 +40,10 @@ typedef struct let_statement {
 /// @param variable The variable
 /// @param initializer The initializer value of the variable
 /// @return A new let statement
-statement_t* let_statement_new(arena_t* arena, u32 line, expression_t* variable, expression_t* initializer);
+statement_t *let_statement_new(arena_t *arena, u32 line, expression_t *variable, expression_t *initializer);
 
 typedef struct print_statement {
-    expression_t* printable;
+    expression_t *printable;
 } print_statement_t;
 
 /// Creates a new print statement
@@ -52,7 +51,7 @@ typedef struct print_statement {
 /// @param line The line of the statement
 /// @param printable The printable expression
 /// @return A new print statement
-statement_t* print_statement_new(arena_t* arena, u32 line, expression_t* printable);
+statement_t *print_statement_new(arena_t *arena, u32 line, expression_t *printable);
 
 typedef struct run_statement {
     char ignored;
@@ -62,7 +61,7 @@ typedef struct run_statement {
 /// @param arena The arena for allocations
 /// @param line The line of the statement
 /// @return A new run statement
-statement_t* run_statement_new(arena_t* arena, u32 line);
+statement_t *run_statement_new(arena_t *arena, u32 line);
 
 typedef enum statement_type {
     STATEMENT_LET,
@@ -85,11 +84,11 @@ typedef struct statement {
 /// @param begin The first token in the statement
 /// @param end The last token in the statement
 /// @return The statement or nil if the statement where invalid
-statement_t* statement_compile(arena_t* arena, token_t* begin, token_t* end);
+statement_t *statement_compile(arena_t *arena, token_t *begin, token_t *end);
 
 /// Executes the statement
 /// @param self The statement
 /// @param program The program state
-void statement_execute(statement_t* self, program_t* program);
+void statement_execute(statement_t *self, program_t *program);
 
 #endif// RETRO_STMT_H

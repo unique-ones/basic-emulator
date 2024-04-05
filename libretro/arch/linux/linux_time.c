@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (c) 2023 Elias Engelbert Plank
+// Copyright (c) 2024 Elias Engelbert Plank
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 #include "../time.h"
 
-/// Sends the current thread of execution to sleep for the specified time 
+/// Sends the current thread of execution to sleep for the specified time
 void time_sleep(u32 milliseconds) {
     usleep(milliseconds * 1000);
 }

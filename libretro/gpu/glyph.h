@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (c) 2023 Elias Engelbert Plank
+// Copyright (c) 2024 Elias Engelbert Plank
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,9 @@
 #include "texture.h"
 #include "util/math.h"
 
-enum { FONT_SIZE = 48 };
+enum {
+    FONT_SIZE = 48
+};
 
 typedef struct glyph_info {
     f32vec2_t size;
@@ -45,16 +47,16 @@ typedef struct glyph_cache {
 /// Creates a glyph cache for the specified font
 /// @param path The path to the TrueType font file
 /// @return A new glyph cache
-glyph_cache_t* glyph_cache_new(const char* path);
+glyph_cache_t *glyph_cache_new(const char *path);
 
 /// Destroys the glyph cache and its glyph atlas
 /// @param self The glyph cache handle
-void glyph_cache_free(glyph_cache_t* self);
+void glyph_cache_free(glyph_cache_t *self);
 
 /// Fetches the specified symbol from the glyph cache
 /// @param self The glyph cache handle
 /// @param info The glyph info handle where the data is placed into
 /// @param symbol The symbol that shall be fetched
-void glyph_cache_acquire(glyph_cache_t* self, glyph_info_t* info, char symbol);
+void glyph_cache_acquire(glyph_cache_t *self, glyph_info_t *info, char symbol);
 
 #endif// RETRO_GPU_GLYPH_H

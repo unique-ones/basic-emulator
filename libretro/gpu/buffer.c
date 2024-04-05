@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (c) 2023 Elias Engelbert Plank
+// Copyright (c) 2024 Elias Engelbert Plank
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -92,7 +92,7 @@ static s32 shader_type_primitives(shader_type_t type) {
 }
 
 /// Calculates the total stride of a vertex buffer layout
-static s32 vertex_buffer_layout_stride(vertex_buffer_layout_t* layout) {
+static s32 vertex_buffer_layout_stride(vertex_buffer_layout_t *layout) {
     s32 stride = 0;
     for (u32 i = 0; i < layout->count; i++) {
         shader_type_t attribute = *(layout->attributes + i);
@@ -102,7 +102,7 @@ static s32 vertex_buffer_layout_stride(vertex_buffer_layout_t* layout) {
 }
 
 /// Creates a vertex buffer on the gpu
-void vertex_buffer_create(vertex_buffer_t* self) {
+void vertex_buffer_create(vertex_buffer_t *self) {
     self->handle = 0;
     self->layout = NULL;
     glGenBuffers(1, &self->handle);
@@ -110,24 +110,24 @@ void vertex_buffer_create(vertex_buffer_t* self) {
 }
 
 /// Destroys the vertex buffer
-void vertex_buffer_destroy(vertex_buffer_t* self) {
+void vertex_buffer_destroy(vertex_buffer_t *self) {
     glDeleteBuffers(1, &self->handle);
     self->layout = NULL;
 }
 
 /// Sets the data for the vertex buffer
-void vertex_buffer_data(vertex_buffer_t* self, const void* data, u32 size) {
+void vertex_buffer_data(vertex_buffer_t *self, const void *data, u32 size) {
     glBindBuffer(GL_ARRAY_BUFFER, self->handle);
     glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
 }
 
 /// Sets the attribute layout for the specified buffer
-void vertex_buffer_layout(vertex_buffer_t* self, vertex_buffer_layout_t* layout) {
+void vertex_buffer_layout(vertex_buffer_t *self, vertex_buffer_layout_t *layout) {
     self->layout = layout;
 }
 
 /// Binds the vertex buffer
-void vertex_buffer_bind(vertex_buffer_t* self) {
+void vertex_buffer_bind(vertex_buffer_t *self) {
     glBindBuffer(GL_ARRAY_BUFFER, self->handle);
 }
 
@@ -137,7 +137,7 @@ void vertex_buffer_unbind(void) {
 }
 
 /// Creates an index buffer on the gpu
-void index_buffer_create(index_buffer_t* self) {
+void index_buffer_create(index_buffer_t *self) {
     self->handle = 0;
     self->count = 0;
     glGenBuffers(1, &self->handle);
@@ -145,19 +145,19 @@ void index_buffer_create(index_buffer_t* self) {
 }
 
 /// Destroys the index buffer
-void index_buffer_destroy(index_buffer_t* self) {
+void index_buffer_destroy(index_buffer_t *self) {
     glDeleteBuffers(1, &self->handle);
 }
 
 /// Sets the data for the specified index buffer
-void index_buffer_data(index_buffer_t* self, const u32* data, u32 count) {
+void index_buffer_data(index_buffer_t *self, const u32 *data, u32 count) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self->handle);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr) (count * sizeof count), data, GL_DYNAMIC_DRAW);
     self->count = count;
 }
 
 /// Binds the specified buffer
-void index_buffer_bind(index_buffer_t* self) {
+void index_buffer_bind(index_buffer_t *self) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self->handle);
 }
 
@@ -167,7 +167,7 @@ void index_buffer_unbind(void) {
 }
 
 /// Creates a new vertex array
-void vertex_array_create(vertex_array_t* self) {
+void vertex_array_create(vertex_array_t *self) {
     self->handle = 0;
     self->vertex_buffer = NULL;
     self->index_buffer = NULL;
@@ -176,12 +176,12 @@ void vertex_array_create(vertex_array_t* self) {
 }
 
 /// Destroys the vertex array
-void vertex_array_destroy(vertex_array_t* self) {
+void vertex_array_destroy(vertex_array_t *self) {
     glDeleteVertexArrays(1, &self->handle);
 }
 
 /// Sets the vertex buffer for the vertex array, this sets all the specified attributes
-void vertex_array_vertex_buffer(vertex_array_t* self, vertex_buffer_t* vertex_buffer) {
+void vertex_array_vertex_buffer(vertex_array_t *self, vertex_buffer_t *vertex_buffer) {
     glBindVertexArray(self->handle);
     vertex_buffer_bind(vertex_buffer);
 
@@ -193,9 +193,9 @@ void vertex_array_vertex_buffer(vertex_array_t* self, vertex_buffer_t* vertex_bu
         GLenum opengl_type = (GLenum) shader_type_opengl(attribute);
         if (opengl_type == GL_FLOAT) {
             glVertexAttribPointer(i, shader_type_primitives(attribute), opengl_type, GL_FALSE, stride,
-                                  (const void*) offset);
+                                  (const void *) offset);
         } else if (opengl_type == GL_INT) {
-            glVertexAttribIPointer(i, shader_type_primitives(attribute), opengl_type, stride, (const void*) offset);
+            glVertexAttribIPointer(i, shader_type_primitives(attribute), opengl_type, stride, (const void *) offset);
         }
         offset += shader_type_stride(attribute);
     }
@@ -203,14 +203,14 @@ void vertex_array_vertex_buffer(vertex_array_t* self, vertex_buffer_t* vertex_bu
 }
 
 /// Sets the index buffer for the vertex array
-void vertex_array_index_buffer(vertex_array_t* self, index_buffer_t* index_buffer) {
+void vertex_array_index_buffer(vertex_array_t *self, index_buffer_t *index_buffer) {
     glBindVertexArray(self->handle);
     index_buffer_bind(index_buffer);
     self->index_buffer = index_buffer;
 }
 
 /// Binds the vertex array
-void vertex_array_bind(vertex_array_t* self) {
+void vertex_array_bind(vertex_array_t *self) {
     glBindVertexArray(self->handle);
 }
 
@@ -220,7 +220,7 @@ void vertex_array_unbind(void) {
 }
 
 /// Creates a frame buffer of specified size
-bool frame_buffer_create(frame_buffer_t* self, frame_buffer_specification_t* spec) {
+bool frame_buffer_create(frame_buffer_t *self, frame_buffer_specification_t *spec) {
     self->handle = 0;
     self->texture_handle = 0;
     self->render_handle = 0;
@@ -229,20 +229,20 @@ bool frame_buffer_create(frame_buffer_t* self, frame_buffer_specification_t* spe
 }
 
 /// Destroys the frame buffer
-void frame_buffer_destroy(frame_buffer_t* self) {
+void frame_buffer_destroy(frame_buffer_t *self) {
     glDeleteFramebuffers(1, &self->handle);
     glDeleteTextures(1, &self->texture_handle);
     glDeleteRenderbuffers(1, &self->render_handle);
 }
 
 /// Checks if the frame buffer is complete
-static bool frame_buffer_is_valid(frame_buffer_t* buffer) {
+static bool frame_buffer_is_valid(frame_buffer_t *buffer) {
     frame_buffer_bind(buffer);
     return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 }
 
 /// Invalidates the frame buffer, this needs to be called whenever the frame buffer is resized
-bool frame_buffer_invalidate(frame_buffer_t* self) {
+bool frame_buffer_invalidate(frame_buffer_t *self) {
     if (self->handle) {
         glDeleteFramebuffers(1, &self->handle);
         glDeleteTextures(1, &self->texture_handle);
@@ -276,7 +276,7 @@ bool frame_buffer_invalidate(frame_buffer_t* self) {
 }
 
 /// Resizes the frame buffer
-bool frame_buffer_resize(frame_buffer_t* self, s32 width, s32 height) {
+bool frame_buffer_resize(frame_buffer_t *self, s32 width, s32 height) {
     if (width <= 0 || height <= 0 || (width == self->spec.width && height == self->spec.height)) {
         return false;
     }
@@ -286,13 +286,13 @@ bool frame_buffer_resize(frame_buffer_t* self, s32 width, s32 height) {
 }
 
 /// Binds the specified frame buffer for rendering
-void frame_buffer_bind(frame_buffer_t* self) {
+void frame_buffer_bind(frame_buffer_t *self) {
     glBindFramebuffer(GL_FRAMEBUFFER, self->handle);
     glViewport(0, 0, self->spec.width, self->spec.height);
 }
 
 /// Binds the texture of the frame buffer at the specified sampler slot
-void frame_buffer_bind_texture(frame_buffer_t* self, u32 slot) {
+void frame_buffer_bind_texture(frame_buffer_t *self, u32 slot) {
     glBindTextureUnit(slot, self->texture_handle);
 }
 
