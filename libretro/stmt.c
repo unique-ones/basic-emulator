@@ -28,8 +28,8 @@
 #include <string.h>
 
 /// Creates a new let statement
-statement_t* let_statement_new(arena_t* arena, u32 line, expression_t* variable, expression_t* initializer) {
-    statement_t* self = (statement_t*) arena_alloc(arena, sizeof(statement_t));
+statement_t *let_statement_new(arena_t *arena, u32 line, expression_t *variable, expression_t *initializer) {
+    statement_t *self = (statement_t *) arena_alloc(arena, sizeof(statement_t));
     self->line = line;
     self->type = STATEMENT_LET;
     self->let.variable = variable;
@@ -38,8 +38,8 @@ statement_t* let_statement_new(arena_t* arena, u32 line, expression_t* variable,
 }
 
 /// Creates a new print statement
-statement_t* print_statement_new(arena_t* arena, u32 line, expression_t* printable) {
-    statement_t* self = (statement_t*) arena_alloc(arena, sizeof(statement_t));
+statement_t *print_statement_new(arena_t *arena, u32 line, expression_t *printable) {
+    statement_t *self = (statement_t *) arena_alloc(arena, sizeof(statement_t));
     self->line = line;
     self->type = STATEMENT_PRINT;
     self->print.printable = printable;
@@ -47,41 +47,41 @@ statement_t* print_statement_new(arena_t* arena, u32 line, expression_t* printab
 }
 
 /// Creates a new run statement
-statement_t* run_statement_new(arena_t* arena, u32 line) {
-    statement_t* self = (statement_t*) arena_alloc(arena, sizeof(statement_t));
+statement_t *run_statement_new(arena_t *arena, u32 line) {
+    statement_t *self = (statement_t *) arena_alloc(arena, sizeof(statement_t));
     self->line = line;
     self->type = STATEMENT_RUN;
     return self;
 }
 
 /// Checks if the given token type matches the current token in the state
-static bool match(token_iterator_t* state, token_type_t type) {
+static bool match(token_iterator_t *state, token_type_t type) {
     return token_iterator_current(state)->type == type;
 }
 
 /// Checks if the given token type matches the next token in the state
-static bool match_next(token_iterator_t* state, token_type_t type) {
+static bool match_next(token_iterator_t *state, token_type_t type) {
     return token_iterator_next(state)->type == type;
 }
 
 /// Compiles a statement from the token state
-static statement_t* statement(arena_t* arena, u32 line, token_iterator_t* state);
+static statement_t *statement(arena_t *arena, u32 line, token_iterator_t *state);
 
 /// Compiles a let statement from the token state
-static statement_t* statement_let(arena_t* arena, u32 line, token_iterator_t* state) {
+static statement_t *statement_let(arena_t *arena, u32 line, token_iterator_t *state) {
     if (match(state, TOKEN_LET)) {
         token_iterator_advance(state);
     }
     if (match(state, TOKEN_IDENTIFIER) && match_next(state, TOKEN_EQUAL_SIGN)) {
-        token_t* identifier_token = token_iterator_current(state);
+        token_t *identifier_token = token_iterator_current(state);
         token_iterator_advance(state);
         token_iterator_advance(state);
 
-        expression_t* initializer = expression_compile(arena, state->current, state->end);
+        expression_t *initializer = expression_compile(arena, state->current, state->end);
         if (initializer == NULL) {
             return NULL;
         }
-        expression_t* variable = variable_expression_new(arena, identifier_token->lexeme, identifier_token->length);
+        expression_t *variable = variable_expression_new(arena, identifier_token->lexeme, identifier_token->length);
         if (variable == NULL) {
             return NULL;
         }
@@ -91,21 +91,21 @@ static statement_t* statement_let(arena_t* arena, u32 line, token_iterator_t* st
 }
 
 /// Compiles a print statement
-static statement_t* statement_print(arena_t* arena, u32 line, token_iterator_t* state) {
+static statement_t *statement_print(arena_t *arena, u32 line, token_iterator_t *state) {
     token_iterator_advance(state);
-    expression_t* printable = expression_compile(arena, state->current, state->end);
+    expression_t *printable = expression_compile(arena, state->current, state->end);
     if (printable == NULL) {
         return NULL;
     }
     return print_statement_new(arena, line, printable);
 }
 
-static statement_t* statement_run(arena_t* arena, u32 line) {
+static statement_t *statement_run(arena_t *arena, u32 line) {
     return run_statement_new(arena, line);
 }
 
 /// Compiles a statement from the token state
-static statement_t* statement(arena_t* arena, u32 line, token_iterator_t* state) {
+static statement_t *statement(arena_t *arena, u32 line, token_iterator_t *state) {
     // RUN
     if (match(state, TOKEN_RUN)) {
         return statement_run(arena, line);
@@ -123,40 +123,40 @@ static statement_t* statement(arena_t* arena, u32 line, token_iterator_t* state)
 }
 
 /// Compiles a statement from a list of tokens
-statement_t* statement_compile(arena_t* arena, token_t* begin, token_t* end) {
+statement_t *statement_compile(arena_t *arena, token_t *begin, token_t *end) {
     token_iterator_t state = { 0 };
     state.current = begin;
     state.end = end;
-    
+
     if (!match(&state, TOKEN_NUMBER)) {
         return NULL;
     }
-    
-    token_t* line_token = token_iterator_current(&state);
+
+    token_t *line_token = token_iterator_current(&state);
     token_iterator_advance(&state);
-    
-    char* line_begin = line_token->lexeme;
-    char* line_end = line_begin + line_token->length;
+
+    char *line_begin = line_token->lexeme;
+    char *line_end = line_begin + line_token->length;
     u32 line = strtoul(line_begin, &line_end, 10);
-    
+
     return statement(arena, line, &state);
 }
 
 /// Executes a line statement
-static void statement_line_execute(statement_t* self, program_t* program) {
+static void statement_line_execute(statement_t *self, program_t *program) {
     program->no_wait = true;
 }
 
 /// Executes a line statement
-static void statement_let_execute(statement_t* self, program_t* program) {
-    expression_t* var = self->let.variable;
+static void statement_let_execute(statement_t *self, program_t *program) {
+    expression_t *var = self->let.variable;
     map_insert(program->symbols, var->variable.name, self->let.initializer);
     program->no_wait = true;
 }
 
 /// Executes a line statement
-static void statement_print_execute(statement_t* self, program_t* program) {
-    expression_t* printable = self->print.printable;
+static void statement_print_execute(statement_t *self, program_t *program) {
+    expression_t *printable = self->print.printable;
     if (expression_is_arithmetic(printable)) {
         f64 result = expression_evaluate(printable, program->symbols);
         text_queue_push_format(program->output, "%lf", result);
@@ -168,13 +168,15 @@ static void statement_print_execute(statement_t* self, program_t* program) {
 }
 
 /// Executes the statement
-void statement_execute(statement_t* self, program_t* program) {
+void statement_execute(statement_t *self, program_t *program) {
     switch (self->type) {
         case STATEMENT_LET:
             statement_let_execute(self, program);
             break;
         case STATEMENT_PRINT:
             statement_print_execute(self, program);
+            break;
+        default:
             break;
     }
 }

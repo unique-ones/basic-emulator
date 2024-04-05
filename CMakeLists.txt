@@ -18,5 +18,11 @@ target_link_libraries(basic PUBLIC "libretro")
 # Copy Assets to the Output Directory
 file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_INSTALL_PREFIX})
 
+# Copy compile commands
+# Compile commands for clangd
+if(EXISTS "${CMAKE_INSTALL_PREFIX}/compile_commands.json")
+    file(CREATE_LINK "${CMAKE_INSTALL_PREFIX}/compile_commands.json" "${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json")
+endif()
+
 enable_testing()
 add_subdirectory(tests)

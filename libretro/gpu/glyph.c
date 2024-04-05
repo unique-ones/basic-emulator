@@ -24,12 +24,14 @@
 #include "glyph.h"
 #include "util/utility.h"
 
+// clang-format off
 #include <ft2build.h>
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
+// clang-format on
 
 /// Creates a glyph cache for the specified font
-glyph_cache_t* glyph_cache_new(const char* path) {
-    glyph_cache_t* self = (glyph_cache_t*) malloc(sizeof(glyph_cache_t));
+glyph_cache_t *glyph_cache_new(const char *path) {
+    glyph_cache_t *self = (glyph_cache_t *) malloc(sizeof(glyph_cache_t));
 
     binary_buffer_t font_data;
     if (!file_read(&font_data, path)) {
@@ -43,7 +45,7 @@ glyph_cache_t* glyph_cache_new(const char* path) {
         return false;
     }
     FT_Face face;
-    if (FT_New_Memory_Face(library, (FT_Byte*) font_data.data, (FT_Long) font_data.size, 0, &face)) {
+    if (FT_New_Memory_Face(library, (FT_Byte *) font_data.data, (FT_Long) font_data.size, 0, &face)) {
         free(font_data.data);
         font_data.size = 0;
         FT_Done_FreeType(library);
@@ -58,7 +60,7 @@ glyph_cache_t* glyph_cache_new(const char* path) {
             fprintf(stderr, "could not load character: %c\n", (char) i);
             continue;
         }
-        glyph_info_t* info = (self->info + i - 32);
+        glyph_info_t *info = (self->info + i - 32);
         info->size.x = (f32) (face->glyph->bitmap.width);
         info->size.y = (f32) (face->glyph->bitmap.rows);
         info->bearing.x = (f32) (face->glyph->bitmap_left);
@@ -92,7 +94,7 @@ glyph_cache_t* glyph_cache_new(const char* path) {
         if (FT_Load_Char(face, i + 32, FT_LOAD_RENDER) || face->glyph->bitmap.buffer == NULL) {
             continue;
         }
-        glyph_info_t* info = (self->info + i);
+        glyph_info_t *info = (self->info + i);
         info->texture_offset = (f32) offset / (f32) size.x;
         info->texture_span.x = info->size.x / (f32) size.x;
         info->texture_span.y = info->size.y / (f32) size.y;
@@ -110,14 +112,14 @@ glyph_cache_t* glyph_cache_new(const char* path) {
 }
 
 /// Destroys the glyph cache and its glyph atlas
-void glyph_cache_free(glyph_cache_t* self) {
+void glyph_cache_free(glyph_cache_t *self) {
     texture_destroy(&self->atlas);
     free(self);
 }
 
 /// Fetches the specified symbol from the glyph cache
-void glyph_cache_acquire(glyph_cache_t* self, glyph_info_t* info, char symbol) {
-    glyph_info_t* fetched = (self->info + symbol - 32);
+void glyph_cache_acquire(glyph_cache_t *self, glyph_info_t *info, char symbol) {
+    glyph_info_t *fetched = (self->info + symbol - 32);
     info->size = fetched->size;
     info->advance = fetched->advance;
     info->bearing = fetched->bearing;

@@ -9,7 +9,8 @@
     {
       "name": "default",
       "hidden": true,
-      "binaryDir": "${sourceDir}/build/${presetName}"
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "generator": "Ninja"
     },
     {
       "name": "debug",
@@ -17,7 +18,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}",
-        "CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG": "${sourceDir}/build/${presetName}"
+        "CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG": "${sourceDir}/build/${presetName}",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
     },
     {
@@ -26,7 +28,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}",
-        "CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE": "${sourceDir}/build/${presetName}"
+        "CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE": "${sourceDir}/build/${presetName}",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
     },
     {
@@ -42,6 +45,7 @@
       },
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
         "TARGET_BUILD_PLATFORM": "win32"
       }
     },
@@ -58,6 +62,7 @@
       },
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
         "TARGET_BUILD_PLATFORM": "linux"
       }
     },
@@ -97,23 +102,31 @@
       "jobs": 16
     },
     {
-      "name": "win-64-app",
+      "name": "win-64-debug",
       "configurePreset": "win-64-debug",
       "inherits": [
         "default"
-      ],
-      "targets": [
-        "basic"
       ]
     },
     {
-      "name": "lin-64-app",
+      "name": "win-64-release",
+      "configurePreset": "win-64-release",
+      "inherits": [
+        "default"
+      ]
+    },
+    {
+      "name": "lin-64-debug",
       "configurePreset": "lin-64-debug",
       "inherits": [
         "default"
-      ],
-      "targets": [
-        "basic"
+      ]
+    },
+    {
+      "name": "lin-64-release",
+      "configurePreset": "lin-64-release",
+      "inherits": [
+        "default"
       ]
     }
   ]
