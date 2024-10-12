@@ -51,7 +51,8 @@ typedef enum token_type {
     // keywords
     TOKEN_LET,
     TOKEN_PRINT,
-    TOKEN_RUN
+    TOKEN_RUN,
+    TOKEN_EXIT
 } token_type_t;
 
 typedef struct token {

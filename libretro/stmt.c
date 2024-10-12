@@ -29,7 +29,7 @@
 
 /// Creates a new let statement
 statement_t *let_statement_new(arena_t *arena, u32 line, expression_t *variable, expression_t *initializer) {
-    statement_t *self = (statement_t *) arena_alloc(arena, sizeof(statement_t));
+    statement_t *self = arena_alloc(arena, sizeof(statement_t));
     self->line = line;
     self->type = STATEMENT_LET;
     self->let.variable = variable;
@@ -39,7 +39,7 @@ statement_t *let_statement_new(arena_t *arena, u32 line, expression_t *variable,
 
 /// Creates a new print statement
 statement_t *print_statement_new(arena_t *arena, u32 line, expression_t *printable) {
-    statement_t *self = (statement_t *) arena_alloc(arena, sizeof(statement_t));
+    statement_t *self = arena_alloc(arena, sizeof(statement_t));
     self->line = line;
     self->type = STATEMENT_PRINT;
     self->print.printable = printable;
@@ -47,9 +47,9 @@ statement_t *print_statement_new(arena_t *arena, u32 line, expression_t *printab
 }
 
 /// Creates a new run statement
-statement_t *run_statement_new(arena_t *arena, u32 line) {
-    statement_t *self = (statement_t *) arena_alloc(arena, sizeof(statement_t));
-    self->line = line;
+statement_t *run_statement_new(arena_t *arena) {
+    statement_t *self = arena_alloc(arena, sizeof(statement_t));
+    self->line = 0;
     self->type = STATEMENT_RUN;
     return self;
 }
@@ -100,16 +100,12 @@ static statement_t *statement_print(arena_t *arena, u32 line, token_iterator_t *
     return print_statement_new(arena, line, printable);
 }
 
-static statement_t *statement_run(arena_t *arena, u32 line) {
-    return run_statement_new(arena, line);
+static statement_t *statement_run(arena_t *arena) {
+    return run_statement_new(arena);
 }
 
 /// Compiles a statement from the token state
 static statement_t *statement(arena_t *arena, u32 line, token_iterator_t *state) {
-    // RUN
-    if (match(state, TOKEN_RUN)) {
-        return statement_run(arena, line);
-    }
     // Assignment
     if (match(state, TOKEN_IDENTIFIER) || match(state, TOKEN_LET)) {
         return statement_let(arena, line, state);
@@ -128,6 +124,12 @@ statement_t *statement_compile(arena_t *arena, token_t *begin, token_t *end) {
     state.current = begin;
     state.end = end;
 
+    if (match(&state, TOKEN_RUN)) {
+        return statement_run(arena);
+    }
+    if (match(&state, TOKEN_EXIT)) {
+        exit(0);
+    }
     if (!match(&state, TOKEN_NUMBER)) {
         return NULL;
     }
@@ -137,14 +139,7 @@ statement_t *statement_compile(arena_t *arena, token_t *begin, token_t *end) {
 
     char *line_begin = line_token->lexeme;
     char *line_end = line_begin + line_token->length;
-    u32 line = strtoul(line_begin, &line_end, 10);
-
-    return statement(arena, line, &state);
-}
-
-/// Executes a line statement
-static void statement_line_execute(statement_t *self, program_t *program) {
-    program->no_wait = true;
+    return statement(arena, strtoul(line_begin, &line_end, 10), &state);
 }
 
 /// Executes a line statement

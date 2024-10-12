@@ -29,7 +29,7 @@
 
 /// Creates a new token instance
 token_t *token_new(token_type_t type, char *lexeme, u32 length) {
-    token_t *self = (token_t *) malloc(sizeof(token_t));
+    token_t *self = malloc(sizeof(token_t));
     self->prev = NULL;
     self->next = NULL;
     self->type = type;
@@ -50,7 +50,7 @@ void token_free(token_t *self) {
 
 /// Creates a new token list instance
 token_list_t *token_list_new(void) {
-    token_list_t *self = (token_list_t *) malloc(sizeof(token_list_t));
+    token_list_t *self = malloc(sizeof(token_list_t));
     self->begin = NULL;
     self->end = NULL;
     self->tokens = 0;
@@ -239,7 +239,6 @@ token_list_t *tokenize(char *data, u32 length) {
             token_list_push(list, TOKEN_STRING, lexeme, lexeme_length);
         }
 
-
         // alphabetic characters
         if (isalpha(string_iterator_current(&iterator))) {
             char *lexeme = iterator.base + iterator.index;
@@ -256,6 +255,8 @@ token_list_t *tokenize(char *data, u32 length) {
                 token_list_push(list, TOKEN_LET, lexeme, lexeme_length);
             } else if (string_view_equal(lexeme, lexeme_length, "RUN", 3)) {
                 token_list_push(list, TOKEN_RUN, lexeme, lexeme_length);
+            } else if (string_view_equal(lexeme, lexeme_length, "EXIT", 4)) {
+                token_list_push(list, TOKEN_EXIT, lexeme, lexeme_length);
             } else {
                 token_list_push(list, TOKEN_IDENTIFIER, lexeme, lexeme_length);
             }
@@ -276,8 +277,7 @@ token_list_t *tokenize(char *data, u32 length) {
                     string_iterator_advance(&iterator);
                 } while (isdigit(string_iterator_current(&iterator)));
             }
-            u32 end_index = iterator.index;
-            token_list_push(list, type, lexeme, end_index - begin_index);
+            token_list_push(list, type, lexeme, iterator.index - begin_index);
             continue;
         }
 

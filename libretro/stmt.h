@@ -54,14 +54,12 @@ typedef struct print_statement {
 statement_t *print_statement_new(arena_t *arena, u32 line, expression_t *printable);
 
 typedef struct run_statement {
-    char ignored;
 } run_statement_t;
 
 /// Creates a new run statement
 /// @param arena The arena for allocations
-/// @param line The line of the statement
 /// @return A new run statement
-statement_t *run_statement_new(arena_t *arena, u32 line);
+statement_t *run_statement_new(arena_t *arena);
 
 typedef enum statement_type {
     STATEMENT_LET,
