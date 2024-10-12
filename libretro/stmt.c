@@ -64,11 +64,27 @@ static bool match_next(token_iterator_t *state, token_type_t type) {
     return token_iterator_next(state)->type == type;
 }
 
+/// Creates a successful statement result
+static statement_result_t statement_result_make(statement_t* statement) {
+    statement_result_t result = { 0 };
+    result.type = RESULT_OK;
+    result.statement = statement;
+    return result;
+}
+
+/// Creates a statement result with an error message
+static statement_result_t statement_result_make_error(const char* error) {
+    statement_result_t result = { 0 };
+    result.type = RESULT_ERROR;
+    result.error = error;
+    return result;
+}
+
 /// Compiles a statement from the token state
-static statement_t *statement(arena_t *arena, u32 line, token_iterator_t *state);
+static statement_result_t statement(arena_t *arena, u32 line, token_iterator_t *state);
 
 /// Compiles a let statement from the token state
-static statement_t *statement_let(arena_t *arena, u32 line, token_iterator_t *state) {
+static statement_result_t statement_let(arena_t *arena, u32 line, token_iterator_t *state) {
     if (match(state, TOKEN_LET)) {
         token_iterator_advance(state);
     }
@@ -79,33 +95,30 @@ static statement_t *statement_let(arena_t *arena, u32 line, token_iterator_t *st
 
         expression_t *initializer = expression_compile(arena, state->current, state->end);
         if (initializer == NULL) {
-            return NULL;
+            return statement_result_make_error("LET statement has invalid initializer");
         }
         expression_t *variable = variable_expression_new(arena, identifier_token->lexeme, identifier_token->length);
-        if (variable == NULL) {
-            return NULL;
-        }
-        return let_statement_new(arena, line, variable, initializer);
+        return statement_result_make(let_statement_new(arena, line, variable, initializer));
     }
-    return NULL;
+    return statement_result_make_error("LET statement must take form of [ LET ] <identifier> = <initializer>");
 }
 
 /// Compiles a print statement
-static statement_t *statement_print(arena_t *arena, u32 line, token_iterator_t *state) {
+static statement_result_t statement_print(arena_t *arena, u32 line, token_iterator_t *state) {
     token_iterator_advance(state);
     expression_t *printable = expression_compile(arena, state->current, state->end);
     if (printable == NULL) {
-        return NULL;
+        return statement_result_make_error("Invalid expression after PRINT statement");
     }
-    return print_statement_new(arena, line, printable);
+    return statement_result_make(print_statement_new(arena, line, printable));
 }
 
-static statement_t *statement_run(arena_t *arena) {
-    return run_statement_new(arena);
+static statement_result_t statement_run(arena_t *arena) {
+    return statement_result_make(run_statement_new(arena));
 }
 
 /// Compiles a statement from the token state
-static statement_t *statement(arena_t *arena, u32 line, token_iterator_t *state) {
+static statement_result_t statement(arena_t *arena, u32 line, token_iterator_t *state) {
     // Assignment
     if (match(state, TOKEN_IDENTIFIER) || match(state, TOKEN_LET)) {
         return statement_let(arena, line, state);
@@ -115,11 +128,11 @@ static statement_t *statement(arena_t *arena, u32 line, token_iterator_t *state)
     if (match(state, TOKEN_PRINT)) {
         return statement_print(arena, line, state);
     }
-    return NULL;
+    return statement_result_make_error("Encountered invalid token");
 }
 
 /// Compiles a statement from a list of tokens
-statement_t *statement_compile(arena_t *arena, token_t *begin, token_t *end) {
+statement_result_t statement_compile(arena_t *arena, token_t *begin, token_t *end) {
     token_iterator_t state = { 0 };
     state.current = begin;
     state.end = end;
@@ -131,7 +144,7 @@ statement_t *statement_compile(arena_t *arena, token_t *begin, token_t *end) {
         exit(0);
     }
     if (!match(&state, TOKEN_NUMBER)) {
-        return NULL;
+        return statement_result_make_error("Statement is missing line number");
     }
 
     token_t *line_token = token_iterator_current(&state);

@@ -48,22 +48,22 @@ static void emulator_pass_finish(emulator_t *self) {
 static void emulator_pass(emulator_t *self) {
     // Parse user input
     token_list_t *tokens = tokenize(self->text.data, (u32) self->text.fill);
-    statement_t *statement = statement_compile(&self->arena, tokens->begin, tokens->end);
+    statement_result_t result = statement_compile(&self->arena, tokens->begin, tokens->end);
     token_list_free(tokens);
 
     f32vec2_t position = { 30.0f, 30.0f };
-    if (statement == NULL) {
+    if (result.type == RESULT_ERROR) {
         // show user the error
         static f32vec3_t err = { 1.0f, 0.0f, 0.0f };
-        renderer_draw_text(self->renderer, &position, &err, 0.5f, "ERROR: INVALID STATEMENT!\n");
+        renderer_draw_text(self->renderer, &position, &err, 0.5f, "%s", result.error);
     } else {
         // if we encounter the RUN statement, we must iterate over all the lines.
         // currently, this is not implemented. therefore, we only execute one
         // statement at a time.
-        if (statement->type == STATEMENT_RUN) {
+        if (result.statement->type == STATEMENT_RUN) {
             program_execute(&self->program);
         } else {
-            program_tree_insert(&self->program.lines, statement);
+            program_tree_insert(&self->program.lines, result.statement);
             emulator_pass_finish(self);
             return;
         }

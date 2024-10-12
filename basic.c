@@ -24,7 +24,7 @@
 #include <libretro/retro.h>
 #include <stdio.h>
 
-int main(int argc, char **argv) {
+int main() {
     display_t display;
     display_create(&display, "Emulator", 800, 600);
 

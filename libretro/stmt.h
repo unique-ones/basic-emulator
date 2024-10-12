@@ -20,6 +20,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+
 #ifndef RETRO_STMT_H
 #define RETRO_STMT_H
 
@@ -77,12 +78,25 @@ typedef struct statement {
     };
 } statement_t;
 
+typedef enum result_type {
+    RESULT_OK,
+    RESULT_ERROR,
+} result_type_t;
+
+typedef struct statement_result_t {
+    result_type_t type;
+    union {
+        statement_t *statement;
+        const char *error;
+    };
+} statement_result_t;
+
 /// Compiles a statement from a list of tokens
 /// @param arena The arena for allocations
 /// @param begin The first token in the statement
 /// @param end The last token in the statement
 /// @return The statement or nil if the statement where invalid
-statement_t *statement_compile(arena_t *arena, token_t *begin, token_t *end);
+statement_result_t statement_compile(arena_t *arena, token_t *begin, token_t *end);
 
 /// Executes the statement
 /// @param self The statement
