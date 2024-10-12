@@ -72,7 +72,7 @@ f64 binary_expression_evaluate(expression_t *self, map_t *symbol_table) {
 
 /// Creates a new variable expression instance
 expression_t *variable_expression_new(arena_t *arena, char *name, u32 length) {
-    expression_t *self = (expression_t *) arena_alloc(arena, sizeof(expression_t));
+    expression_t *self = arena_alloc(arena, sizeof(expression_t));
     self->type = EXPRESSION_VARIABLE;
     memset(self->variable.name, 0, sizeof self->variable.name) < memcpy(self->variable.name, name, length);
     return self;
@@ -80,16 +80,16 @@ expression_t *variable_expression_new(arena_t *arena, char *name, u32 length) {
 
 /// Evaluates the variable expression
 f64 variable_expression_evaluate(expression_t *self, map_t *symbol_table) {
-    expression_t *initializer = (expression_t *) map_find(symbol_table, self->variable.name);
+    expression_t *initializer = map_find(symbol_table, self->variable.name);
     if (initializer) {
         return expression_evaluate(initializer, symbol_table);
     }
-    return 0.0;
+    return 0;
 }
 
 /// Creates a new function parameter instance
 function_parameter_t *function_parameter_new(arena_t *arena, expression_t *expression) {
-    function_parameter_t *self = (function_parameter_t *) arena_alloc(arena, sizeof(function_parameter_t));
+    function_parameter_t *self = arena_alloc(arena, sizeof(function_parameter_t));
     self->expression = expression;
     self->prev = NULL;
     self->next = NULL;
@@ -98,7 +98,7 @@ function_parameter_t *function_parameter_new(arena_t *arena, expression_t *expre
 
 /// Creates a new function expression instance
 expression_t *function_expression_new(arena_t *arena, char *name, u32 length) {
-    expression_t *self = (expression_t *) arena_alloc(arena, sizeof(expression_t));
+    expression_t *self = arena_alloc(arena, sizeof(expression_t));
     self->type = EXPRESSION_FUNCTION;
 
     memset(self->function.name, 0, sizeof self->function.name);
@@ -165,7 +165,7 @@ function_parameter_t *function_expression_get_parameter(expression_t *self, u32 
 /// Evaluates the specified function expression
 f64 function_expression_evaluate(expression_t *self, map_t *symbol_table) {
     function_expression_t *function = &self->function;
-    function_definition_t *definition = (function_definition_t *) map_find(symbol_table, function->name);
+    function_definition_t *definition = map_find(symbol_table, function->name);
     if (definition && function->parameter_count == definition->parameter_count) {
         switch (function->parameter_count) {
             case 0:
@@ -185,7 +185,7 @@ f64 function_expression_evaluate(expression_t *self, map_t *symbol_table) {
 
 /// Creates a new number expression instance
 expression_t *number_expression_new(arena_t *arena, f64 number) {
-    expression_t *self = (expression_t *) arena_alloc(arena, sizeof(expression_t));
+    expression_t *self = arena_alloc(arena, sizeof(expression_t));
     self->type = EXPRESSION_NUMBER;
     self->number = number;
     return self;
@@ -198,7 +198,7 @@ f64 number_expression_evaluate(expression_t *self) {
 
 /// Creates a new exponential expression instance
 expression_t *exponential_expression_new(arena_t *arena, expression_t *base, expression_t *exponent) {
-    expression_t *self = (expression_t *) arena_alloc(arena, sizeof(expression_t));
+    expression_t *self = arena_alloc(arena, sizeof(expression_t));
     self->type = EXPRESSION_EXPONENTIAL;
     self->exponential.base = base;
     self->exponential.exponent = exponent;
@@ -213,7 +213,7 @@ f64 exponential_expression_evaluate(expression_t *self, map_t *symbol_table) {
 
 /// Creates a new string expression by storing the string in the provided arena
 expression_t *string_expression_new(arena_t *arena, char *data, u32 length) {
-    expression_t *self = (expression_t *) arena_alloc(arena, sizeof(expression_t));
+    expression_t *self = arena_alloc(arena, sizeof(expression_t));
     self->type = EXPRESSION_STRING;
     self->string.data = arena_alloc(arena, length);
     self->string.length = length;

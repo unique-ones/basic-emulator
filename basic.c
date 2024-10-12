@@ -44,7 +44,6 @@ int main(int argc, char **argv) {
     f32vec3_t amber = { 1.0f, 0.6f, 0.0f };
     f32vec3_t amber_dimmed = { 0.9f, 0.5f, 0.0f };
 
-    u32 fps_display_counter = 0;
     while (display_running(&display)) {
         renderer_resize(&renderer, display.width, display.height);
         if (emulator.enable_crt) {

@@ -150,6 +150,10 @@ static void statement_line_execute(statement_t *self, program_t *program) {
 /// Executes a line statement
 static void statement_let_execute(statement_t *self, program_t *program) {
     expression_t *var = self->let.variable;
+    if (expression_is_arithmetic(self->let.initializer)) {
+        f64 result = expression_evaluate(self->let.initializer, program->symbols);
+        self->let.initializer = number_expression_new(&program->objects, result);
+    }
     map_insert(program->symbols, var->variable.name, self->let.initializer);
     program->no_wait = true;
 }
