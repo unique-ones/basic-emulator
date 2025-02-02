@@ -170,3 +170,30 @@ node_t *list_find(list_t *self, void *data, list_equal_function_t equal) {
     }
     return NULL;
 }
+
+/// Tries to remove the specified data using the specified equal function
+void list_remove(list_t *self, void *data, list_equal_function_t equal) {
+    if (self->head == NULL || data == NULL || equal == NULL) {
+        return;
+    }
+
+    for (node_t *it = self->head; it != NULL; it = it->next) {
+        if (equal(it->data, data)) {
+            if (it->prev) {
+                it->prev->next = it->next;
+            } else {
+                self->head = it->next;
+            }
+
+            if (it->next) {
+                it->next->prev = it->prev;
+            } else {
+                self->tail = it->prev;
+            }
+
+            node_free(it);
+            self->length--;
+            return;
+        }
+    }
+}

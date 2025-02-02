@@ -52,6 +52,8 @@ typedef enum token_type {
     TOKEN_LET,
     TOKEN_CLEAR,
     TOKEN_PRINT,
+    TOKEN_DEF,
+    TOKEN_FN,
 
     // Emulator commands
     TOKEN_RUN,

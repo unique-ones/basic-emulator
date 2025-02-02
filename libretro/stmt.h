@@ -49,6 +49,25 @@ statement_t *let_statement_new(arena_t *arena, u32 line, expression_t *variable,
 /// @return A new clear statement
 statement_t *clear_statement_new(arena_t *arena, u32 line);
 
+typedef struct def_fn_statement {
+    expression_t *name;
+    expression_t *variable;
+    expression_t *body;
+} def_fn_statement_t;
+
+/// Creates a new def fn statement
+/// @param arena The arena for allocations
+/// @param line The line of the statement
+/// @param name The name of the function
+/// @param variable The variable that is used
+/// @param body The body of the function
+/// @return A new def fn statement
+statement_t *def_fn_statement_new(arena_t *arena,
+                                  u32 line,
+                                  expression_t *name,
+                                  expression_t *variable,
+                                  expression_t *body);
+
 typedef struct print_statement {
     expression_t *printable;
 } print_statement_t;
@@ -69,6 +88,7 @@ typedef enum statement_type {
     // Variable Control
     STATEMENT_CLEAR,
     STATEMENT_LET,
+    STATEMENT_DEF_FN,
 
     // Emulator commands
     STATEMENT_PRINT,
@@ -80,6 +100,7 @@ typedef struct statement {
     statement_type_t type;
     union {
         let_statement_t let;
+        def_fn_statement_t def_fn;
         print_statement_t print;
     };
 } statement_t;

@@ -26,6 +26,8 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include "expr.h"
+#include "lexer.h"
 
 /// Creates a new let statement
 statement_t *let_statement_new(arena_t *arena, u32 line, expression_t *variable, expression_t *initializer) {
@@ -42,6 +44,21 @@ statement_t *clear_statement_new(arena_t *arena, u32 line) {
     statement_t *self = arena_alloc(arena, sizeof(statement_t));
     self->line = line;
     self->type = STATEMENT_CLEAR;
+    return self;
+}
+
+/// Creates a new def fn statement
+statement_t *def_fn_statement_new(arena_t *arena,
+                                  u32 line,
+                                  expression_t *name,
+                                  expression_t *variable,
+                                  expression_t *body) {
+    statement_t *self = arena_alloc(arena, sizeof(statement_t));
+    self->line = line;
+    self->type = STATEMENT_DEF_FN;
+    self->def_fn.name = name;
+    self->def_fn.variable = variable;
+    self->def_fn.body = body;
     return self;
 }
 
@@ -111,6 +128,47 @@ static statement_result_t statement_compile_let(arena_t *arena, u32 line, token_
     return statement_result_make_error("LET statement must take form of [ LET ] <identifier> = <initializer>");
 }
 
+static statement_result_t statement_compile_def_fn(arena_t *arena, u32 line, token_iterator_t *state) {
+    static const char *form_err = "DEF FN statement must take form of DEF FN <name>(<var>) = <body>";
+    token_iterator_advance(state);
+    if (!match(state, TOKEN_FN)) {
+        return statement_result_make_error(form_err);
+    }
+    token_iterator_advance(state);
+
+    if (!match(state, TOKEN_IDENTIFIER)) {
+        return statement_result_make_error(form_err);
+    }
+    token_t *name_token = token_iterator_current(state);
+    token_iterator_advance(state);
+
+    if (!match(state, TOKEN_LEFT_PARENTHESIS)) {
+        return statement_result_make_error(form_err);
+    }
+    token_iterator_advance(state);
+
+    if (!match(state, TOKEN_IDENTIFIER)) {
+        return statement_result_make_error(form_err);
+    }
+    token_t *variable_token = token_iterator_current(state);
+    token_iterator_advance(state);
+
+    if (!match(state, TOKEN_RIGHT_PARENTHESIS) || !match_next(state, TOKEN_EQUAL_SIGN)) {
+        return statement_result_make_error(form_err);
+    }
+    token_iterator_advance(state);
+    token_iterator_advance(state);
+
+    expression_t *body = expression_compile(arena, state->current, state->end);
+    if (body == NULL) {
+        return statement_result_make_error("LET statement has invalid initializer");
+    }
+
+    expression_t *name = variable_expression_new(arena, name_token->lexeme, name_token->length);
+    expression_t *var = variable_expression_new(arena, variable_token->lexeme, variable_token->length);
+    return statement_result_make(def_fn_statement_new(arena, line, name, var, body));
+}
+
 /// Compiles a clear statement
 static statement_result_t statement_compile_clear(arena_t *arena, u32 line, token_iterator_t *state) {
     token_iterator_advance(state);
@@ -141,6 +199,11 @@ static statement_result_t statement_compile_internal(arena_t *arena, u32 line, t
     // Assignment
     if (match(state, TOKEN_IDENTIFIER) || match(state, TOKEN_LET)) {
         return statement_compile_let(arena, line, state);
+    }
+
+    // Single variable function
+    if (match(state, TOKEN_DEF)) {
+        return statement_compile_def_fn(arena, line, state);
     }
 
     // Printing
@@ -197,6 +260,15 @@ static void statement_execute_clear(statement_t *self, program_t *program) {
     program->no_wait = true;
 }
 
+static void statement_execute_def_fn(statement_t *self, program_t *program) {
+    function_definition_t *definition = arena_alloc(&program->objects, sizeof(function_definition_t));
+    definition->type = FUNCTION_DEFINITION_VARIABLE;
+    definition->name = self->def_fn.name->variable.name;
+    definition->variable.variable = self->def_fn.variable;
+    definition->variable.body = self->def_fn.body;
+    map_insert(program->symbols, definition->name, definition);
+}
+
 /// Executes a line statement
 static void statement_execute_print(statement_t *self, program_t *program) {
     expression_t *printable = self->print.printable;
@@ -218,6 +290,9 @@ void statement_execute(statement_t *self, program_t *program) {
             break;
         case STATEMENT_CLEAR:
             statement_execute_clear(self, program);
+            break;
+        case STATEMENT_DEF_FN:
+            statement_execute_def_fn(self, program);
             break;
         case STATEMENT_PRINT:
             statement_execute_print(self, program);

@@ -167,17 +167,41 @@ function_parameter_t *function_expression_get_parameter(expression_t *self, u32 
 f64 function_expression_evaluate(expression_t *self, map_t *symbol_table) {
     function_expression_t *function = &self->function;
     function_definition_t *definition = map_find(symbol_table, function->name);
-    if (definition && function->parameter_count == definition->parameter_count) {
-        switch (function->parameter_count) {
-            case 0:
-                return definition->func0();
-            case 1:
-                return definition->func1(EXPR_PARAM(0));
-            case 2:
-                return definition->func2(EXPR_PARAM(0), EXPR_PARAM(1));
-            default:
-                break;
+    if (definition == NULL) {
+        return 0.0;
+    }
+
+    switch (definition->type) {
+        case FUNCTION_DEFINITION_VARIABLE: {
+            // NOTE(elias): This is EXTREMELY bad as the arena allocates a 4 Kb block per default, which means
+            // that for every invocation of a user defined function, we have to allocate 4 Kb. Maybe this is an
+            // indicator to transition away from arenas...
+
+            arena_t temporary = arena_identity(ALIGNMENT8);
+            expression_t *number = number_expression_new(&temporary, EXPR_PARAM(0));
+            map_insert(symbol_table, definition->variable.variable->variable.name, number);
+            f64 result = expression_evaluate(definition->variable.body, symbol_table);
+            map_remove(symbol_table, definition->variable.variable->variable.name);
+            arena_destroy(&temporary);
+            return result;
         }
+        case FUNCTION_DEFINITION_BUILTIN: {
+            if (function->parameter_count == definition->builtin.parameter_count) {
+                switch (function->parameter_count) {
+                    case 0:
+                        return definition->builtin.func0();
+                    case 1:
+                        return definition->builtin.func1(EXPR_PARAM(0));
+                    case 2:
+                        return definition->builtin.func2(EXPR_PARAM(0), EXPR_PARAM(1));
+                    default:
+                        break;
+                }
+            }
+            break;
+        }
+        default:
+            break;
     }
     return 0.0;
 }

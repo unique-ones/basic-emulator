@@ -119,12 +119,34 @@ static f64 sgn(f64 x) {
 /// Adds all builtin symbols to the emulator symbol table
 static void emulator_add_builtin_symbols(emulator_t *self) {
     // available math functions
-    static function_definition_t builtin[] = { { "ABS", 1, { .func1 = fabs } },  { "ATN", 1, { .func1 = atan } },
-                                               { "COS", 1, { .func1 = cos } },   { "EXP", 1, { .func1 = exp } },
-                                               { "INT", 1, { .func1 = floor } }, { "LOG", 1, { .func1 = log } },
-                                               { "RND", 1, { .func1 = rnd } },   { "SGN", 1, { .func1 = sgn } },
-                                               { "SIN", 1, { .func1 = sin } },   { "SQR", 1, { .func1 = sqrt } },
-                                               { "TAN", 1, { .func1 = tan } } };
+    static function_definition_t builtin[] = { { .name = "ABS",
+                                                 .type = FUNCTION_DEFINITION_BUILTIN,
+                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = fabs } },
+                                               { "ATN", .type = FUNCTION_DEFINITION_BUILTIN,
+                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = atan } },
+                                               { .name = "COS",
+                                                 .type = FUNCTION_DEFINITION_BUILTIN,
+                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = cos } },
+                                               { "EXP", .type = FUNCTION_DEFINITION_BUILTIN,
+                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = exp } },
+                                               { .name = "INT",
+                                                 .type = FUNCTION_DEFINITION_BUILTIN,
+                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = floor } },
+                                               { "LOG", .type = FUNCTION_DEFINITION_BUILTIN,
+                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = log } },
+                                               { .name = "RND",
+                                                 .type = FUNCTION_DEFINITION_BUILTIN,
+                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = rnd } },
+                                               { "SGN", .type = FUNCTION_DEFINITION_BUILTIN,
+                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = sgn } },
+                                               { .name = "SIN",
+                                                 .type = FUNCTION_DEFINITION_BUILTIN,
+                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = sin } },
+                                               { "SQR", .type = FUNCTION_DEFINITION_BUILTIN,
+                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = sqrt } },
+                                               { .name = "TAN",
+                                                 .type = FUNCTION_DEFINITION_BUILTIN,
+                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = tan } } };
 
     for (u32 index = 0; index < STACK_ARRAY_SIZE(builtin); ++index) {
         function_definition_t *function = builtin + index;

@@ -127,13 +127,36 @@ typedef struct function_expression {
     u32 parameter_count;
 } function_expression_t;
 
-typedef struct function_definition {
-    const char *name;
-    u32 parameter_count;
+typedef struct function_definition_builtin {
+    enum {
+        PARAMETER_COUNT_0 = 0,
+        PARAMETER_COUNT_1 = 1,
+        PARAMETER_COUNT_2 = 2
+    } parameter_count;
+
     union {
         f64 (*func0)(void);
         f64 (*func1)(f64);
         f64 (*func2)(f64, f64);
+    };
+} function_definition_builtin_t;
+
+typedef struct function_definition_variable {
+    expression_t *variable;
+    expression_t *body;
+} function_definition_variable_t;
+
+typedef enum function_definition_type {
+    FUNCTION_DEFINITION_BUILTIN,
+    FUNCTION_DEFINITION_VARIABLE
+} function_definition_type_t;
+
+typedef struct function_definition {
+    const char *name;
+    function_definition_type_t type;
+    union {
+        function_definition_builtin_t builtin;
+        function_definition_variable_t variable;
     };
 } function_definition_t;
 

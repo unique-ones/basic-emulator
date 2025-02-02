@@ -46,6 +46,11 @@ void map_free(map_t *self);
 /// @param self The map handle
 void map_clear(map_t *self);
 
+/// Removes the specified key from the map
+/// @param self The map handle
+/// @param key The key that shall be removed
+void map_remove(map_t *self, const char *key);
+
 /// Inserts the specified key-value pair into the map
 /// @param self The map handle
 /// @param key The key under which the value will be placed

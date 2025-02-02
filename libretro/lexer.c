@@ -251,6 +251,10 @@ token_list_t *tokenize(char *data, u32 length) {
 
             if (string_view_equal(lexeme, lexeme_length, "PRINT", 5)) {
                 token_list_push(list, TOKEN_PRINT, lexeme, lexeme_length);
+            } else if (string_view_equal(lexeme, lexeme_length, "FN", 2)) {
+                token_list_push(list, TOKEN_FN, lexeme, lexeme_length);
+            } else if (string_view_equal(lexeme, lexeme_length, "DEF", 3)) {
+                token_list_push(list, TOKEN_DEF, lexeme, lexeme_length);
             } else if (string_view_equal(lexeme, lexeme_length, "LET", 3)) {
                 token_list_push(list, TOKEN_LET, lexeme, lexeme_length);
             } else if (string_view_equal(lexeme, lexeme_length, "RUN", 3)) {

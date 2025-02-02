@@ -99,4 +99,10 @@ void list_set_tail(list_t *self, void *data);
 /// @return The node of the found data or NULL on failure
 node_t *list_find(list_t *self, void *data, list_equal_function_t equal);
 
+/// Tries to remove the specified data using the specified equal function
+/// @param self The list handle
+/// @param data The data which shall be removed
+/// @param equal The equality check function
+void list_remove(list_t *self, void *data, list_equal_function_t equal);
+
 #endif// RETRO_UTIL_LIST_H

@@ -85,6 +85,15 @@ static bool map_entry_equal(const void *a, const void *b) {
     return strcmp(first->key, second->key) == 0;
 }
 
+/// Removes the specified key from the map
+void map_remove(map_t *self, const char *key) {
+    u32 bucket_index = hash(key, (u32) strlen(key)) % MAP_BUCKET_COUNT;
+    list_t *bucket = self->buckets[bucket_index];
+
+    map_entry_t entry = { .type = KEY_TYPE_STRING, .key = key, .data = NULL };
+    list_remove(bucket, &entry, map_entry_equal);
+}
+
 /// Inserts the specified key-value pair into the map
 void map_insert(map_t *self, const char *key, void *value) {
     u32 bucket_index = hash(key, (u32) strlen(key)) % MAP_BUCKET_COUNT;
