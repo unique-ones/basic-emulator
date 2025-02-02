@@ -37,6 +37,14 @@ statement_t *let_statement_new(arena_t *arena, u32 line, expression_t *variable,
     return self;
 }
 
+/// Creates a new clear statement
+statement_t *clear_statement_new(arena_t *arena, u32 line) {
+    statement_t *self = arena_alloc(arena, sizeof(statement_t));
+    self->line = line;
+    self->type = STATEMENT_CLEAR;
+    return self;
+}
+
 /// Creates a new print statement
 statement_t *print_statement_new(arena_t *arena, u32 line, expression_t *printable) {
     statement_t *self = arena_alloc(arena, sizeof(statement_t));
@@ -48,7 +56,7 @@ statement_t *print_statement_new(arena_t *arena, u32 line, expression_t *printab
 
 /// Creates a new run statement
 statement_t *run_statement_new(arena_t *arena) {
-    statement_t *self = (statement_t *) arena_alloc(arena, sizeof(statement_t));
+    statement_t *self = arena_alloc(arena, sizeof(statement_t));
     self->line = 0;
     self->type = STATEMENT_RUN;
     return self;
@@ -81,10 +89,10 @@ static statement_result_t statement_result_make_error(const char *error) {
 }
 
 /// Compiles a statement from the token state
-static statement_result_t statement(arena_t *arena, u32 line, token_iterator_t *state);
+static statement_result_t statement_compile_internal(arena_t *arena, u32 line, token_iterator_t *state);
 
 /// Compiles a let statement from the token state
-static statement_result_t statement_let(arena_t *arena, u32 line, token_iterator_t *state) {
+static statement_result_t statement_compile_let(arena_t *arena, u32 line, token_iterator_t *state) {
     if (match(state, TOKEN_LET)) {
         token_iterator_advance(state);
     }
@@ -103,8 +111,14 @@ static statement_result_t statement_let(arena_t *arena, u32 line, token_iterator
     return statement_result_make_error("LET statement must take form of [ LET ] <identifier> = <initializer>");
 }
 
+/// Compiles a clear statement
+static statement_result_t statement_compile_clear(arena_t *arena, u32 line, token_iterator_t *state) {
+    token_iterator_advance(state);
+    return statement_result_make(clear_statement_new(arena, line));
+}
+
 /// Compiles a print statement
-static statement_result_t statement_print(arena_t *arena, u32 line, token_iterator_t *state) {
+static statement_result_t statement_compile_print(arena_t *arena, u32 line, token_iterator_t *state) {
     token_iterator_advance(state);
     expression_t *printable = expression_compile(arena, state->current, state->end);
     if (printable == NULL) {
@@ -113,20 +127,25 @@ static statement_result_t statement_print(arena_t *arena, u32 line, token_iterat
     return statement_result_make(print_statement_new(arena, line, printable));
 }
 
-static statement_result_t statement_run(arena_t *arena) {
+static statement_result_t statement_compile_run(arena_t *arena) {
     return statement_result_make(run_statement_new(arena));
 }
 
 /// Compiles a statement from the token state
-static statement_result_t statement(arena_t *arena, u32 line, token_iterator_t *state) {
+static statement_result_t statement_compile_internal(arena_t *arena, u32 line, token_iterator_t *state) {
+    // Clear all variables
+    if (match(state, TOKEN_CLEAR)) {
+        return statement_compile_clear(arena, line, state);
+    }
+
     // Assignment
     if (match(state, TOKEN_IDENTIFIER) || match(state, TOKEN_LET)) {
-        return statement_let(arena, line, state);
+        return statement_compile_let(arena, line, state);
     }
 
     // Printing
     if (match(state, TOKEN_PRINT)) {
-        return statement_print(arena, line, state);
+        return statement_compile_print(arena, line, state);
     }
     return statement_result_make_error("Encountered invalid token");
 }
@@ -138,7 +157,7 @@ statement_result_t statement_compile(arena_t *arena, token_t *begin, token_t *en
     state.end = end;
 
     if (match(&state, TOKEN_RUN)) {
-        return statement_run(arena);
+        return statement_compile_run(arena);
     }
 
     if (match(&state, TOKEN_EXIT)) {
@@ -155,13 +174,17 @@ statement_result_t statement_compile(arena_t *arena, token_t *begin, token_t *en
 
     char *line_begin = line_token->lexeme;
     char *line_end = line_begin + line_token->length;
-    return statement(arena, strtoul(line_begin, &line_end, 10), &state);
+    return statement_compile_internal(arena, strtoul(line_begin, &line_end, 10), &state);
 }
 
 /// Executes a line statement
-static void statement_let_execute(statement_t *self, program_t *program) {
+static void statement_execute_let(statement_t *self, program_t *program) {
     expression_t *var = self->let.variable;
     if (expression_is_arithmetic(self->let.initializer)) {
+        // TODO(elias): This here is actually a memory leak since the old unevaluated expression
+        // still lives inside the arena. Imagine having a loop that computes an expression over
+        // and over again. I don't really care about it at the moment but maybe this should be
+        // handled sometime in the future.
         f64 result = expression_evaluate(self->let.initializer, program->symbols);
         self->let.initializer = number_expression_new(&program->objects, result);
     }
@@ -169,8 +192,13 @@ static void statement_let_execute(statement_t *self, program_t *program) {
     program->no_wait = true;
 }
 
+static void statement_execute_clear(statement_t *self, program_t *program) {
+    map_clear(program->symbols);
+    program->no_wait = true;
+}
+
 /// Executes a line statement
-static void statement_print_execute(statement_t *self, program_t *program) {
+static void statement_execute_print(statement_t *self, program_t *program) {
     expression_t *printable = self->print.printable;
     if (expression_is_arithmetic(printable)) {
         f64 result = expression_evaluate(printable, program->symbols);
@@ -186,10 +214,13 @@ static void statement_print_execute(statement_t *self, program_t *program) {
 void statement_execute(statement_t *self, program_t *program) {
     switch (self->type) {
         case STATEMENT_LET:
-            statement_let_execute(self, program);
+            statement_execute_let(self, program);
+            break;
+        case STATEMENT_CLEAR:
+            statement_execute_clear(self, program);
             break;
         case STATEMENT_PRINT:
-            statement_print_execute(self, program);
+            statement_execute_print(self, program);
             break;
         default:
             break;

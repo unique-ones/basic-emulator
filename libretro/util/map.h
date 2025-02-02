@@ -26,43 +26,49 @@
 
 #include "list.h"
 
-enum { MAP_BUCKET_COUNT = 16 };
+enum {
+    MAP_BUCKET_COUNT = 16
+};
 
 typedef struct map {
-    list_t* buckets[MAP_BUCKET_COUNT];
+    list_t *buckets[MAP_BUCKET_COUNT];
 } map_t;
 
 /// Allocates a new map instance
 /// @return A new map instance
-map_t* map_new(void);
+map_t *map_new(void);
 
 /// Frees the map and its buckets
 /// @param self The map handle
-void map_free(map_t* self);
+void map_free(map_t *self);
+
+/// Clears the map and its buckets
+/// @param self The map handle
+void map_clear(map_t *self);
 
 /// Inserts the specified key-value pair into the map
 /// @param self The map handle
 /// @param key The key under which the value will be placed
 /// @param value The value that shall be inserted
-void map_insert(map_t* self, const char* key, void* value);
+void map_insert(map_t *self, const char *key, void *value);
 
 /// Inserts the specified key-value pair into the map
 /// @param self The map handle
 /// @param key The key under which the value will be placed
 /// @param value The value that shall be inserted
-void map_insert_number(map_t* self, u32 key, void* value);
+void map_insert_number(map_t *self, u32 key, void *value);
 
 /// Tries to find a key-value pair where the key matches with the specified entry
 /// @param self The map handle
 /// @param key The key for which the value shall be found
 /// @return A reference to the found value or NULL
-void* map_find(map_t* self, const char* key);
+void *map_find(map_t *self, const char *key);
 
 /// Tries to find a key-value pair where the key matches with the specified entry
 /// @param self The map handle
 /// @param key The key for which the value shall be found
 /// @return A reference to the found value or NULL
-void* map_find_number(map_t* self, u32 key);
+void *map_find_number(map_t *self, u32 key);
 
 /// Super fast hash function by paul hsieh
 /// @cite http://www.azillionmonkeys.com/qed/hash.html
@@ -73,6 +79,6 @@ void* map_find_number(map_t* self, u32 key);
 /// @param data byte array that shall be hashed
 /// @param size size of the byte array
 /// @return super fast hash
-u32 hash(const char* data, u32 size);
+u32 hash(const char *data, u32 size);
 
 #endif// RETRO_UTIL_MAP_H

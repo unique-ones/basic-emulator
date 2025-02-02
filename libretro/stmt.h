@@ -43,6 +43,12 @@ typedef struct let_statement {
 /// @return A new let statement
 statement_t *let_statement_new(arena_t *arena, u32 line, expression_t *variable, expression_t *initializer);
 
+/// Creates a new clear statement
+/// @param arena The arena for allocations
+/// @param line The line of the statement
+/// @return A new clear statement
+statement_t *clear_statement_new(arena_t *arena, u32 line);
+
 typedef struct print_statement {
     expression_t *printable;
 } print_statement_t;
@@ -54,16 +60,17 @@ typedef struct print_statement {
 /// @return A new print statement
 statement_t *print_statement_new(arena_t *arena, u32 line, expression_t *printable);
 
-typedef struct run_statement {
-} run_statement_t;
-
 /// Creates a new run statement
 /// @param arena The arena for allocations
 /// @return A new run statement
 statement_t *run_statement_new(arena_t *arena);
 
 typedef enum statement_type {
+    // Variable Control
+    STATEMENT_CLEAR,
     STATEMENT_LET,
+
+    // Emulator commands
     STATEMENT_PRINT,
     STATEMENT_RUN
 } statement_type_t;
@@ -74,7 +81,6 @@ typedef struct statement {
     union {
         let_statement_t let;
         print_statement_t print;
-        run_statement_t run;
     };
 } statement_t;
 

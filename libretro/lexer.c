@@ -257,6 +257,8 @@ token_list_t *tokenize(char *data, u32 length) {
                 token_list_push(list, TOKEN_RUN, lexeme, lexeme_length);
             } else if (string_view_equal(lexeme, lexeme_length, "EXIT", 4)) {
                 token_list_push(list, TOKEN_EXIT, lexeme, lexeme_length);
+            } else if (string_view_equal(lexeme, lexeme_length, "CLEAR", 5)) {
+                token_list_push(list, TOKEN_CLEAR, lexeme, lexeme_length);
             } else {
                 token_list_push(list, TOKEN_IDENTIFIER, lexeme, lexeme_length);
             }

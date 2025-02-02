@@ -26,20 +26,23 @@
 
 #include "map.h"
 
-typedef enum map_entry_key_type { KEY_TYPE_STRING, KEY_TYPE_NUMBER } map_entry_key_type_t;
+typedef enum map_entry_key_type {
+    KEY_TYPE_STRING,
+    KEY_TYPE_NUMBER
+} map_entry_key_type_t;
 
 typedef struct map_entry {
     map_entry_key_type_t type;
     union {
-        const char* key;
+        const char *key;
         u32 key_number;
     };
-    void* data;
+    void *data;
 } map_entry_t;
 
 /// Allocates a new map instance
-map_t* map_new(void) {
-    map_t* self = (map_t*) malloc(sizeof(map_t));
+map_t *map_new(void) {
+    map_t *self = (map_t *) malloc(sizeof(map_t));
     for (u32 i = 0; i < MAP_BUCKET_COUNT; ++i) {
         self->buckets[i] = list_new();
     }
@@ -47,12 +50,12 @@ map_t* map_new(void) {
 }
 
 /// Frees the map and its buckets
-void map_free(map_t* self) {
+void map_free(map_t *self) {
     for (u32 i = 0; i < MAP_BUCKET_COUNT; ++i) {
-        list_t* bucket = self->buckets[i];
-        node_t* it = bucket->head;
+        list_t *bucket = self->buckets[i];
+        node_t *it = bucket->head;
         while (it != NULL && it->next != NULL) {
-            map_entry_t* entry = it->data;
+            map_entry_t *entry = it->data;
             free(entry);
             it = it->next;
         }
@@ -61,10 +64,18 @@ void map_free(map_t* self) {
     free(self);
 }
 
+/// Clears the map and its buckets
+/// @param self The map handle
+void map_clear(map_t *self) {
+    for (u32 i = 0; i < MAP_BUCKET_COUNT; ++i) {
+        list_clear(self->buckets[i]);
+    }
+}
+
 /// Checks if two map entries are equal
-static bool map_entry_equal(const void* a, const void* b) {
-    const map_entry_t* first = (const map_entry_t*) a;
-    const map_entry_t* second = (const map_entry_t*) b;
+static bool map_entry_equal(const void *a, const void *b) {
+    const map_entry_t *first = (const map_entry_t *) a;
+    const map_entry_t *second = (const map_entry_t *) b;
     if (first->type != second->type) {
         return false;
     }
@@ -75,16 +86,16 @@ static bool map_entry_equal(const void* a, const void* b) {
 }
 
 /// Inserts the specified key-value pair into the map
-void map_insert(map_t* self, const char* key, void* value) {
+void map_insert(map_t *self, const char *key, void *value) {
     u32 bucket_index = hash(key, (u32) strlen(key)) % MAP_BUCKET_COUNT;
-    list_t* bucket = self->buckets[bucket_index];
+    list_t *bucket = self->buckets[bucket_index];
 
-    map_entry_t* data = (map_entry_t*) malloc(sizeof(map_entry_t));
+    map_entry_t *data = (map_entry_t *) malloc(sizeof(map_entry_t));
     data->type = KEY_TYPE_STRING;
     data->key = key;
     data->data = value;
 
-    node_t* find_result = list_find(bucket, data, map_entry_equal);
+    node_t *find_result = list_find(bucket, data, map_entry_equal);
     if (find_result) {
         find_result->data = data;
     } else {
@@ -93,16 +104,16 @@ void map_insert(map_t* self, const char* key, void* value) {
 }
 
 /// Inserts the specified key-value pair into the map
-void map_insert_number(map_t* self, u32 key, void* value) {
+void map_insert_number(map_t *self, u32 key, void *value) {
     u32 bucket_index = key % MAP_BUCKET_COUNT;
-    list_t* bucket = self->buckets[bucket_index];
+    list_t *bucket = self->buckets[bucket_index];
 
-    map_entry_t* data = (map_entry_t*) malloc(sizeof(map_entry_t));
+    map_entry_t *data = (map_entry_t *) malloc(sizeof(map_entry_t));
     data->type = KEY_TYPE_NUMBER;
     data->key_number = key;
     data->data = value;
 
-    node_t* find_result = list_find(bucket, data, map_entry_equal);
+    node_t *find_result = list_find(bucket, data, map_entry_equal);
     if (find_result) {
         find_result->data = data;
     } else {
@@ -111,14 +122,14 @@ void map_insert_number(map_t* self, u32 key, void* value) {
 }
 
 /// Tries to find a key-value pair where the key matches with the specified entry
-void* map_find(map_t* self, const char* key) {
+void *map_find(map_t *self, const char *key) {
     u32 bucket_index = hash(key, strlen(key)) % MAP_BUCKET_COUNT;
-    list_t* bucket = self->buckets[bucket_index];
+    list_t *bucket = self->buckets[bucket_index];
 
     map_entry_t find_entry = { KEY_TYPE_STRING, { .key = key }, NULL };
-    node_t* find_result = list_find(bucket, &find_entry, map_entry_equal);
+    node_t *find_result = list_find(bucket, &find_entry, map_entry_equal);
     if (find_result) {
-        map_entry_t* entry = find_result->data;
+        map_entry_t *entry = find_result->data;
         return entry->data;
     } else {
         return NULL;
@@ -126,14 +137,14 @@ void* map_find(map_t* self, const char* key) {
 }
 
 /// Tries to find a key-value pair where the key matches with the specified entry
-void* map_find_number(map_t* self, u32 key) {
+void *map_find_number(map_t *self, u32 key) {
     u32 bucket_index = key % MAP_BUCKET_COUNT;
-    list_t* bucket = self->buckets[bucket_index];
+    list_t *bucket = self->buckets[bucket_index];
 
     map_entry_t find_entry = { KEY_TYPE_NUMBER, { .key_number = key }, NULL };
-    node_t* find_result = list_find(bucket, &find_entry, map_entry_equal);
+    node_t *find_result = list_find(bucket, &find_entry, map_entry_equal);
     if (find_result) {
-        map_entry_t* entry = find_result->data;
+        map_entry_t *entry = find_result->data;
         return entry->data;
     } else {
         return NULL;
@@ -141,12 +152,12 @@ void* map_find_number(map_t* self, u32 key) {
 }
 
 /// Retrieves the first 16 bits of the data string
-static u32 hash_get16bits(const char* data) {
+static u32 hash_get16bits(const char *data) {
     return (((u32) (data[1])) << 8) + (u32) data[0];
 }
 
 /// Computes hash of byte array
-u32 hash(const char* data, u32 size) {
+u32 hash(const char *data, u32 size) {
     if (size == 0 || data == NULL) {
         return 0;
     }

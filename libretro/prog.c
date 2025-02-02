@@ -152,6 +152,8 @@ static void program_tree_node_execute(program_tree_node_t *node, program_t *prog
 
 /// Executes the program
 void program_execute(program_t *self) {
+    self->text_position.x = PROGRAM_MARGIN_SIZE;
+    self->text_position.y = PROGRAM_MARGIN_SIZE;
     program_tree_node_execute(self->lines.root, self);
 }
 
