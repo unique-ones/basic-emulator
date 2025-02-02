@@ -30,10 +30,6 @@
 #include "prog.h"
 #include "util/text.h"
 
-enum {
-    EMULATOR_MEMORY_SIZE = 0x10000
-};
-
 typedef enum emulator_state {
     EMULATOR_STATE_INPUT = 0,
     EMULATOR_STATE_EXECUTION = 1

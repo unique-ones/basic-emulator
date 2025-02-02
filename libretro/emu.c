@@ -39,7 +39,6 @@
 /// Finalizes an emulator pass by destroying associated data
 static void emulator_pass_finish(emulator_t *self) {
     text_queue_push(self->history, self->text.data, (u32) self->text.fill);
-    text_queue_clear(self->program.output);
     text_cursor_clear(&self->text);
     self->state = EMULATOR_STATE_INPUT;
 }
@@ -66,12 +65,6 @@ static void emulator_pass(emulator_t *self) {
                 emulator_pass_finish(self);
                 return;
         }
-    }
-
-    text_queue_t *output = self->program.output;
-    for (text_entry_t *it = output->begin; it != NULL; it = it->next) {
-        static f32vec3_t msg = { 1.0f, 0.55f, 0.0f };
-        renderer_draw_text(self->renderer, &position, &msg, 0.5f, "%.*s", it->length, it->data);
     }
 
     while (self->program.last_key != GLFW_KEY_ESCAPE) {
@@ -144,7 +137,7 @@ void emulator_create(emulator_t *self, renderer_t *renderer) {
     self->state = EMULATOR_STATE_INPUT;
     self->mode = EMULATOR_MODE_TEXT;
     self->renderer = renderer;
-    program_create(&self->program, EMULATOR_MEMORY_SIZE);
+    program_create(&self->program, renderer);
     emulator_add_builtin_symbols(self);
 
     text_cursor_create(&self->text, 128);
