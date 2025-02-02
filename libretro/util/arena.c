@@ -26,7 +26,7 @@
 #include "arena.h"
 
 /// Aligns the specified size according to arena alignment
-u32 arena_alignment_size(arena_t* self, u32 size) {
+u32 arena_alignment_size(MemoryArena *self, u32 size) {
     u32 align_distance = size % self->alignment;
     if (align_distance != 0) {
         size += align_distance;
@@ -35,19 +35,19 @@ u32 arena_alignment_size(arena_t* self, u32 size) {
 }
 
 /// Aligns the used offset according to arena alignment
-u32 arena_alignment_offset(arena_t* self) {
+u32 arena_alignment_offset(MemoryArena *self) {
     return arena_alignment_size(self, self->current->used);
 }
 
-block_t* arena_block_new(arena_t* self, u32 requested_size, bool temporary) {
+MemoryBlock *arena_block_new(MemoryArena *self, u32 requested_size, bool temporary) {
     // Default block size is 4 Kb, which should be a page?
     u32 block_size = 4 * 1024;
 
     // At this point, the requested size is already aligned
     u32 actual_size = requested_size > block_size ? requested_size : block_size;
 
-    block_t* blck = (block_t*) self->reserve(sizeof(block_t) + actual_size);
-    blck->base = (u8*) blck + sizeof(block_t);
+    MemoryBlock *blck = (MemoryBlock *) self->reserve(sizeof(MemoryBlock) + actual_size);
+    blck->base = (u8 *) blck + sizeof(MemoryBlock);
     blck->size = actual_size;
     blck->used = 0;
     blck->before = NULL;
@@ -58,8 +58,8 @@ block_t* arena_block_new(arena_t* self, u32 requested_size, bool temporary) {
 }
 
 /// Creates a new memory arena
-arena_t arena_make(arena_specification_t* spec) {
-    arena_t result;
+MemoryArena arena_make(ArenaSpecification *spec) {
+    MemoryArena result;
     result.alignment = spec->alignment;
     result.reserve = spec->reserve;
     result.release = spec->release;
@@ -71,8 +71,8 @@ arena_t arena_make(arena_specification_t* spec) {
 }
 
 /// Creates an identity memory arena
-arena_t arena_identity(alignment_t alignment) {
-    arena_specification_t spec;
+MemoryArena arena_identity(MemoryAlignment alignment) {
+    ArenaSpecification spec;
     spec.alignment = alignment;
     spec.reserve = malloc;
     spec.release = free;
@@ -80,9 +80,9 @@ arena_t arena_identity(alignment_t alignment) {
 }
 
 /// Destroys the specified memory arena
-void arena_destroy(arena_t* self) {
+void arena_destroy(MemoryArena *self) {
     while (self->current != NULL) {
-        block_t* before = self->current->before;
+        MemoryBlock *before = self->current->before;
         // We must release the memory block itself as it is the base of the allocation
         self->release(self->current);
         self->current = before;
@@ -92,22 +92,22 @@ void arena_destroy(arena_t* self) {
     self->current = NULL;
 }
 
-static void arena_append_block(arena_t* self, block_t* blck) {
+static void arena_append_block(MemoryArena *self, MemoryBlock *blck) {
     blck->before = self->current;
     self->current = blck;
 }
 
 /// Allocates a block of memory in the specified arena
-void* arena_alloc(arena_t* self, u32 size) {
+void *arena_alloc(MemoryArena *self, u32 size) {
     u32 aligned_size = arena_alignment_size(self, size);
 
     if (self->current->used + aligned_size > self->current->size) {
-        block_t* blck = arena_block_new(self, aligned_size, self->temporary);
+        MemoryBlock *blck = arena_block_new(self, aligned_size, self->temporary);
         arena_append_block(self, blck);
     }
 
     u32 aligned_offset = arena_alignment_offset(self);
-    u8* result = self->current->base + aligned_offset;
+    u8 *result = self->current->base + aligned_offset;
     self->current->used = aligned_offset + aligned_size;
     return result;
 }
@@ -115,15 +115,15 @@ void* arena_alloc(arena_t* self, u32 size) {
 /// Begins a temporary scope where all subsequent allocations are freed after
 /// calling arena_end_temporary(). Note that previous allocations are not
 /// affected.
-void arena_begin_temporary(arena_t* self) {
+void arena_begin_temporary(MemoryArena *self) {
     self->temporary = true;
-    block_t* blck = arena_block_new(self, 0, true);
+    MemoryBlock *blck = arena_block_new(self, 0, true);
     arena_append_block(self, blck);
 }
 
 /// Ends the temporary scope by freeing all memory allocations that are
 /// marked as temporary.
-void arena_end_temporary(arena_t* self) {
+void arena_end_temporary(MemoryArena *self) {
     self->temporary = false;
     for (; self->current != NULL && self->current->temporary; self->current = self->current->before) {
         self->release(self->current);

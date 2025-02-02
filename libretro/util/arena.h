@@ -26,43 +26,46 @@
 
 #include "types.h"
 
-typedef void* (*reserve_func_t)(u64);
-typedef void (*release_func_t)(void*);
+typedef void *(*ReserveFunction)(usize);
+typedef void (*ReleaseFunction)(void *);
 
-typedef enum alignment { ALIGNMENT1 = 1, ALIGNMENT4 = 4, ALIGNMENT8 = 8 } alignment_t;
+typedef enum MemoryAlignment {
+    ALIGNMENT1 = 1,
+    ALIGNMENT4 = 4,
+    ALIGNMENT8 = 8
+} MemoryAlignment;
 
-typedef struct arena_specification {
-    alignment_t alignment;
-    reserve_func_t reserve;
-    release_func_t release;
-} arena_specification_t;
+typedef struct ArenaSpecification {
+    MemoryAlignment alignment;
+    ReserveFunction reserve;
+    ReleaseFunction release;
+} ArenaSpecification;
 
-typedef struct block block_t;
+typedef struct MemoryBlock MemoryBlock;
 
-typedef struct block {
-    u32 size;
-    u32 used;
-    u8* base;
-    block_t* before;
-    u32 id;
+typedef struct MemoryBlock {
+    usize size;
+    usize used;
+    u8 *base;
+    MemoryBlock *before;
+    usize id;
     bool temporary;
-} block_t;
+} MemoryBlock;
 
-typedef struct arena {
-    block_t* current;
-    alignment_t alignment;
-    reserve_func_t reserve;
-    release_func_t release;
+typedef struct MemoryArena {
+    MemoryBlock *current;
+    MemoryAlignment alignment;
+    ReserveFunction reserve;
+    ReleaseFunction release;
     u32 blocks;
     u32 total_memory;
     bool temporary;
-} arena_t;
+} MemoryArena;
 
 /// Creates a new memory arena
-/// @param arena The arena
 /// @param spec The arena specification
 /// @return Memory arena with one block
-arena_t arena_make(arena_specification_t* spec);
+MemoryArena arena_make(ArenaSpecification *spec);
 
 /// Creates an identity memory arena
 /// @param alignment The alignment for the allocations
@@ -70,28 +73,28 @@ arena_t arena_make(arena_specification_t* spec);
 ///
 /// @note An identity arena is an arena with malloc and free
 ///       as reserve/release functions
-arena_t arena_identity(alignment_t alignment);
+MemoryArena arena_identity(MemoryAlignment alignment);
 
 /// Destroys the specified memory arena
 /// @param arena The arena
-void arena_destroy(arena_t* self);
+void arena_destroy(MemoryArena *self);
 
 /// Allocates a block of memory in the specified arena
 /// @param arena The arena
 /// @param size The size of the requested block
 /// @return Memory
-void* arena_alloc(arena_t* self, u32 size);
+void *arena_alloc(MemoryArena *self, u32 size);
 
 /// Begins a temporary scope where all subsequent allocations are freed after
 /// calling arena_end_temporary(). Note that previous allocations are not
 /// affected.
 /// @param self The arena
-void arena_begin_temporary(arena_t* self);
+void arena_begin_temporary(MemoryArena *self);
 
 /// Ends the temporary scope by freeing all memory allocations that are
 /// marked as temporary.
 /// @param self The arena
-void arena_end_temporary(arena_t* self);
+void arena_end_temporary(MemoryArena *self);
 
 
 #endif// RETRO_UTILS_ARENA_H

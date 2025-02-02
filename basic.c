@@ -24,15 +24,15 @@
 #include <libretro/retro.h>
 
 int main() {
-    display_t display;
+    Display display;
     display_create(&display, "Emulator", 800, 600);
 
     // renderer with apple2 pc21 font
-    renderer_t renderer;
+    Renderer renderer;
     renderer_create(&renderer, "assets/pc21.ttf");
-    renderer_clear_color(&(f32vec4_t){ 0.05f, 0.05f, 0.05f, 1.0f });
+    renderer_clear_color(&(F32Vector4) { 0.05f, 0.05f, 0.05f, 1.0f });
 
-    emulator_t emulator;
+    Emulator emulator;
     emulator_create(&emulator, &renderer);
 
     // set up callbacks
@@ -40,8 +40,8 @@ int main() {
     display_key_callback(&display, emulator_key_callback);
     display_char_callback(&display, emulator_char_callback);
 
-    f32vec3_t amber = { 1.0f, 0.6f, 0.0f };
-    f32vec3_t amber_dimmed = { 0.9f, 0.5f, 0.0f };
+    F32Vector3 amber = { 1.0f, 0.6f, 0.0f };
+    F32Vector3 amber_dimmed = { 0.9f, 0.5f, 0.0f };
 
     while (display_running(&display)) {
         renderer_resize(&renderer, display.width, display.height);
@@ -61,8 +61,8 @@ int main() {
         switch (emulator.state) {
             case EMULATOR_STATE_INPUT: {
                 // history
-                f32vec2_t position_iterator = { 30.0f, 30.0f };
-                for (text_entry_t *it = emulator.history->begin; it; it = it->next) {
+                F32Vector2 position_iterator = { 30.0f, 30.0f };
+                for (TextEntry *it = emulator.history->begin; it; it = it->next) {
                     position_iterator.x = 30.0f;
                     renderer_begin_batch(&renderer);
                     renderer_draw_text(&renderer, &position_iterator, &amber_dimmed, 0.5f, "]%.*s", it->length,

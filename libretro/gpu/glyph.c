@@ -34,7 +34,7 @@
 glyph_cache_t *glyph_cache_new(const char *path) {
     glyph_cache_t *self = (glyph_cache_t *) malloc(sizeof(glyph_cache_t));
 
-    binary_buffer_t font_data;
+    BinaryBuffer font_data;
     if (!file_read(&font_data, path)) {
         return false;
     }
@@ -55,13 +55,13 @@ glyph_cache_t *glyph_cache_new(const char *path) {
     FT_Set_Pixel_Sizes(face, 0, (s32) FONT_SIZE);
 
     // calculate combined size of glyphs
-    s32vec2_t size = { 0, 0 };
+    S32Vector2 size = { 0, 0 };
     for (s32 i = 32; i < 128; i++) {
         if (FT_Load_Char(face, (FT_ULong) i, FT_LOAD_RENDER)) {
             fprintf(stderr, "could not load character: %c\n", (char) i);
             continue;
         }
-        glyph_info_t *info = (self->info + i - 32);
+        GlyphInfo *info = (self->info + i - 32);
         info->size.x = face->glyph->bitmap.width;
         info->size.y = face->glyph->bitmap.rows;
         info->bearing.x = face->glyph->bitmap_left;
@@ -106,7 +106,7 @@ glyph_cache_t *glyph_cache_new(const char *path) {
         if (FT_Load_Char(face, i + 32, FT_LOAD_RENDER) || face->glyph->bitmap.buffer == NULL) {
             continue;
         }
-        glyph_info_t *info = self->info + i;
+        GlyphInfo *info = self->info + i;
         info->texture_offset = (f32) offset / (f32) size.x;
         info->texture_span.x = info->size.x / (f32) size.x;
         info->texture_span.y = info->size.y / (f32) size.y;
@@ -130,6 +130,6 @@ void glyph_cache_free(glyph_cache_t *self) {
 }
 
 /// Fetches the specified symbol from the glyph cache
-void glyph_cache_acquire(glyph_cache_t *self, glyph_info_t *info, char symbol) {
+void glyph_cache_acquire(glyph_cache_t *self, GlyphInfo *info, char symbol) {
     *info = *(self->info + symbol - 32);
 }

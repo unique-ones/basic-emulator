@@ -26,7 +26,7 @@
 
 #include "types.h"
 
-typedef enum token_type {
+typedef enum TokenType {
     TOKEN_IDENTIFIER,
     TOKEN_NUMBER,
     TOKEN_NUMBER_FLOAT,
@@ -58,84 +58,84 @@ typedef enum token_type {
     // Emulator commands
     TOKEN_RUN,
     TOKEN_EXIT
-} token_type_t;
+} TokenType;
 
-typedef struct token {
-    struct token *prev;
-    struct token *next;
-    token_type_t type;
+typedef struct Token {
+    struct Token *prev;
+    struct Token *next;
+    TokenType type;
     char *lexeme;
     u32 length;
-} token_t;
+} Token;
 
 /// Creates a new token instance
 /// @param type The type of the token
 /// @param lexeme The string of the token
 /// @param length The length of the lexeme
 /// @return A new token instance
-token_t *token_new(token_type_t type, char *lexeme, u32 length);
+Token *token_new(TokenType type, char *lexeme, u32 length);
 
 /// Frees the specified token instance
 /// @param self The token instance
-void token_free(token_t *self);
+void token_free(Token *self);
 
-typedef struct token_list {
-    token_t *begin;
-    token_t *end;
+typedef struct TokenList {
+    Token *begin;
+    Token *end;
     u32 tokens;
-} token_list_t;
+} TokenList;
 
 /// Creates a new token list instance
 /// @return A new token list
-token_list_t *token_list_new(void);
+TokenList *token_list_new(void);
 
 /// Clears the specified token list (i.e. deletes all tokens)
 /// @param self The token list instance
-void token_list_clear(token_list_t *self);
+void token_list_clear(TokenList *self);
 
 /// Frees the specified token list (i.e. deletes tokens and free list)
 /// @param self The token list instance
-void token_list_free(token_list_t *self);
+void token_list_free(TokenList *self);
 
 /// Pushes a token to the specified token list
 /// @param self The token list instance
 /// @param type The type of the token
 /// @param lexeme The string of the token
 /// @param length The length of the lexeme
-void token_list_push(token_list_t *self, token_type_t type, char *lexeme, u32 length);
+void token_list_push(TokenList *self, TokenType type, char *lexeme, u32 length);
 
 /// Tokenizes the specified data
 /// @param data The string that shall be tokenized
 /// @param length The length of the string
 /// @return A new token list
-token_list_t *tokenize(char *data, u32 length);
+TokenList *tokenize(char *data, u32 length);
 
-typedef struct token_iterator {
-    token_t *current;
-    token_t *end;
-} token_iterator_t;
+typedef struct TokenIterator {
+    Token *current;
+    Token *end;
+} TokenIterator;
 
 /// Checks if the token iterator reached the end
 /// @param self The token iterator
 /// @return A boolean that indicates whether the iterator is at the end
-bool token_iterator_end(token_iterator_t *self);
+bool token_iterator_end(TokenIterator *self);
 
 /// Returns an invalid token
 /// @return An invalid token
-token_t *token_iterator_invalid(void);
+Token *token_iterator_invalid(void);
 
 /// Retrieves the current token
 /// @param self The token iterator
 /// @return The current token
-token_t *token_iterator_current(token_iterator_t *self);
+Token *token_iterator_current(TokenIterator *self);
 
 /// Retrieves the next token
 /// @param self The token iterator
 /// @return The next token
-token_t *token_iterator_next(token_iterator_t *self);
+Token *token_iterator_next(TokenIterator *self);
 
 /// Advances the token cursor by one
 /// @param self The token iterator
-void token_iterator_advance(token_iterator_t *self);
+void token_iterator_advance(TokenIterator *self);
 
 #endif// RETRO_LEXER_H

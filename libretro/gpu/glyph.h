@@ -31,17 +31,17 @@ enum {
     FONT_SIZE = 48
 };
 
-typedef struct glyph_info {
-    s32vec2_t size;
-    s32vec2_t bearing;
-    s32vec2_t advance;
-    f32vec2_t texture_span;
+typedef struct GlyphInfo {
+    S32Vector2 size;
+    S32Vector2 bearing;
+    S32Vector2 advance;
+    F32Vector2 texture_span;
     f32 texture_offset;
-} glyph_info_t;
+} GlyphInfo;
 
 typedef struct glyph_cache {
-    texture_t atlas;
-    glyph_info_t info[128];
+    Texture atlas;
+    GlyphInfo info[128];
 } glyph_cache_t;
 
 /// Creates a glyph cache for the specified font
@@ -57,6 +57,6 @@ void glyph_cache_free(glyph_cache_t *self);
 /// @param self The glyph cache handle
 /// @param info The glyph info handle where the data is placed into
 /// @param symbol The symbol that shall be fetched
-void glyph_cache_acquire(glyph_cache_t *self, glyph_info_t *info, char symbol);
+void glyph_cache_acquire(glyph_cache_t *self, GlyphInfo *info, char symbol);
 
 #endif// RETRO_GPU_GLYPH_H

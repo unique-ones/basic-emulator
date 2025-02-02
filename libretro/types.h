@@ -39,6 +39,9 @@ typedef uint16_t u16;
 typedef uint32_t u32;
 typedef uint64_t u64;
 
+typedef u64 usize;
+typedef s64 ssize;
+
 typedef u8 bool;
 
 typedef float f32;
@@ -55,55 +58,55 @@ typedef double f64;
         abort();                      \
     }
 
-typedef struct s32vec2 {
+typedef struct S32Vector2 {
     s32 x;
     s32 y;
-} s32vec2_t;
+} S32Vector2;
 
-typedef struct s32vec3 {
+typedef struct S32Vector3 {
     s32 x;
     s32 y;
     s32 z;
-} s32vec3_t;
+} S32Vector3;
 
-typedef struct s32vec4 {
+typedef struct S32Vector4 {
     s32 x;
     s32 y;
     s32 z;
     s32 w;
-} s32vec4_t;
+} S32Vector4;
 
-typedef struct f32vec2 {
+typedef struct F32Vector2 {
     f32 x;
     f32 y;
-} f32vec2_t;
+} F32Vector2;
 
-typedef struct f32vec3 {
+typedef struct F32Vector3 {
     f32 x;
     f32 y;
     f32 z;
-} f32vec3_t;
+} F32Vector3;
 
-typedef struct f32vec4 {
+typedef struct F32Vector4 {
     f32 x;
     f32 y;
     f32 z;
     f32 w;
-} f32vec4_t;
+} F32Vector4;
 
-typedef struct f32mat4 {
-    f32vec4_t value[4];
-} f32mat4_t;
+typedef struct F32Mat4 {
+    F32Vector4 value[4];
+} F32Mat4;
 
-typedef struct vertex {
-    f32vec3_t position;
-    f32vec3_t color;
-    f32vec2_t texture;
-} vertex_t;
+typedef struct Vertex {
+    F32Vector3 position;
+    F32Vector3 color;
+    F32Vector2 texture;
+} Vertex;
 
-typedef struct binary_buffer {
+typedef struct BinaryBuffer {
     char *data;
     u32 size;
-} binary_buffer_t;
+} BinaryBuffer;
 
 #endif// RETRO_TYPES_H

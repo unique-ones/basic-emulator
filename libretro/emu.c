@@ -37,23 +37,23 @@
 #include "GLFW/glfw3.h"
 
 /// Finalizes an emulator pass by destroying associated data
-static void emulator_pass_finish(emulator_t *self) {
+static void emulator_pass_finish(Emulator *self) {
     text_queue_push(self->history, self->text.data, (u32) self->text.fill);
     text_cursor_clear(&self->text);
     self->state = EMULATOR_STATE_INPUT;
 }
 
 /// Runs an emulator pass
-static void emulator_pass(emulator_t *self) {
+static void emulator_pass(Emulator *self) {
     // Parse user input
-    token_list_t *tokens = tokenize(self->text.data, (u32) self->text.fill);
-    statement_result_t result = statement_compile(&self->arena, tokens->begin, tokens->end);
+    TokenList *tokens = tokenize(self->text.data, (u32) self->text.fill);
+    StatementResult result = statement_compile(&self->arena, tokens->begin, tokens->end);
     token_list_free(tokens);
 
-    f32vec2_t position = { 30.0f, 30.0f };
+    F32Vector2 position = { 30.0f, 30.0f };
     if (result.type == RESULT_ERROR) {
         // show user the error
-        static f32vec3_t err = { 1.0f, 0.0f, 0.0f };
+        static F32Vector3 err = { 1.0f, 0.0f, 0.0f };
         renderer_draw_text(self->renderer, &position, &err, 0.5f, "%s", result.error);
     } else {
         switch (result.statement->type) {
@@ -117,45 +117,45 @@ static f64 sgn(f64 x) {
 }
 
 /// Adds all builtin symbols to the emulator symbol table
-static void emulator_add_builtin_symbols(emulator_t *self) {
+static void emulator_add_builtin_symbols(Emulator *self) {
     // available math functions
-    static function_definition_t builtin[] = { { .name = "ABS",
-                                                 .type = FUNCTION_DEFINITION_BUILTIN,
-                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = fabs } },
-                                               { "ATN", .type = FUNCTION_DEFINITION_BUILTIN,
-                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = atan } },
-                                               { .name = "COS",
-                                                 .type = FUNCTION_DEFINITION_BUILTIN,
-                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = cos } },
-                                               { "EXP", .type = FUNCTION_DEFINITION_BUILTIN,
-                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = exp } },
-                                               { .name = "INT",
-                                                 .type = FUNCTION_DEFINITION_BUILTIN,
-                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = floor } },
-                                               { "LOG", .type = FUNCTION_DEFINITION_BUILTIN,
-                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = log } },
-                                               { .name = "RND",
-                                                 .type = FUNCTION_DEFINITION_BUILTIN,
-                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = rnd } },
-                                               { "SGN", .type = FUNCTION_DEFINITION_BUILTIN,
-                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = sgn } },
-                                               { .name = "SIN",
-                                                 .type = FUNCTION_DEFINITION_BUILTIN,
-                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = sin } },
-                                               { "SQR", .type = FUNCTION_DEFINITION_BUILTIN,
-                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = sqrt } },
-                                               { .name = "TAN",
-                                                 .type = FUNCTION_DEFINITION_BUILTIN,
-                                                 .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = tan } } };
+    static FunctionDefinition builtin[] = { { .name = "ABS",
+                                              .type = FUNCTION_DEFINITION_BUILTIN,
+                                              .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = fabs } },
+                                            { "ATN", .type = FUNCTION_DEFINITION_BUILTIN,
+                                              .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = atan } },
+                                            { .name = "COS",
+                                              .type = FUNCTION_DEFINITION_BUILTIN,
+                                              .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = cos } },
+                                            { "EXP", .type = FUNCTION_DEFINITION_BUILTIN,
+                                              .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = exp } },
+                                            { .name = "INT",
+                                              .type = FUNCTION_DEFINITION_BUILTIN,
+                                              .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = floor } },
+                                            { "LOG", .type = FUNCTION_DEFINITION_BUILTIN,
+                                              .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = log } },
+                                            { .name = "RND",
+                                              .type = FUNCTION_DEFINITION_BUILTIN,
+                                              .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = rnd } },
+                                            { "SGN", .type = FUNCTION_DEFINITION_BUILTIN,
+                                              .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = sgn } },
+                                            { .name = "SIN",
+                                              .type = FUNCTION_DEFINITION_BUILTIN,
+                                              .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = sin } },
+                                            { "SQR", .type = FUNCTION_DEFINITION_BUILTIN,
+                                              .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = sqrt } },
+                                            { .name = "TAN",
+                                              .type = FUNCTION_DEFINITION_BUILTIN,
+                                              .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = tan } } };
 
     for (u32 index = 0; index < STACK_ARRAY_SIZE(builtin); ++index) {
-        function_definition_t *function = builtin + index;
-        map_insert(self->program.symbols, function->name, function);
+        FunctionDefinition *function = builtin + index;
+        hash_map_insert(self->program.symbols, function->name, function);
     }
 }
 
 /// Creates a new emulator instance
-void emulator_create(emulator_t *self, renderer_t *renderer) {
+void emulator_create(Emulator *self, Renderer *renderer) {
     self->state = EMULATOR_STATE_INPUT;
     self->mode = EMULATOR_MODE_TEXT;
     self->renderer = renderer;
@@ -169,7 +169,7 @@ void emulator_create(emulator_t *self, renderer_t *renderer) {
 }
 
 /// Destroys the emulator and frees all its associated data
-void emulator_destroy(emulator_t *self) {
+void emulator_destroy(Emulator *self) {
     program_destroy(&self->program);
     text_cursor_destroy(&self->text);
     text_queue_free(self->history);
@@ -177,7 +177,7 @@ void emulator_destroy(emulator_t *self) {
 }
 
 /// Runs an emulation pass
-void emulator_run(emulator_t *self) {
+void emulator_run(Emulator *self) {
     self->state = EMULATOR_STATE_EXECUTION;
     self->text.submit = false;
     thread_create(emulator_pass_platform, self);
@@ -188,11 +188,11 @@ void emulator_key_callback(GLFWwindow *handle, s32 key, s32 scancode, s32 action
     if (action != GLFW_PRESS && action != GLFW_REPEAT) {
         return;
     }
-    emulator_t *self = glfwGetWindowUserPointer(handle);
+    Emulator *self = glfwGetWindowUserPointer(handle);
     if (self) {
         self->program.last_key = key;
         if (self->state == EMULATOR_STATE_INPUT) {
-            text_cursor_t *text = &self->text;
+            TextCursor *text = &self->text;
             switch (key) {
                 case GLFW_KEY_LEFT:
                     text_cursor_advance(text, -1);
@@ -222,7 +222,7 @@ void emulator_key_callback(GLFWwindow *handle, s32 key, s32 scancode, s32 action
 
 /// Char callback handler for handling GLFW char input
 void emulator_char_callback(GLFWwindow *handle, u32 unicode) {
-    emulator_t *self = glfwGetWindowUserPointer(handle);
+    Emulator *self = glfwGetWindowUserPointer(handle);
     if (self) {
         text_cursor_emplace(&self->text, (char) toupper((char) unicode));
     }

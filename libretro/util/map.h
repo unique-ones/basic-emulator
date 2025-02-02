@@ -30,50 +30,50 @@ enum {
     MAP_BUCKET_COUNT = 16
 };
 
-typedef struct map {
-    list_t *buckets[MAP_BUCKET_COUNT];
-} map_t;
+typedef struct HashMap {
+    LinkedList *buckets[MAP_BUCKET_COUNT];
+} HashMap;
 
 /// Allocates a new map instance
 /// @return A new map instance
-map_t *map_new(void);
+HashMap *hash_map_new(void);
 
 /// Frees the map and its buckets
 /// @param self The map handle
-void map_free(map_t *self);
+void hash_map_free(HashMap *self);
 
 /// Clears the map and its buckets
 /// @param self The map handle
-void map_clear(map_t *self);
+void hash_map_clear(HashMap *self);
 
 /// Removes the specified key from the map
 /// @param self The map handle
 /// @param key The key that shall be removed
-void map_remove(map_t *self, const char *key);
+void hash_map_remove(HashMap *self, const char *key);
 
 /// Inserts the specified key-value pair into the map
 /// @param self The map handle
 /// @param key The key under which the value will be placed
 /// @param value The value that shall be inserted
-void map_insert(map_t *self, const char *key, void *value);
+void hash_map_insert(HashMap *self, const char *key, void *value);
 
 /// Inserts the specified key-value pair into the map
 /// @param self The map handle
 /// @param key The key under which the value will be placed
 /// @param value The value that shall be inserted
-void map_insert_number(map_t *self, u32 key, void *value);
+void hash_map_insert_number(HashMap *self, u32 key, void *value);
 
 /// Tries to find a key-value pair where the key matches with the specified entry
 /// @param self The map handle
 /// @param key The key for which the value shall be found
 /// @return A reference to the found value or NULL
-void *map_find(map_t *self, const char *key);
+void *hash_map_find(HashMap *self, const char *key);
 
 /// Tries to find a key-value pair where the key matches with the specified entry
 /// @param self The map handle
 /// @param key The key for which the value shall be found
 /// @return A reference to the found value or NULL
-void *map_find_number(map_t *self, u32 key);
+void *hash_map_find_number(HashMap *self, u32 key);
 
 /// Super fast hash function by paul hsieh
 /// @cite http://www.azillionmonkeys.com/qed/hash.html

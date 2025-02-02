@@ -27,12 +27,12 @@
 
 #include <libretro/util/stack.h>
 
-typedef struct employee {
+typedef struct Employee {
     const char *name;
     u32 id;
-} employee_t;
+} Employee;
 
-bool employee_equal(employee_t *a, employee_t *b) {
+bool employee_equal(Employee *a, Employee *b) {
     if (a->id != b->id) {
         return false;
     }
@@ -40,10 +40,10 @@ bool employee_equal(employee_t *a, employee_t *b) {
 }
 
 static void stack_test_push(void) {
-    employee_t *joseph = &(employee_t){ .name = "Joseph", .id = 1 };
-    employee_t *adam = &(employee_t){ .name = "Adam", .id = 2 };
+    Employee *joseph = &(Employee){ .name = "Joseph", .id = 1 };
+    Employee *adam = &(Employee){ .name = "Adam", .id = 2 };
 
-    stack_t *stack = stack_new(4);
+    Stack *stack = stack_new(4);
     stack_push(stack, joseph);
     stack_push(stack, adam);
     assert(stack->size == 2 && "stack size mismatch");
@@ -51,36 +51,36 @@ static void stack_test_push(void) {
 }
 
 static void stack_test_pop(void) {
-    employee_t *peter = &(employee_t){ .name = "Peter", .id = 1 };
-    employee_t *michael = &(employee_t){ .name = "Michael", .id = 10 };
-    employee_t *natalie = &(employee_t){ .name = "Natalie", .id = 3 };
+    Employee *peter = &(Employee){ .name = "Peter", .id = 1 };
+    Employee *michael = &(Employee){ .name = "Michael", .id = 10 };
+    Employee *natalie = &(Employee){ .name = "Natalie", .id = 3 };
 
-    stack_t *stack = stack_new(4);
+    Stack *stack = stack_new(4);
     stack_push(stack, peter);
     stack_push(stack, michael);
     stack_push(stack, natalie);
 
-    employee_t *popped = stack_pop(stack);
+    Employee *popped = stack_pop(stack);
     assert(stack->size == 2 && "stack size mismatch");
     assert(employee_equal(popped, natalie) && "stack entry mismatch");
     stack_free(stack);
 }
 
 static void stack_test_peek(void) {
-    employee_t *mario = &(employee_t){ .name = "Mario", .id = 11 };
-    employee_t *eva = &(employee_t){ .name = "Eva", .id = 20 };
-    employee_t *alina = &(employee_t){ .name = "Alina", .id = 17 };
+    Employee *mario = &(Employee){ .name = "Mario", .id = 11 };
+    Employee *eva = &(Employee){ .name = "Eva", .id = 20 };
+    Employee *alina = &(Employee){ .name = "Alina", .id = 17 };
 
-    stack_t *stack = stack_new(4);
+    Stack *stack = stack_new(4);
     stack_push(stack, mario);
     stack_push(stack, eva);
     stack_push(stack, alina);
 
-    employee_t *top = stack_peek(stack);
+    Employee *top = stack_peek(stack);
     assert(stack->size == 3 && "stack size mismatch");
     assert(employee_equal(top, alina) && "stack entry mismatch");
 
-    employee_t *popped = stack_pop(stack);
+    Employee *popped = stack_pop(stack);
     assert(stack->size == 2 && "stack size mismatch");
     assert(employee_equal(top, popped) && "stack entry mismatch");
 
@@ -90,15 +90,15 @@ static void stack_test_peek(void) {
 }
 
 static void stack_test_grow(void) {
-    employee_t *mario = &(employee_t){ .name = "Mario", .id = 11 };
-    employee_t *eva = &(employee_t){ .name = "Eva", .id = 20 };
-    employee_t *alina = &(employee_t){ .name = "Alina", .id = 17 };
-    employee_t *peter = &(employee_t){ .name = "Peter", .id = 1 };
-    employee_t *michael = &(employee_t){ .name = "Michael", .id = 10 };
-    employee_t *natalie = &(employee_t){ .name = "Natalie", .id = 3 };
-    employee_t *joseph = &(employee_t){ .name = "Joseph", .id = 1 };
+    Employee *mario = &(Employee){ .name = "Mario", .id = 11 };
+    Employee *eva = &(Employee){ .name = "Eva", .id = 20 };
+    Employee *alina = &(Employee){ .name = "Alina", .id = 17 };
+    Employee *peter = &(Employee){ .name = "Peter", .id = 1 };
+    Employee *michael = &(Employee){ .name = "Michael", .id = 10 };
+    Employee *natalie = &(Employee){ .name = "Natalie", .id = 3 };
+    Employee *joseph = &(Employee){ .name = "Joseph", .id = 1 };
 
-    stack_t *stack = stack_new(3);
+    Stack *stack = stack_new(3);
     stack_push(stack, mario);
     stack_push(stack, eva);
     stack_push(stack, alina);

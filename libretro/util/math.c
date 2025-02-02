@@ -39,7 +39,7 @@ s32 s32_clamp(s32 n, s32 min, s32 max) {
 }
 
 /// Creates an identity matrix
-void f32mat4_create_identity(f32mat4_t* self) {
+void f32mat4_create_identity(F32Mat4 *self) {
     self->value[0].x = 1.0f;
     self->value[0].y = 0.0f;
     self->value[0].z = 0.0f;
@@ -59,7 +59,7 @@ void f32mat4_create_identity(f32mat4_t* self) {
 }
 
 /// Creates an orthogonal projection matrix
-void f32mat4_create_orthogonal(f32mat4_t* self, f32 left, f32 right, f32 bottom, f32 top) {
+void f32mat4_create_orthogonal(F32Mat4 *self, f32 left, f32 right, f32 bottom, f32 top) {
     f32mat4_create_identity(self);
     self->value[0].x = 2.0f / (right - left);
     self->value[1].y = 2.0f / (top - bottom);

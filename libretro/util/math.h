@@ -47,7 +47,7 @@ s32 s32_clamp(s32 n, s32 min, s32 max);
 
 /// Creates an identity matrix
 /// @param self The matrix handle
-void f32mat4_create_identity(f32mat4_t* self);
+void f32mat4_create_identity(F32Mat4 *self);
 
 /// Creates an orthogonal projection matrix
 /// @param self The matrix handle
@@ -55,6 +55,6 @@ void f32mat4_create_identity(f32mat4_t* self);
 /// @param right The right coordinate of the orthogonal frustum
 /// @param bottom The bottom coordinate of the orthogonal frustum
 /// @param top The top coordinate of the orthogonal frustum
-void f32mat4_create_orthogonal(f32mat4_t* self, f32 left, f32 right, f32 bottom, f32 top);
+void f32mat4_create_orthogonal(F32Mat4 *self, f32 left, f32 right, f32 bottom, f32 top);
 
 #endif// RETRO_UTIL_MATH_H

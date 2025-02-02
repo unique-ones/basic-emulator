@@ -29,57 +29,57 @@
 #include <libretro/util/list.h>
 
 static void list_test_at(void) {
-    list_t *list = list_new();
+    LinkedList *list = linked_list_new();
 
     char *data = "GOSUB 1000";
     for (u32 i = 0; i < strlen(data); i++) {
-        list_append(list, data + i);
+        linked_list_append(list, data + i);
         assert(list->length == i + 1 && "list_append length mismatch");
     }
 
     for (u32 i = 0; i < strlen(data); i++) {
-        char *node_data = list_at(list, i);
+        char *node_data = linked_list_at(list, i);
         assert(node_data && "list_at returned NULL data");
         assert(*node_data == *(data + i) && "list_at data mismatch");
     }
-    list_free(list);
+    linked_list_free(list);
 }
 
 static void list_test_insert(void) {
-    list_t *list = list_new();
+    LinkedList *list = linked_list_new();
 
     char *data = "foo_bar";
     for (u32 i = 0; i < strlen(data); ++i) {
-        list_insert(list, i, data + i);
+        linked_list_insert(list, i, data + i);
         assert(list->length == i + 1 && "list_insert length mismatch");
     }
 
     u32 i = 0;
-    node_t *node = list->head;
+    ListNode *node = list->head;
     while (node != NULL) {
         assert(*((char *) (node->data)) == data[i++]);
         node = node->next;
     }
 
-    list_free(list);
+    linked_list_free(list);
 }
 
-typedef enum animal_type {
+typedef enum AnimalType {
     MAMMAL = 0,
     INSECT = 1
-} animal_type_t;
+} AnimalType;
 
-typedef struct animal {
+typedef struct Animal {
     const char *name;
-    animal_type_t type;
-} animal_t;
+    AnimalType type;
+} Animal;
 
 static bool animal_compare(const void *a, const void *b) {
     if (a == NULL || b == NULL) {
         return false;
     }
-    const animal_t *first_animal = (const animal_t *) a;
-    const animal_t *second_animal = (const animal_t *) b;
+    const Animal *first_animal = (const Animal *) a;
+    const Animal *second_animal = (const Animal *) b;
     if (first_animal->type != second_animal->type) {
         return false;
     }
@@ -87,38 +87,38 @@ static bool animal_compare(const void *a, const void *b) {
 }
 
 static void list_test_find(void) {
-    animal_t *bear = &(animal_t){ .name = "joe", .type = MAMMAL };
-    animal_t *monkey = &(animal_t){ .name = "jeff", .type = MAMMAL };
-    animal_t *bee = &(animal_t){ .name = "mia", .type = INSECT };
-    animal_t *cat = &(animal_t){ .name = "rupert", .type = MAMMAL };
-    animal_t *dog = &(animal_t){ .name = "sir peanut", .type = MAMMAL };
+    Animal *bear = &(Animal){ .name = "joe", .type = MAMMAL };
+    Animal *monkey = &(Animal){ .name = "jeff", .type = MAMMAL };
+    Animal *bee = &(Animal){ .name = "mia", .type = INSECT };
+    Animal *cat = &(Animal){ .name = "rupert", .type = MAMMAL };
+    Animal *dog = &(Animal){ .name = "sir peanut", .type = MAMMAL };
 
-    list_t *list = list_new();
-    node_t *empty_result = list_find(list, cat, animal_compare);
+    LinkedList *list = linked_list_new();
+    ListNode *empty_result = linked_list_find(list, cat, animal_compare);
     assert(empty_result == NULL && "list_find returned invalid node");
 
-    list_append(list, bear);
-    list_append(list, monkey);
-    list_append(list, bee);
-    list_append(list, cat);
-    list_append(list, dog);
+    linked_list_append(list, bear);
+    linked_list_append(list, monkey);
+    linked_list_append(list, bee);
+    linked_list_append(list, cat);
+    linked_list_append(list, dog);
 
-    node_t *dog_result = list_find(list, dog, animal_compare);
+    ListNode *dog_result = linked_list_find(list, dog, animal_compare);
     assert(dog_result != NULL && animal_compare(dog_result->data, dog) && "list_find did not find dog entry");
 
-    node_t *cat_result = list_find(list, cat, animal_compare);
+    ListNode *cat_result = linked_list_find(list, cat, animal_compare);
     assert(cat_result != NULL && animal_compare(cat_result->data, cat) && "list_find did not find dog entry");
 
-    node_t *bee_result = list_find(list, bee, animal_compare);
+    ListNode *bee_result = linked_list_find(list, bee, animal_compare);
     assert(bee_result != NULL && animal_compare(bee_result->data, bee) && "list_find did not find dog entry");
 
-    node_t *monkey_result = list_find(list, monkey, animal_compare);
+    ListNode *monkey_result = linked_list_find(list, monkey, animal_compare);
     assert(monkey_result != NULL && animal_compare(monkey_result->data, monkey) && "list_find did not find dog entry");
 
-    node_t *bear_result = list_find(list, bear, animal_compare);
+    ListNode *bear_result = linked_list_find(list, bear, animal_compare);
     assert(bear_result != NULL && animal_compare(bear_result->data, bear) && "list_find did not find dog entry");
 
-    list_free(list);
+    linked_list_free(list);
 }
 
 int main(int argc, char **argv) {
