@@ -56,6 +56,7 @@ static program_tree_node_t *program_tree_node_create(arena_t *arena, statement_t
 
 /// Insert the given statement at a feasible position starting at the specified node
 static void program_tree_node_insert(arena_t *arena, program_tree_node_t *node, statement_t *stmt) {
+    // TODO(elias): program tree should probably be ordered into heap rather than tree
     u32 node_line = node->stmt->line;
     u32 stmt_line = stmt->line;
 

@@ -22,7 +22,6 @@
 // SOFTWARE.
 
 #include <libretro/retro.h>
-#include <stdio.h>
 
 int main() {
     display_t display;

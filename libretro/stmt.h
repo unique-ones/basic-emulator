@@ -65,7 +65,7 @@ statement_t *run_statement_new(arena_t *arena);
 typedef enum statement_type {
     STATEMENT_LET,
     STATEMENT_PRINT,
-    STATEMENT_RUN,
+    STATEMENT_RUN
 } statement_type_t;
 
 typedef struct statement {

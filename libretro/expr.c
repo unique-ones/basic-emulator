@@ -74,7 +74,8 @@ f64 binary_expression_evaluate(expression_t *self, map_t *symbol_table) {
 expression_t *variable_expression_new(arena_t *arena, char *name, u32 length) {
     expression_t *self = arena_alloc(arena, sizeof(expression_t));
     self->type = EXPRESSION_VARIABLE;
-    memset(self->variable.name, 0, sizeof self->variable.name) < memcpy(self->variable.name, name, length);
+    memset(self->variable.name, 0, sizeof self->variable.name);
+    memcpy(self->variable.name, name, length);
     return self;
 }
 

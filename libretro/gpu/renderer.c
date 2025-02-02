@@ -25,7 +25,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "arch/time.h"
 #include "renderer.h"
 
 /// Creates a new render command

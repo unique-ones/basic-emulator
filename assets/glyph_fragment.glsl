@@ -6,5 +6,5 @@ layout (location = 0) out vec4 out_color;
 uniform sampler2D uniform_glyph_atlas;
 
 void main() {
-    out_color = vec4(passed_color, texture(uniform_glyph_atlas, passed_texture_coordinates).r);
+    out_color = vec4(passed_color, texture(uniform_glyph_atlas, passed_texture_coordinates).a);
 }

@@ -48,7 +48,7 @@ statement_t *print_statement_new(arena_t *arena, u32 line, expression_t *printab
 
 /// Creates a new run statement
 statement_t *run_statement_new(arena_t *arena) {
-    statement_t *self = arena_alloc(arena, sizeof(statement_t));
+    statement_t *self = (statement_t *) arena_alloc(arena, sizeof(statement_t));
     self->line = 0;
     self->type = STATEMENT_RUN;
     return self;
@@ -65,7 +65,7 @@ static bool match_next(token_iterator_t *state, token_type_t type) {
 }
 
 /// Creates a successful statement result
-static statement_result_t statement_result_make(statement_t* statement) {
+static statement_result_t statement_result_make(statement_t *statement) {
     statement_result_t result = { 0 };
     result.type = RESULT_OK;
     result.statement = statement;
@@ -73,7 +73,7 @@ static statement_result_t statement_result_make(statement_t* statement) {
 }
 
 /// Creates a statement result with an error message
-static statement_result_t statement_result_make_error(const char* error) {
+static statement_result_t statement_result_make_error(const char *error) {
     statement_result_t result = { 0 };
     result.type = RESULT_ERROR;
     result.error = error;
@@ -140,9 +140,12 @@ statement_result_t statement_compile(arena_t *arena, token_t *begin, token_t *en
     if (match(&state, TOKEN_RUN)) {
         return statement_run(arena);
     }
+
     if (match(&state, TOKEN_EXIT)) {
         exit(0);
     }
+
+    // Any other statement should be preceeded by a number
     if (!match(&state, TOKEN_NUMBER)) {
         return statement_result_make_error("Statement is missing line number");
     }

@@ -57,15 +57,14 @@ static void emulator_pass(emulator_t *self) {
         static f32vec3_t err = { 1.0f, 0.0f, 0.0f };
         renderer_draw_text(self->renderer, &position, &err, 0.5f, "%s", result.error);
     } else {
-        // if we encounter the RUN statement, we must iterate over all the lines.
-        // currently, this is not implemented. therefore, we only execute one
-        // statement at a time.
-        if (result.statement->type == STATEMENT_RUN) {
-            program_execute(&self->program);
-        } else {
-            program_tree_insert(&self->program.lines, result.statement);
-            emulator_pass_finish(self);
-            return;
+        switch (result.statement->type) {
+            case STATEMENT_RUN:
+                program_execute(&self->program);
+                break;
+            default:
+                program_tree_insert(&self->program.lines, result.statement);
+                emulator_pass_finish(self);
+                return;
         }
     }
 

@@ -25,6 +25,7 @@
 #include "util/utility.h"
 
 // clang-format off
+#include <assert.h>
 #include <ft2build.h>
 #include <freetype/freetype.h>
 // clang-format on
@@ -61,17 +62,17 @@ glyph_cache_t *glyph_cache_new(const char *path) {
             continue;
         }
         glyph_info_t *info = (self->info + i - 32);
-        info->size.x = (f32) (face->glyph->bitmap.width);
-        info->size.y = (f32) (face->glyph->bitmap.rows);
-        info->bearing.x = (f32) (face->glyph->bitmap_left);
-        info->bearing.y = (f32) (face->glyph->bitmap_top);
-        info->advance.x = (f32) (face->glyph->advance.x >> 6);
-        info->advance.y = (f32) (face->glyph->advance.y >> 6);
+        info->size.x = face->glyph->bitmap.width;
+        info->size.y = face->glyph->bitmap.rows;
+        info->bearing.x = face->glyph->bitmap_left;
+        info->bearing.y = face->glyph->bitmap_top;
+        info->advance.x = face->glyph->advance.x >> 6;
+        info->advance.y = face->glyph->advance.y >> 6;
         info->texture_span.x = 0.0f;
         info->texture_span.y = 0.0f;
         info->texture_offset = 0.0f;
-        size.x += (s32) face->glyph->bitmap.width;
-        size.y = s32_max(size.y, (s32) face->glyph->bitmap.rows);
+        size.x += info->advance.x;
+        size.y = s32_max(size.y, info->size.y);
     }
 
     self->atlas.data = NULL;
@@ -86,7 +87,18 @@ glyph_cache_t *glyph_cache_new(const char *path) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, size.x, size.y, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
+
+    s32 length = size.x * size.y;
+    u8 *data = malloc(length);
+    if (data == NULL) {
+        assert(false && "Unable to allocate data for blank texture!");
+    }
+    memset(data, 0, length);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, size.x, size.y, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+    free(data);
+
+    GLint swizzle[] = { GL_ZERO, GL_ZERO, GL_ZERO, GL_RED };
+    glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
 
     s32 offset = 0;
     for (u32 i = 0; i < 96; i++) {
@@ -94,14 +106,14 @@ glyph_cache_t *glyph_cache_new(const char *path) {
         if (FT_Load_Char(face, i + 32, FT_LOAD_RENDER) || face->glyph->bitmap.buffer == NULL) {
             continue;
         }
-        glyph_info_t *info = (self->info + i);
+        glyph_info_t *info = self->info + i;
         info->texture_offset = (f32) offset / (f32) size.x;
         info->texture_span.x = info->size.x / (f32) size.x;
         info->texture_span.y = info->size.y / (f32) size.y;
-        info->bearing.y -= (f32) size.y - info->size.y;
-        glTexSubImage2D(GL_TEXTURE_2D, 0, offset, 0, (s32) info->size.x, (s32) info->size.y, GL_RED, GL_UNSIGNED_BYTE,
+        info->bearing.y -= size.y - info->size.y;
+        glTexSubImage2D(GL_TEXTURE_2D, 0, offset, 0, info->size.x, info->size.y, GL_RED, GL_UNSIGNED_BYTE,
                         face->glyph->bitmap.buffer);
-        offset += (s32) info->size.x;
+        offset += info->advance.x;
     }
 
     free(font_data.data);
@@ -119,10 +131,5 @@ void glyph_cache_free(glyph_cache_t *self) {
 
 /// Fetches the specified symbol from the glyph cache
 void glyph_cache_acquire(glyph_cache_t *self, glyph_info_t *info, char symbol) {
-    glyph_info_t *fetched = (self->info + symbol - 32);
-    info->size = fetched->size;
-    info->advance = fetched->advance;
-    info->bearing = fetched->bearing;
-    info->texture_span = fetched->texture_span;
-    info->texture_offset = fetched->texture_offset;
+    *info = *(self->info + symbol - 32);
 }

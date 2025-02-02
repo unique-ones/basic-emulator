@@ -28,8 +28,6 @@
 
 #include "gpu/renderer.h"
 #include "prog.h"
-#include "util/map.h"
-#include "util/stack.h"
 #include "util/text.h"
 
 enum {
@@ -40,6 +38,7 @@ typedef enum emulator_state {
     EMULATOR_STATE_INPUT = 0,
     EMULATOR_STATE_EXECUTION = 1
 } emulator_state_t;
+
 typedef enum emulator_mode {
     EMULATOR_MODE_TEXT = 0,
     EMULATOR_MODE_GRAPHICS = 1

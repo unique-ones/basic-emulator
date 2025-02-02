@@ -32,9 +32,9 @@ enum {
 };
 
 typedef struct glyph_info {
-    f32vec2_t size;
-    f32vec2_t bearing;
-    f32vec2_t advance;
+    s32vec2_t size;
+    s32vec2_t bearing;
+    s32vec2_t advance;
     f32vec2_t texture_span;
     f32 texture_offset;
 } glyph_info_t;
