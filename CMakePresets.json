@@ -102,31 +102,55 @@
       "jobs": 16
     },
     {
+      "name": "lin",
+      "hidden": true,
+      "inherits": [
+        "default"
+      ],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "win",
+      "hidden": true,
+      "inherits": [
+        "default"
+      ],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
       "name": "win-64-debug",
       "configurePreset": "win-64-debug",
       "inherits": [
-        "default"
+        "win"
       ]
     },
     {
       "name": "win-64-release",
       "configurePreset": "win-64-release",
       "inherits": [
-        "default"
+        "win"
       ]
     },
     {
       "name": "lin-64-debug",
       "configurePreset": "lin-64-debug",
       "inherits": [
-        "default"
+        "lin"
       ]
     },
     {
       "name": "lin-64-release",
       "configurePreset": "lin-64-release",
       "inherits": [
-        "default"
+        "lin"
       ]
     }
   ]

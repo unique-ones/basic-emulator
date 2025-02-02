@@ -2,13 +2,15 @@
 
 Basic-Emulator is a simple Applesoft-Basic Emulator.
 
-## Installation
+## Prerequisites
 
-Use git to clone the repository:
+In order to build the emulator, you must have a few things installed:
 
-```bash
-git clone https://gitlab.com/average-basic-enjoyers/basic-emulator.git
-```
+ - [CMake](https://cmake.org)
+ - [LLVM](https://llvm.org)
+ - [Ninja](https://ninja-build.org)
+
+Make sure that all of the above are installed correctly and that they are set in your `PATH` environment variable.
 
 ### Linux
 
@@ -18,29 +20,51 @@ On Debian based distros, the following packages are required:
 sudo apt install git cmake ninja-build libx11-dev xorg-dev libglu1-mesa-dev
 ```
 
-### Windows
-
-Git, CMake and preferably Visual Studio (as it ships with Microsoft's MSVC compiler) must all be installed.
-
 ## Building
 
-Basic-Emulator uses the CMake build system.
+### VSCode
 
-### Configure wrapper
+In order to build the project using VSCode, you must first configure the CMake project:
 
-For quick setup, the configure wrapper takes care of setting up CMake automatically. It must be run from the Basic-Emulator root directory.
+1. Press `F1` to open the command palette
+2. Type in _CMake: Configure_
+3. Press `Enter`
 
-#### Linux
+You will probably get asked what preset you want to choose, you can choose from
+ - Debug: `<os>-64-debug`
+ - Release: `<os>-64-release`
+
+Then you can build the project:
+
+1. Press `F1` to open the command palette
+2. Type in _CMake: Build_
+3. Press `Enter`
+
+### Command Line
+
+In order to build the project using the commandline, you must first configure the CMake project. There are different presets to choose from, you can list them using:
 
 ```bash
-./configure-lin-64 <debug|release>
+cmake --list-presets
 ```
 
-#### Windows
+There will probably be two presets to choose from:
+ - Debug: `<os>-64-debug`
+ - Release: `<os>-64-release`
+
+You can then go on and choose a preset using the following command:
 
 ```bash
-.\configure-win-64.bat <debug|release>
+cmake --preset=<preset-name>
 ```
 
-## License
-[MIT](https://choosealicense.com/licenses/mit/)
+After this, you can build the project. For building, there are also different presets to choose from. It must be noted that the build preset **must** match with the configure preset. You can see all possible build presets using the following command:
+
+```bash
+cmake --build --list-presets
+```
+
+Now you can build the project using a preset of your choice:
+```bash
+cmake --build --preset=<preset-name>
+```
