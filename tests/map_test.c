@@ -28,12 +28,12 @@
 #include <libretro/gpu/buffer.h>
 #include <libretro/util/map.h>
 
-typedef struct uniform {
+typedef struct Uniform {
     u32 location;
-    shader_type_t type;
-} uniform_t;
+    ShaderType type;
+} Uniform;
 
-bool uniform_equal(uniform_t *a, uniform_t *b) {
+bool uniform_equal(Uniform *a, Uniform *b) {
     if (a->location != b->location) {
         return false;
     }
@@ -41,26 +41,26 @@ bool uniform_equal(uniform_t *a, uniform_t *b) {
 }
 
 static void map_test(void) {
-    uniform_t *scale = &(uniform_t){ .location = 0, .type = FLOAT4 };
-    uniform_t *curvature = &(uniform_t){ .location = 1, .type = FLOAT2 };
+    Uniform *scale = &(Uniform){ .location = 0, .type = FLOAT4 };
+    Uniform *curvature = &(Uniform){ .location = 1, .type = FLOAT2 };
 
-    map_t *map = map_new();
-    map_insert(map, "uniform_scale", scale);
-    map_insert(map, "uniform_curvature", curvature);
+    HashMap *map = hash_map_new();
+    hash_map_insert(map, "uniform_scale", scale);
+    hash_map_insert(map, "uniform_curvature", curvature);
 
-    uniform_t *scale_find = map_find(map, "uniform_scale");
+    Uniform *scale_find = hash_map_find(map, "uniform_scale");
     assert(scale_find != NULL && uniform_equal(scale_find, scale) && "map_find mismatch");
 
-    uniform_t *altered_scale = &(uniform_t){ .location = 10, .type = FLOAT4 };
-    map_insert(map, "uniform_scale", altered_scale);
+    Uniform *altered_scale = &(Uniform){ .location = 10, .type = FLOAT4 };
+    hash_map_insert(map, "uniform_scale", altered_scale);
 
-    scale_find = map_find(map, "uniform_scale");
+    scale_find = hash_map_find(map, "uniform_scale");
     assert(scale_find != NULL && uniform_equal(scale_find, altered_scale) && "map_find mismatch");
 
-    uniform_t *curvature_find = map_find(map, "uniform_curvature");
+    Uniform *curvature_find = hash_map_find(map, "uniform_curvature");
     assert(curvature_find != NULL && uniform_equal(curvature_find, curvature) && "map_find mismatch");
 
-    map_free(map);
+    hash_map_free(map);
 }
 
 int main(int argc, char **argv) {

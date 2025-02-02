@@ -30,39 +30,39 @@
 #include "prog.h"
 #include "util/text.h"
 
-typedef enum emulator_state {
+typedef enum EmulatorState {
     EMULATOR_STATE_INPUT = 0,
     EMULATOR_STATE_EXECUTION = 1
-} emulator_state_t;
+} EmulatorState;
 
-typedef enum emulator_mode {
+typedef enum EmulatorMode {
     EMULATOR_MODE_TEXT = 0,
     EMULATOR_MODE_GRAPHICS = 1
-} emulator_mode_t;
+} EmulatorMode;
 
-typedef struct emulator {
-    emulator_state_t state;
-    emulator_mode_t mode;
-    renderer_t *renderer;
-    program_t program;
-    text_cursor_t text;
-    text_queue_t *history;
-    arena_t arena;
+typedef struct Emulator {
+    EmulatorState state;
+    EmulatorMode mode;
+    Renderer *renderer;
+    Program program;
+    TextCursor text;
+    TextQueue *history;
+    MemoryArena arena;
     bool enable_crt;
-} emulator_t;
+} Emulator;
 
 /// Creates a new emulator instance
 /// @param self The emulator instance
 /// @param renderer The renderer of the emulator
-void emulator_create(emulator_t *self, renderer_t *renderer);
+void emulator_create(Emulator *self, Renderer *renderer);
 
 /// Destroys the emulator and frees all its associated data
 /// @param self The emulator instance
-void emulator_destroy(emulator_t *self);
+void emulator_destroy(Emulator *self);
 
 /// Runs an emulation pass
 /// @param self The emulator instance
-void emulator_run(emulator_t *self);
+void emulator_run(Emulator *self);
 
 /// Key callback handler for handling GLFW key input
 /// @param handle The glfw window handle

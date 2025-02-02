@@ -26,56 +26,56 @@
 
 #include "map.h"
 
-typedef enum map_entry_key_type {
+typedef enum hash_map_entry_key_type {
     KEY_TYPE_STRING,
     KEY_TYPE_NUMBER
-} map_entry_key_type_t;
+} hash_map_entry_key_type_t;
 
-typedef struct map_entry {
-    map_entry_key_type_t type;
+typedef struct hash_map_entry {
+    hash_map_entry_key_type_t type;
     union {
         const char *key;
         u32 key_number;
     };
     void *data;
-} map_entry_t;
+} hash_map_entry_t;
 
 /// Allocates a new map instance
-map_t *map_new(void) {
-    map_t *self = (map_t *) malloc(sizeof(map_t));
+HashMap *hash_map_new(void) {
+    HashMap *self = (HashMap *) malloc(sizeof(HashMap));
     for (u32 i = 0; i < MAP_BUCKET_COUNT; ++i) {
-        self->buckets[i] = list_new();
+        self->buckets[i] = linked_list_new();
     }
     return self;
 }
 
 /// Frees the map and its buckets
-void map_free(map_t *self) {
+void hash_map_free(HashMap *self) {
     for (u32 i = 0; i < MAP_BUCKET_COUNT; ++i) {
-        list_t *bucket = self->buckets[i];
-        node_t *it = bucket->head;
+        LinkedList *bucket = self->buckets[i];
+        ListNode *it = bucket->head;
         while (it != NULL && it->next != NULL) {
-            map_entry_t *entry = it->data;
+            hash_map_entry_t *entry = it->data;
             free(entry);
             it = it->next;
         }
-        list_free(bucket);
+        linked_list_free(bucket);
     }
     free(self);
 }
 
 /// Clears the map and its buckets
 /// @param self The map handle
-void map_clear(map_t *self) {
+void hash_map_clear(HashMap *self) {
     for (u32 i = 0; i < MAP_BUCKET_COUNT; ++i) {
-        list_clear(self->buckets[i]);
+        linked_list_clear(self->buckets[i]);
     }
 }
 
 /// Checks if two map entries are equal
-static bool map_entry_equal(const void *a, const void *b) {
-    const map_entry_t *first = (const map_entry_t *) a;
-    const map_entry_t *second = (const map_entry_t *) b;
+static bool hash_map_entry_equal(const void *a, const void *b) {
+    const hash_map_entry_t *first = (const hash_map_entry_t *) a;
+    const hash_map_entry_t *second = (const hash_map_entry_t *) b;
     if (first->type != second->type) {
         return false;
     }
@@ -86,59 +86,59 @@ static bool map_entry_equal(const void *a, const void *b) {
 }
 
 /// Removes the specified key from the map
-void map_remove(map_t *self, const char *key) {
+void hash_map_remove(HashMap *self, const char *key) {
     u32 bucket_index = hash(key, (u32) strlen(key)) % MAP_BUCKET_COUNT;
-    list_t *bucket = self->buckets[bucket_index];
+    LinkedList *bucket = self->buckets[bucket_index];
 
-    map_entry_t entry = { .type = KEY_TYPE_STRING, .key = key, .data = NULL };
-    list_remove(bucket, &entry, map_entry_equal);
+    hash_map_entry_t entry = { .type = KEY_TYPE_STRING, .key = key, .data = NULL };
+    linked_list_remove(bucket, &entry, hash_map_entry_equal);
 }
 
 /// Inserts the specified key-value pair into the map
-void map_insert(map_t *self, const char *key, void *value) {
+void hash_map_insert(HashMap *self, const char *key, void *value) {
     u32 bucket_index = hash(key, (u32) strlen(key)) % MAP_BUCKET_COUNT;
-    list_t *bucket = self->buckets[bucket_index];
+    LinkedList *bucket = self->buckets[bucket_index];
 
-    map_entry_t *data = (map_entry_t *) malloc(sizeof(map_entry_t));
+    hash_map_entry_t *data = (hash_map_entry_t *) malloc(sizeof(hash_map_entry_t));
     data->type = KEY_TYPE_STRING;
     data->key = key;
     data->data = value;
 
-    node_t *find_result = list_find(bucket, data, map_entry_equal);
+    ListNode *find_result = linked_list_find(bucket, data, hash_map_entry_equal);
     if (find_result) {
         find_result->data = data;
     } else {
-        list_append(bucket, data);
+        linked_list_append(bucket, data);
     }
 }
 
 /// Inserts the specified key-value pair into the map
-void map_insert_number(map_t *self, u32 key, void *value) {
+void hash_map_insert_number(HashMap *self, u32 key, void *value) {
     u32 bucket_index = key % MAP_BUCKET_COUNT;
-    list_t *bucket = self->buckets[bucket_index];
+    LinkedList *bucket = self->buckets[bucket_index];
 
-    map_entry_t *data = (map_entry_t *) malloc(sizeof(map_entry_t));
+    hash_map_entry_t *data = (hash_map_entry_t *) malloc(sizeof(hash_map_entry_t));
     data->type = KEY_TYPE_NUMBER;
     data->key_number = key;
     data->data = value;
 
-    node_t *find_result = list_find(bucket, data, map_entry_equal);
+    ListNode *find_result = linked_list_find(bucket, data, hash_map_entry_equal);
     if (find_result) {
         find_result->data = data;
     } else {
-        list_append(bucket, data);
+        linked_list_append(bucket, data);
     }
 }
 
 /// Tries to find a key-value pair where the key matches with the specified entry
-void *map_find(map_t *self, const char *key) {
+void *hash_map_find(HashMap *self, const char *key) {
     u32 bucket_index = hash(key, strlen(key)) % MAP_BUCKET_COUNT;
-    list_t *bucket = self->buckets[bucket_index];
+    LinkedList *bucket = self->buckets[bucket_index];
 
-    map_entry_t find_entry = { KEY_TYPE_STRING, { .key = key }, NULL };
-    node_t *find_result = list_find(bucket, &find_entry, map_entry_equal);
+    hash_map_entry_t find_entry = { KEY_TYPE_STRING, { .key = key }, NULL };
+    ListNode *find_result = linked_list_find(bucket, &find_entry, hash_map_entry_equal);
     if (find_result) {
-        map_entry_t *entry = find_result->data;
+        hash_map_entry_t *entry = find_result->data;
         return entry->data;
     } else {
         return NULL;
@@ -146,14 +146,14 @@ void *map_find(map_t *self, const char *key) {
 }
 
 /// Tries to find a key-value pair where the key matches with the specified entry
-void *map_find_number(map_t *self, u32 key) {
+void *hash_map_find_number(HashMap *self, u32 key) {
     u32 bucket_index = key % MAP_BUCKET_COUNT;
-    list_t *bucket = self->buckets[bucket_index];
+    LinkedList *bucket = self->buckets[bucket_index];
 
-    map_entry_t find_entry = { KEY_TYPE_NUMBER, { .key_number = key }, NULL };
-    node_t *find_result = list_find(bucket, &find_entry, map_entry_equal);
+    hash_map_entry_t find_entry = { KEY_TYPE_NUMBER, { .key_number = key }, NULL };
+    ListNode *find_result = linked_list_find(bucket, &find_entry, hash_map_entry_equal);
     if (find_result) {
-        map_entry_t *entry = find_result->data;
+        hash_map_entry_t *entry = find_result->data;
         return entry->data;
     } else {
         return NULL;

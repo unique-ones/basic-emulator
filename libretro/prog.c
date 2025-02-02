@@ -29,26 +29,26 @@
 
 
 /// Creates a new program tree
-void program_tree_create(program_tree_t *tree) {
+void program_tree_create(ProgramTree *tree) {
     tree->root = NULL;
     tree->arena = arena_identity(ALIGNMENT8);
 }
 
 /// Destroys the program tree
-void program_tree_destroy(program_tree_t *tree) {
+void program_tree_destroy(ProgramTree *tree) {
     tree->root = NULL;
     arena_destroy(&tree->arena);
 }
 
 /// Clears all nodes of the program tree
-void program_tree_clear(program_tree_t *tree) {
+void program_tree_clear(ProgramTree *tree) {
     program_tree_destroy(tree);
     program_tree_create(tree);
 }
 
 /// Creates a program tree node
-static program_tree_node_t *program_tree_node_create(arena_t *arena, statement_t *stmt) {
-    program_tree_node_t *self = (program_tree_node_t *) arena_alloc(arena, sizeof(program_tree_node_t));
+static ProgramTreeNode *program_tree_node_create(MemoryArena *arena, Statement *stmt) {
+    ProgramTreeNode *self = (ProgramTreeNode *) arena_alloc(arena, sizeof(ProgramTreeNode));
     self->left = NULL;
     self->right = NULL;
     self->stmt = stmt;
@@ -56,12 +56,12 @@ static program_tree_node_t *program_tree_node_create(arena_t *arena, statement_t
 }
 
 /// Insert the given statement at a feasible position starting at the specified node
-static void program_tree_node_insert(arena_t *arena, program_tree_node_t *node, statement_t *stmt) {
+static void program_tree_node_insert(MemoryArena *arena, ProgramTreeNode *node, Statement *stmt) {
     // TODO(elias): program tree should probably be ordered into heap rather than tree
     u32 node_line = node->stmt->line;
     u32 stmt_line = stmt->line;
 
-    program_tree_node_t **walk_position = NULL;
+    ProgramTreeNode **walk_position = NULL;
     if (stmt_line > node_line) {
         walk_position = &node->right;
     } else if (stmt_line < node_line) {
@@ -83,7 +83,7 @@ static void program_tree_node_insert(arena_t *arena, program_tree_node_t *node, 
 }
 
 /// Inserts the given statement into the program tree
-void program_tree_insert(program_tree_t *tree, statement_t *stmt) {
+void program_tree_insert(ProgramTree *tree, Statement *stmt) {
     if (tree->root == NULL) {
         tree->root = program_tree_node_create(&tree->arena, stmt);
     } else {
@@ -91,7 +91,7 @@ void program_tree_insert(program_tree_t *tree, statement_t *stmt) {
     }
 }
 
-static program_tree_node_t *program_tree_node_get(program_tree_node_t *node, u32 line) {
+static ProgramTreeNode *program_tree_node_get(ProgramTreeNode *node, u32 line) {
     if (node == NULL) {
         return NULL;
     }
@@ -106,14 +106,14 @@ static program_tree_node_t *program_tree_node_get(program_tree_node_t *node, u32
 }
 
 /// Retrieves a program tree node from the given line
-program_tree_node_t *program_tree_get(program_tree_t *tree, u32 line) {
+ProgramTreeNode *program_tree_get(ProgramTree *tree, u32 line) {
     return program_tree_node_get(tree->root, line);
 }
 
 /// Creates a program which serves as the handle between emulator and AST
-void program_create(program_t *self, renderer_t *renderer) {
+void program_create(Program *self, Renderer *renderer) {
     self->objects = arena_identity(ALIGNMENT8);
-    self->symbols = map_new();
+    self->symbols = hash_map_new();
     self->renderer = renderer;
     self->text_position.x = (f32) PROGRAM_MARGIN_SIZE;
     self->text_position.y = (f32) PROGRAM_MARGIN_SIZE;
@@ -124,10 +124,10 @@ void program_create(program_t *self, renderer_t *renderer) {
 }
 
 /// Destroys the program and all its data
-void program_destroy(program_t *self) {
+void program_destroy(Program *self) {
     program_tree_destroy(&self->lines);
 
-    map_free(self->symbols);
+    hash_map_free(self->symbols);
     self->symbols = NULL;
     self->renderer = NULL;
 
@@ -135,7 +135,7 @@ void program_destroy(program_t *self) {
 }
 
 /// Executes a program tree node
-static void program_tree_node_execute(program_tree_node_t *node, program_t *program) {
+static void program_tree_node_execute(ProgramTreeNode *node, Program *program) {
     if (node == NULL) {
         return;
     }
@@ -151,20 +151,20 @@ static void program_tree_node_execute(program_tree_node_t *node, program_t *prog
 }
 
 /// Executes the program
-void program_execute(program_t *self) {
+void program_execute(Program *self) {
     self->text_position.x = PROGRAM_MARGIN_SIZE;
     self->text_position.y = PROGRAM_MARGIN_SIZE;
     program_tree_node_execute(self->lines.root, self);
 }
 
 /// Submits formatted text to the renderer
-void program_print_format(program_t *self, const char *fmt, ...) {
+void program_print_format(Program *self, const char *fmt, ...) {
     char buffer[1024];
     va_list list;
     va_start(list, fmt);
     u32 length = (u32) vsnprintf(buffer, sizeof buffer, fmt, list);
     va_end(list);
 
-    static f32vec3_t msg = { 1.0f, 0.55f, 0.0f };
+    static F32Vector3 msg = { 1.0f, 0.55f, 0.0f };
     renderer_draw_text(self->renderer, &self->text_position, &msg, 0.5f, "%.*s", length, buffer);
 }

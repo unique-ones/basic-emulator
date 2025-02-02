@@ -30,8 +30,8 @@
 #include "lexer.h"
 
 /// Creates a new let statement
-statement_t *let_statement_new(arena_t *arena, u32 line, expression_t *variable, expression_t *initializer) {
-    statement_t *self = arena_alloc(arena, sizeof(statement_t));
+Statement *let_statement_new(MemoryArena *arena, u32 line, Expression *variable, Expression *initializer) {
+    Statement *self = arena_alloc(arena, sizeof(Statement));
     self->line = line;
     self->type = STATEMENT_LET;
     self->let.variable = variable;
@@ -40,20 +40,20 @@ statement_t *let_statement_new(arena_t *arena, u32 line, expression_t *variable,
 }
 
 /// Creates a new clear statement
-statement_t *clear_statement_new(arena_t *arena, u32 line) {
-    statement_t *self = arena_alloc(arena, sizeof(statement_t));
+Statement *clear_statement_new(MemoryArena *arena, u32 line) {
+    Statement *self = arena_alloc(arena, sizeof(Statement));
     self->line = line;
     self->type = STATEMENT_CLEAR;
     return self;
 }
 
 /// Creates a new def fn statement
-statement_t *def_fn_statement_new(arena_t *arena,
-                                  u32 line,
-                                  expression_t *name,
-                                  expression_t *variable,
-                                  expression_t *body) {
-    statement_t *self = arena_alloc(arena, sizeof(statement_t));
+Statement *def_fn_statement_new(MemoryArena *arena,
+                                u32 line,
+                                Expression *name,
+                                Expression *variable,
+                                Expression *body) {
+    Statement *self = arena_alloc(arena, sizeof(Statement));
     self->line = line;
     self->type = STATEMENT_DEF_FN;
     self->def_fn.name = name;
@@ -63,8 +63,8 @@ statement_t *def_fn_statement_new(arena_t *arena,
 }
 
 /// Creates a new print statement
-statement_t *print_statement_new(arena_t *arena, u32 line, expression_t *printable) {
-    statement_t *self = arena_alloc(arena, sizeof(statement_t));
+Statement *print_statement_new(MemoryArena *arena, u32 line, Expression *printable) {
+    Statement *self = arena_alloc(arena, sizeof(Statement));
     self->line = line;
     self->type = STATEMENT_PRINT;
     self->print.printable = printable;
@@ -72,63 +72,63 @@ statement_t *print_statement_new(arena_t *arena, u32 line, expression_t *printab
 }
 
 /// Creates a new run statement
-statement_t *run_statement_new(arena_t *arena) {
-    statement_t *self = arena_alloc(arena, sizeof(statement_t));
+Statement *run_statement_new(MemoryArena *arena) {
+    Statement *self = arena_alloc(arena, sizeof(Statement));
     self->line = 0;
     self->type = STATEMENT_RUN;
     return self;
 }
 
 /// Checks if the given token type matches the current token in the state
-static bool match(token_iterator_t *state, token_type_t type) {
+static bool match(TokenIterator *state, TokenType type) {
     return token_iterator_current(state)->type == type;
 }
 
 /// Checks if the given token type matches the next token in the state
-static bool match_next(token_iterator_t *state, token_type_t type) {
+static bool match_next(TokenIterator *state, TokenType type) {
     return token_iterator_next(state)->type == type;
 }
 
 /// Creates a successful statement result
-static statement_result_t statement_result_make(statement_t *statement) {
-    statement_result_t result = { 0 };
+static StatementResult statement_result_make(Statement *statement) {
+    StatementResult result = { 0 };
     result.type = RESULT_OK;
     result.statement = statement;
     return result;
 }
 
 /// Creates a statement result with an error message
-static statement_result_t statement_result_make_error(const char *error) {
-    statement_result_t result = { 0 };
+static StatementResult statement_result_make_error(const char *error) {
+    StatementResult result = { 0 };
     result.type = RESULT_ERROR;
     result.error = error;
     return result;
 }
 
 /// Compiles a statement from the token state
-static statement_result_t statement_compile_internal(arena_t *arena, u32 line, token_iterator_t *state);
+static StatementResult statement_compile_internal(MemoryArena *arena, u32 line, TokenIterator *state);
 
 /// Compiles a let statement from the token state
-static statement_result_t statement_compile_let(arena_t *arena, u32 line, token_iterator_t *state) {
+static StatementResult statement_compile_let(MemoryArena *arena, u32 line, TokenIterator *state) {
     if (match(state, TOKEN_LET)) {
         token_iterator_advance(state);
     }
     if (match(state, TOKEN_IDENTIFIER) && match_next(state, TOKEN_EQUAL_SIGN)) {
-        token_t *identifier_token = token_iterator_current(state);
+        Token *identifier_token = token_iterator_current(state);
         token_iterator_advance(state);
         token_iterator_advance(state);
 
-        expression_t *initializer = expression_compile(arena, state->current, state->end);
+        Expression *initializer = expression_compile(arena, state->current, state->end);
         if (initializer == NULL) {
             return statement_result_make_error("LET statement has invalid initializer");
         }
-        expression_t *variable = variable_expression_new(arena, identifier_token->lexeme, identifier_token->length);
+        Expression *variable = variable_expression_new(arena, identifier_token->lexeme, identifier_token->length);
         return statement_result_make(let_statement_new(arena, line, variable, initializer));
     }
     return statement_result_make_error("LET statement must take form of [ LET ] <identifier> = <initializer>");
 }
 
-static statement_result_t statement_compile_def_fn(arena_t *arena, u32 line, token_iterator_t *state) {
+static StatementResult statement_compile_def_fn(MemoryArena *arena, u32 line, TokenIterator *state) {
     static const char *form_err = "DEF FN statement must take form of DEF FN <name>(<var>) = <body>";
     token_iterator_advance(state);
     if (!match(state, TOKEN_FN)) {
@@ -139,7 +139,7 @@ static statement_result_t statement_compile_def_fn(arena_t *arena, u32 line, tok
     if (!match(state, TOKEN_IDENTIFIER)) {
         return statement_result_make_error(form_err);
     }
-    token_t *name_token = token_iterator_current(state);
+    Token *name_token = token_iterator_current(state);
     token_iterator_advance(state);
 
     if (!match(state, TOKEN_LEFT_PARENTHESIS)) {
@@ -150,7 +150,7 @@ static statement_result_t statement_compile_def_fn(arena_t *arena, u32 line, tok
     if (!match(state, TOKEN_IDENTIFIER)) {
         return statement_result_make_error(form_err);
     }
-    token_t *variable_token = token_iterator_current(state);
+    Token *variable_token = token_iterator_current(state);
     token_iterator_advance(state);
 
     if (!match(state, TOKEN_RIGHT_PARENTHESIS) || !match_next(state, TOKEN_EQUAL_SIGN)) {
@@ -159,38 +159,38 @@ static statement_result_t statement_compile_def_fn(arena_t *arena, u32 line, tok
     token_iterator_advance(state);
     token_iterator_advance(state);
 
-    expression_t *body = expression_compile(arena, state->current, state->end);
+    Expression *body = expression_compile(arena, state->current, state->end);
     if (body == NULL) {
         return statement_result_make_error("LET statement has invalid initializer");
     }
 
-    expression_t *name = variable_expression_new(arena, name_token->lexeme, name_token->length);
-    expression_t *var = variable_expression_new(arena, variable_token->lexeme, variable_token->length);
+    Expression *name = variable_expression_new(arena, name_token->lexeme, name_token->length);
+    Expression *var = variable_expression_new(arena, variable_token->lexeme, variable_token->length);
     return statement_result_make(def_fn_statement_new(arena, line, name, var, body));
 }
 
 /// Compiles a clear statement
-static statement_result_t statement_compile_clear(arena_t *arena, u32 line, token_iterator_t *state) {
+static StatementResult statement_compile_clear(MemoryArena *arena, u32 line, TokenIterator *state) {
     token_iterator_advance(state);
     return statement_result_make(clear_statement_new(arena, line));
 }
 
 /// Compiles a print statement
-static statement_result_t statement_compile_print(arena_t *arena, u32 line, token_iterator_t *state) {
+static StatementResult statement_compile_print(MemoryArena *arena, u32 line, TokenIterator *state) {
     token_iterator_advance(state);
-    expression_t *printable = expression_compile(arena, state->current, state->end);
+    Expression *printable = expression_compile(arena, state->current, state->end);
     if (printable == NULL) {
         return statement_result_make_error("Invalid expression after PRINT statement");
     }
     return statement_result_make(print_statement_new(arena, line, printable));
 }
 
-static statement_result_t statement_compile_run(arena_t *arena) {
+static StatementResult statement_compile_run(MemoryArena *arena) {
     return statement_result_make(run_statement_new(arena));
 }
 
 /// Compiles a statement from the token state
-static statement_result_t statement_compile_internal(arena_t *arena, u32 line, token_iterator_t *state) {
+static StatementResult statement_compile_internal(MemoryArena *arena, u32 line, TokenIterator *state) {
     // Clear all variables
     if (match(state, TOKEN_CLEAR)) {
         return statement_compile_clear(arena, line, state);
@@ -214,8 +214,8 @@ static statement_result_t statement_compile_internal(arena_t *arena, u32 line, t
 }
 
 /// Compiles a statement from a list of tokens
-statement_result_t statement_compile(arena_t *arena, token_t *begin, token_t *end) {
-    token_iterator_t state = { 0 };
+StatementResult statement_compile(MemoryArena *arena, Token *begin, Token *end) {
+    TokenIterator state = { 0 };
     state.current = begin;
     state.end = end;
 
@@ -232,7 +232,7 @@ statement_result_t statement_compile(arena_t *arena, token_t *begin, token_t *en
         return statement_result_make_error("Statement is missing line number");
     }
 
-    token_t *line_token = token_iterator_current(&state);
+    Token *line_token = token_iterator_current(&state);
     token_iterator_advance(&state);
 
     char *line_begin = line_token->lexeme;
@@ -241,8 +241,8 @@ statement_result_t statement_compile(arena_t *arena, token_t *begin, token_t *en
 }
 
 /// Executes a line statement
-static void statement_execute_let(statement_t *self, program_t *program) {
-    expression_t *var = self->let.variable;
+static void statement_execute_let(Statement *self, Program *program) {
+    Expression *var = self->let.variable;
     if (expression_is_arithmetic(self->let.initializer)) {
         // TODO(elias): This here is actually a memory leak since the old unevaluated expression
         // still lives inside the arena. Imagine having a loop that computes an expression over
@@ -251,39 +251,41 @@ static void statement_execute_let(statement_t *self, program_t *program) {
         f64 result = expression_evaluate(self->let.initializer, program->symbols);
         self->let.initializer = number_expression_new(&program->objects, result);
     }
-    map_insert(program->symbols, var->variable.name, self->let.initializer);
+    hash_map_insert(program->symbols, var->variable.name, self->let.initializer);
     program->no_wait = true;
 }
 
-static void statement_execute_clear(statement_t *self, program_t *program) {
-    map_clear(program->symbols);
+/// Executes a clear statement
+static void statement_execute_clear(Statement *self, Program *program) {
+    hash_map_clear(program->symbols);
     program->no_wait = true;
 }
 
-static void statement_execute_def_fn(statement_t *self, program_t *program) {
-    function_definition_t *definition = arena_alloc(&program->objects, sizeof(function_definition_t));
-    definition->type = FUNCTION_DEFINITION_VARIABLE;
+/// Executes a custom function definition statement
+static void statement_execute_def_fn(Statement *self, Program *program) {
+    FunctionDefinition *definition = arena_alloc(&program->objects, sizeof(FunctionDefinition));
+    definition->type = FUNCTION_DEFINITION_DYNAMIC;
     definition->name = self->def_fn.name->variable.name;
     definition->variable.variable = self->def_fn.variable;
     definition->variable.body = self->def_fn.body;
-    map_insert(program->symbols, definition->name, definition);
+    hash_map_insert(program->symbols, definition->name, definition);
 }
 
 /// Executes a line statement
-static void statement_execute_print(statement_t *self, program_t *program) {
-    expression_t *printable = self->print.printable;
+static void statement_execute_print(Statement *self, Program *program) {
+    Expression *printable = self->print.printable;
     if (expression_is_arithmetic(printable)) {
         f64 result = expression_evaluate(printable, program->symbols);
-        program_print_format(program, "%lf", result);
+        program_print_format(program, "%lf\n", result);
     } else {
         assert(printable->type == EXPRESSION_STRING && "printable must be arithmetic or string");
-        program_print_format(program, "%.*s", printable->string.length, printable->string.data);
+        program_print_format(program, "%.*s\n", printable->string.length, printable->string.data);
     }
     program->no_wait = false;
 }
 
 /// Executes the statement
-void statement_execute(statement_t *self, program_t *program) {
+void statement_execute(Statement *self, Program *program) {
     switch (self->type) {
         case STATEMENT_LET:
             statement_execute_let(self, program);

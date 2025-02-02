@@ -27,8 +27,8 @@
 #include "list.h"
 
 /// Allocates a new node instance
-node_t *node_new(void *data) {
-    node_t *self = (node_t *) malloc(sizeof(node_t));
+ListNode *node_new(void *data) {
+    ListNode *self = (ListNode *) malloc(sizeof(ListNode));
     self->prev = NULL;
     self->next = NULL;
     self->data = data;
@@ -36,13 +36,13 @@ node_t *node_new(void *data) {
 }
 
 /// Frees all associated data with the node except the data
-void node_free(node_t *self) {
+void node_free(ListNode *self) {
     free(self);
 }
 
 /// Allocates a new list instance
-list_t *list_new(void) {
-    list_t *self = (list_t *) malloc(sizeof(list_t));
+LinkedList *linked_list_new(void) {
+    LinkedList *self = (LinkedList *) malloc(sizeof(LinkedList));
     self->head = NULL;
     self->tail = NULL;
     self->length = 0;
@@ -51,15 +51,15 @@ list_t *list_new(void) {
 }
 
 /// Frees all data associated with the list
-void list_free(list_t *self) {
-    list_clear(self);
+void linked_list_free(LinkedList *self) {
+    linked_list_clear(self);
     free(self);
 }
 
 /// Clears the list
-void list_clear(list_t *self) {
-    node_t *it = self->head;
-    node_t *tmp;
+void linked_list_clear(LinkedList *self) {
+    ListNode *it = self->head;
+    ListNode *tmp;
 
     while (it != NULL) {
         tmp = it;
@@ -72,8 +72,8 @@ void list_clear(list_t *self) {
 }
 
 /// Appends the data to the list
-void list_append(list_t *self, void *data) {
-    node_t *node = node_new(data);
+void linked_list_append(LinkedList *self, void *data) {
+    ListNode *node = node_new(data);
 
     if (self->head == NULL) {
         self->head = node;
@@ -83,7 +83,7 @@ void list_append(list_t *self, void *data) {
         return;
     }
 
-    node_t *temp = self->tail;
+    ListNode *temp = self->tail;
     temp->next = node;
     self->tail = node;
     self->tail->prev = temp;
@@ -92,8 +92,8 @@ void list_append(list_t *self, void *data) {
 }
 
 /// Sets the first node of the list
-void list_set_head(list_t *self, void *data) {
-    node_t *node = node_new(data);
+void linked_list_set_head(LinkedList *self, void *data) {
+    ListNode *node = node_new(data);
 
     node->next = self->head;
     node->prev = NULL;
@@ -106,20 +106,20 @@ void list_set_head(list_t *self, void *data) {
     self->length++;
 }
 
-/// Alias to list_append
-void list_set_tail(list_t *self, void *data) {
-    list_append(self, data);
+/// Alias to linked_list_append
+void linked_list_set_tail(LinkedList *self, void *data) {
+    linked_list_append(self, data);
 }
 
 /// Inserts a node at the specified index
-void list_insert(list_t *self, u32 idx, void *data) {
+void linked_list_insert(LinkedList *self, u32 idx, void *data) {
     if (self->head == NULL) {
-        list_set_head(self, data);
+        linked_list_set_head(self, data);
         return;
     }
 
-    node_t *node = node_new(data);
-    node_t *temp = self->head;
+    ListNode *node = node_new(data);
+    ListNode *temp = self->head;
 
     while (--idx) {
         temp = temp->next;
@@ -133,14 +133,14 @@ void list_insert(list_t *self, u32 idx, void *data) {
 }
 
 /// Retrieves the data of the node at the specified index in the list
-void *list_at(list_t *self, u32 idx) {
+void *linked_list_at(LinkedList *self, u32 idx) {
     if (self->head == NULL || idx >= self->length) {
         return NULL;
     }
 
     u32 iterator;
     u32 iterator_limit;
-    node_t *temp;
+    ListNode *temp;
     if (idx < (self->length - idx)) {
         temp = self->head;
         iterator_limit = idx;
@@ -158,12 +158,12 @@ void *list_at(list_t *self, u32 idx) {
 }
 
 /// Tries to find the specified data using the specified equal function
-node_t *list_find(list_t *self, void *data, list_equal_function_t equal) {
+ListNode *linked_list_find(LinkedList *self, void *data, ListEqualFunction equal) {
     if (self->head == NULL || data == NULL || equal == NULL) {
         return NULL;
     }
 
-    for (node_t *it = self->head; it != NULL; it = it->next) {
+    for (ListNode *it = self->head; it != NULL; it = it->next) {
         if (equal(it->data, data)) {
             return it;
         }
@@ -172,12 +172,12 @@ node_t *list_find(list_t *self, void *data, list_equal_function_t equal) {
 }
 
 /// Tries to remove the specified data using the specified equal function
-void list_remove(list_t *self, void *data, list_equal_function_t equal) {
+void linked_list_remove(LinkedList *self, void *data, ListEqualFunction equal) {
     if (self->head == NULL || data == NULL || equal == NULL) {
         return;
     }
 
-    for (node_t *it = self->head; it != NULL; it = it->next) {
+    for (ListNode *it = self->head; it != NULL; it = it->next) {
         if (equal(it->data, data)) {
             if (it->prev) {
                 it->prev->next = it->next;

@@ -29,8 +29,8 @@
 #include "expr.h"
 
 /// Creates a new unary expression instance
-expression_t *unary_expression_new(arena_t *arena, operator_t operator, expression_t * expression) {
-    expression_t *self = (expression_t *) arena_alloc(arena, sizeof(expression_t));
+Expression *unary_expression_new(MemoryArena *arena, Operator operator, Expression * expression) {
+    Expression *self = (Expression *) arena_alloc(arena, sizeof(Expression));
     self->type = EXPRESSION_UNARY;
     self->unary.operator= operator;
     self->unary.expression = expression;
@@ -38,14 +38,14 @@ expression_t *unary_expression_new(arena_t *arena, operator_t operator, expressi
 }
 
 /// Evaluates the unary expression
-f64 unary_expression_evaluate(expression_t *self, map_t *symbol_table) {
+f64 unary_expression_evaluate(Expression *self, HashMap *symbol_table) {
     f64 value = expression_evaluate(self->unary.expression, symbol_table);
     return self->unary.operator== OPERATOR_ADD ? value : - 1.0 * value;
 }
 
 /// Creates a new binary expression instance
-expression_t *binary_expression_new(arena_t *arena, expression_t *left, expression_t *right, operator_t operator) {
-    expression_t *self = (expression_t *) arena_alloc(arena, sizeof(expression_t));
+Expression *binary_expression_new(MemoryArena *arena, Expression *left, Expression *right, Operator operator) {
+    Expression *self = (Expression *) arena_alloc(arena, sizeof(Expression));
     self->type = EXPRESSION_BINARY;
     self->binary.left = left;
     self->binary.right = right;
@@ -54,7 +54,7 @@ expression_t *binary_expression_new(arena_t *arena, expression_t *left, expressi
 }
 
 /// Evaluates the binary expression
-f64 binary_expression_evaluate(expression_t *self, map_t *symbol_table) {
+f64 binary_expression_evaluate(Expression *self, HashMap *symbol_table) {
     f64 left = expression_evaluate(self->binary.left, symbol_table);
     f64 right = expression_evaluate(self->binary.right, symbol_table);
     switch (self->binary.operator) {
@@ -71,8 +71,8 @@ f64 binary_expression_evaluate(expression_t *self, map_t *symbol_table) {
 }
 
 /// Creates a new variable expression instance
-expression_t *variable_expression_new(arena_t *arena, char *name, u32 length) {
-    expression_t *self = arena_alloc(arena, sizeof(expression_t));
+Expression *variable_expression_new(MemoryArena *arena, char *name, u32 length) {
+    Expression *self = arena_alloc(arena, sizeof(Expression));
     self->type = EXPRESSION_VARIABLE;
     memset(self->variable.name, 0, sizeof self->variable.name);
     memcpy(self->variable.name, name, length);
@@ -80,8 +80,8 @@ expression_t *variable_expression_new(arena_t *arena, char *name, u32 length) {
 }
 
 /// Evaluates the variable expression
-f64 variable_expression_evaluate(expression_t *self, map_t *symbol_table) {
-    expression_t *initializer = map_find(symbol_table, self->variable.name);
+f64 variable_expression_evaluate(Expression *self, HashMap *symbol_table) {
+    Expression *initializer = hash_map_find(symbol_table, self->variable.name);
     if (initializer) {
         return expression_evaluate(initializer, symbol_table);
     }
@@ -89,8 +89,8 @@ f64 variable_expression_evaluate(expression_t *self, map_t *symbol_table) {
 }
 
 /// Creates a new function parameter instance
-function_parameter_t *function_parameter_new(arena_t *arena, expression_t *expression) {
-    function_parameter_t *self = arena_alloc(arena, sizeof(function_parameter_t));
+FunctionParameter *function_parameter_new(MemoryArena *arena, Expression *expression) {
+    FunctionParameter *self = arena_alloc(arena, sizeof(FunctionParameter));
     self->expression = expression;
     self->prev = NULL;
     self->next = NULL;
@@ -98,8 +98,8 @@ function_parameter_t *function_parameter_new(arena_t *arena, expression_t *expre
 }
 
 /// Creates a new function expression instance
-expression_t *function_expression_new(arena_t *arena, char *name, u32 length) {
-    expression_t *self = arena_alloc(arena, sizeof(expression_t));
+Expression *function_expression_new(MemoryArena *arena, char *name, u32 length) {
+    Expression *self = arena_alloc(arena, sizeof(Expression));
     self->type = EXPRESSION_FUNCTION;
 
     memset(self->function.name, 0, sizeof self->function.name);
@@ -113,9 +113,9 @@ expression_t *function_expression_new(arena_t *arena, char *name, u32 length) {
 }
 
 /// Pushes a parameter to the specified function expression
-void function_expression_push(arena_t *arena, expression_t *self, expression_t *parameter) {
-    function_parameter_t *entry = function_parameter_new(arena, parameter);
-    function_expression_t *function = &self->function;
+void function_expression_push(MemoryArena *arena, Expression *self, Expression *parameter) {
+    FunctionParameter *entry = function_parameter_new(arena, parameter);
+    FunctionExpression *function = &self->function;
     if (function->first_parameter == NULL) {
         function->first_parameter = entry;
         entry->prev = NULL;
@@ -123,7 +123,7 @@ void function_expression_push(arena_t *arena, expression_t *self, expression_t *
         return;
     }
 
-    function_parameter_t *tmp = function->first_parameter;
+    FunctionParameter *tmp = function->first_parameter;
     while (tmp->next != NULL) {
         tmp = tmp->next;
     }
@@ -135,15 +135,15 @@ void function_expression_push(arena_t *arena, expression_t *self, expression_t *
 }
 
 /// Retrieves the parameter at the specified index
-function_parameter_t *function_expression_get_parameter(expression_t *self, u32 index) {
-    function_expression_t *function = &self->function;
+FunctionParameter *function_expression_get_parameter(Expression *self, u32 index) {
+    FunctionExpression *function = &self->function;
     if (function->first_parameter == NULL || index >= function->parameter_count) {
         return NULL;
     }
 
     u32 iterator;
     u32 iterator_limit;
-    function_parameter_t *temp;
+    FunctionParameter *temp;
     if (index < (function->parameter_count - index)) {
         temp = function->first_parameter;
         iterator_limit = index;
@@ -164,24 +164,24 @@ function_parameter_t *function_expression_get_parameter(expression_t *self, u32 
     (expression_evaluate(function_expression_get_parameter(self, index)->expression, symbol_table))
 
 /// Evaluates the specified function expression
-f64 function_expression_evaluate(expression_t *self, map_t *symbol_table) {
-    function_expression_t *function = &self->function;
-    function_definition_t *definition = map_find(symbol_table, function->name);
+f64 function_expression_evaluate(Expression *self, HashMap *symbol_table) {
+    FunctionExpression *function = &self->function;
+    FunctionDefinition *definition = hash_map_find(symbol_table, function->name);
     if (definition == NULL) {
         return 0.0;
     }
 
     switch (definition->type) {
-        case FUNCTION_DEFINITION_VARIABLE: {
+        case FUNCTION_DEFINITION_DYNAMIC: {
             // NOTE(elias): This is EXTREMELY bad as the arena allocates a 4 Kb block per default, which means
             // that for every invocation of a user defined function, we have to allocate 4 Kb. Maybe this is an
             // indicator to transition away from arenas...
 
-            arena_t temporary = arena_identity(ALIGNMENT8);
-            expression_t *number = number_expression_new(&temporary, EXPR_PARAM(0));
-            map_insert(symbol_table, definition->variable.variable->variable.name, number);
+            MemoryArena temporary = arena_identity(ALIGNMENT8);
+            Expression *number = number_expression_new(&temporary, EXPR_PARAM(0));
+            hash_map_insert(symbol_table, definition->variable.variable->variable.name, number);
             f64 result = expression_evaluate(definition->variable.body, symbol_table);
-            map_remove(symbol_table, definition->variable.variable->variable.name);
+            hash_map_remove(symbol_table, definition->variable.variable->variable.name);
             arena_destroy(&temporary);
             return result;
         }
@@ -209,21 +209,21 @@ f64 function_expression_evaluate(expression_t *self, map_t *symbol_table) {
 #undef EXPR_PARAM
 
 /// Creates a new number expression instance
-expression_t *number_expression_new(arena_t *arena, f64 number) {
-    expression_t *self = arena_alloc(arena, sizeof(expression_t));
+Expression *number_expression_new(MemoryArena *arena, f64 number) {
+    Expression *self = arena_alloc(arena, sizeof(Expression));
     self->type = EXPRESSION_NUMBER;
     self->number = number;
     return self;
 }
 
 /// Evaluates the specified number expression
-f64 number_expression_evaluate(expression_t *self) {
+f64 number_expression_evaluate(Expression *self) {
     return self->number;
 }
 
 /// Creates a new exponential expression instance
-expression_t *exponential_expression_new(arena_t *arena, expression_t *base, expression_t *exponent) {
-    expression_t *self = arena_alloc(arena, sizeof(expression_t));
+Expression *exponential_expression_new(MemoryArena *arena, Expression *base, Expression *exponent) {
+    Expression *self = arena_alloc(arena, sizeof(Expression));
     self->type = EXPRESSION_EXPONENTIAL;
     self->exponential.base = base;
     self->exponential.exponent = exponent;
@@ -231,14 +231,14 @@ expression_t *exponential_expression_new(arena_t *arena, expression_t *base, exp
 }
 
 /// Evaluates the specified exponential expression
-f64 exponential_expression_evaluate(expression_t *self, map_t *symbol_table) {
+f64 exponential_expression_evaluate(Expression *self, HashMap *symbol_table) {
     return pow(expression_evaluate(self->exponential.base, symbol_table),
                expression_evaluate(self->exponential.exponent, symbol_table));
 }
 
 /// Creates a new string expression by storing the string in the provided arena
-expression_t *string_expression_new(arena_t *arena, char *data, u32 length) {
-    expression_t *self = arena_alloc(arena, sizeof(expression_t));
+Expression *string_expression_new(MemoryArena *arena, char *data, u32 length) {
+    Expression *self = arena_alloc(arena, sizeof(Expression));
     self->type = EXPRESSION_STRING;
     self->string.data = arena_alloc(arena, length);
     self->string.length = length;
@@ -248,13 +248,13 @@ expression_t *string_expression_new(arena_t *arena, char *data, u32 length) {
 
 
 /// Parses an addition or subtraction expression
-static expression_t *expression_add_or_sub(arena_t *arena, token_iterator_t *state);
+static Expression *expression_add_or_sub(MemoryArena *arena, TokenIterator *state);
 
 /// Parses a unary-plus-or-minus expression
-static expression_t *expression_unary_plus_or_minus(arena_t *arena, token_iterator_t *state);
+static Expression *expression_unary_plus_or_minus(MemoryArena *arena, TokenIterator *state);
 
 /// Parses an exponential expression
-static expression_t *expression_exponential(arena_t *arena, token_iterator_t *state, expression_t *base) {
+static Expression *expression_exponential(MemoryArena *arena, TokenIterator *state, Expression *base) {
     if (token_iterator_current(state)->type == TOKEN_CIRCUMFLEX) {
         token_iterator_advance(state);
         return exponential_expression_new(arena, base, expression_unary_plus_or_minus(arena, state));
@@ -263,25 +263,25 @@ static expression_t *expression_exponential(arena_t *arena, token_iterator_t *st
 }
 
 /// Parses a primary expression, that includes numbers, variables and functions
-static expression_t *expression_primary(arena_t *arena, token_iterator_t *state) {
+static Expression *expression_primary(MemoryArena *arena, TokenIterator *state) {
     if (token_iterator_current(state)->type == TOKEN_NUMBER ||
         token_iterator_current(state)->type == TOKEN_NUMBER_FLOAT) {
-        token_t *number_token = token_iterator_current(state);
+        Token *number_token = token_iterator_current(state);
         token_iterator_advance(state);
 
         char *number_begin = number_token->lexeme;
         char *number_end = number_begin + number_token->length;
         f64 value = strtod(number_begin, &number_end);
-        expression_t *number = number_expression_new(arena, value);
+        Expression *number = number_expression_new(arena, value);
         return expression_exponential(arena, state, number);
     }
     if (token_iterator_current(state)->type == TOKEN_IDENTIFIER) {
-        token_t *text_token = token_iterator_current(state);
+        Token *text_token = token_iterator_current(state);
         token_iterator_advance(state);
 
         // function expression
         if (token_iterator_current(state) && token_iterator_current(state)->type == TOKEN_LEFT_PARENTHESIS) {
-            expression_t *function = function_expression_new(arena, text_token->lexeme, text_token->length);
+            Expression *function = function_expression_new(arena, text_token->lexeme, text_token->length);
             token_iterator_advance(state);
             function_expression_push(arena, function, expression_add_or_sub(arena, state));
             while (token_iterator_current(state)->type == TOKEN_COMMA) {
@@ -290,14 +290,14 @@ static expression_t *expression_primary(arena_t *arena, token_iterator_t *state)
             return expression_exponential(arena, state, function);
         } else {
             // variable expression
-            expression_t *variable = variable_expression_new(arena, text_token->lexeme, text_token->length);
+            Expression *variable = variable_expression_new(arena, text_token->lexeme, text_token->length);
             return expression_exponential(arena, state, variable);
         }
     }
     if (token_iterator_current(state)->type == TOKEN_LEFT_PARENTHESIS) {
         token_iterator_advance(state);
 
-        expression_t *inner = expression_add_or_sub(arena, state);
+        Expression *inner = expression_add_or_sub(arena, state);
         if (token_iterator_current(state)->type != TOKEN_RIGHT_PARENTHESIS) {
             // we need some sort of error callback here
             return NULL;
@@ -311,12 +311,12 @@ static expression_t *expression_primary(arena_t *arena, token_iterator_t *state)
 }
 
 /// Parses a unary-plus-or-minus expression
-static expression_t *expression_unary_plus_or_minus(arena_t *arena, token_iterator_t *state) {
+static Expression *expression_unary_plus_or_minus(MemoryArena *arena, TokenIterator *state) {
     if (token_iterator_current(state)->type == TOKEN_PLUS || token_iterator_current(state)->type == TOKEN_MINUS) {
-        operator_t operator= token_iterator_current(state)->type == TOKEN_PLUS ? OPERATOR_ADD : OPERATOR_SUB;
+        Operator operator= token_iterator_current(state)->type == TOKEN_PLUS ? OPERATOR_ADD : OPERATOR_SUB;
         token_iterator_advance(state);
 
-        expression_t *inner = expression_unary_plus_or_minus(arena, state);
+        Expression *inner = expression_unary_plus_or_minus(arena, state);
         if (!inner) {
             return NULL;
         }
@@ -326,11 +326,11 @@ static expression_t *expression_unary_plus_or_minus(arena_t *arena, token_iterat
 }
 
 /// Parses a multiplication or division expression
-static expression_t *expression_mul_or_div(arena_t *arena, token_iterator_t *state) {
+static Expression *expression_mul_or_div(MemoryArena *arena, TokenIterator *state) {
     // The first term in the multiplication or division can be an
     // expression of higher precedence, which are all contained by
     // unary plus or minus expressions
-    expression_t *left = expression_unary_plus_or_minus(arena, state);
+    Expression *left = expression_unary_plus_or_minus(arena, state);
     if (!left) {
         return NULL;
     }
@@ -338,12 +338,12 @@ static expression_t *expression_mul_or_div(arena_t *arena, token_iterator_t *sta
     // In the next step, we try to consume either a plus or minus sign
     while (token_iterator_current(state)->type == TOKEN_ASTERISK ||
            token_iterator_current(state)->type == TOKEN_SLASH) {
-        operator_t operator= token_iterator_current(state)->type == TOKEN_ASTERISK ? OPERATOR_MUL : OPERATOR_DIV;
+        Operator operator= token_iterator_current(state)->type == TOKEN_ASTERISK ? OPERATOR_MUL : OPERATOR_DIV;
         token_iterator_advance(state);
 
         // On the right side of the expression, we again try to parse an expression
         // of higher precedence
-        expression_t *right = expression_unary_plus_or_minus(arena, state);
+        Expression *right = expression_unary_plus_or_minus(arena, state);
         if (!right) {
             return NULL;
         }
@@ -355,23 +355,23 @@ static expression_t *expression_mul_or_div(arena_t *arena, token_iterator_t *sta
 }
 
 /// Parses an addition or subtraction expression
-static expression_t *expression_add_or_sub(arena_t *arena, token_iterator_t *state) {
+static Expression *expression_add_or_sub(MemoryArena *arena, TokenIterator *state) {
     // The first term in the addition or subtraction can be an
     // expression of higher precedence, they are all handled by
     // multiplication or division as it is next in the
     // precedence hierarchy
-    expression_t *left = expression_mul_or_div(arena, state);
+    Expression *left = expression_mul_or_div(arena, state);
     if (!left) {
         return NULL;
     }
 
     // In the next step, we try to consume either a plus or minus sign
     while (token_iterator_current(state)->type == TOKEN_PLUS || token_iterator_current(state)->type == TOKEN_MINUS) {
-        operator_t operator= token_iterator_current(state)->type == TOKEN_PLUS ? OPERATOR_ADD : OPERATOR_SUB;
+        Operator operator= token_iterator_current(state)->type == TOKEN_PLUS ? OPERATOR_ADD : OPERATOR_SUB;
         token_iterator_advance(state);
 
         // On the right side of the plus or minus sign, we again try to parse an expression of higher precedence
-        expression_t *right = expression_mul_or_div(arena, state);
+        Expression *right = expression_mul_or_div(arena, state);
         if (!right) {
             return NULL;
         }
@@ -382,8 +382,8 @@ static expression_t *expression_add_or_sub(arena_t *arena, token_iterator_t *sta
     return left;
 }
 
-static expression_t *expression_arithmetic_or_final(arena_t *arena, token_iterator_t *state) {
-    token_t *current = token_iterator_current(state);
+static Expression *expression_arithmetic_or_final(MemoryArena *arena, TokenIterator *state) {
+    Token *current = token_iterator_current(state);
     if (current->type == TOKEN_STRING) {
         return string_expression_new(arena, current->lexeme, current->length);
     }
@@ -391,15 +391,15 @@ static expression_t *expression_arithmetic_or_final(arena_t *arena, token_iterat
 }
 
 /// Compiles an expression from a list of tokens
-expression_t *expression_compile(arena_t *arena, token_t *begin, token_t *end) {
-    token_iterator_t state = { 0 };
+Expression *expression_compile(MemoryArena *arena, Token *begin, Token *end) {
+    TokenIterator state = { 0 };
     state.current = begin;
     state.end = end;
     return expression_arithmetic_or_final(arena, &state);
 }
 
 /// Evaluates the specified expression
-f64 expression_evaluate(expression_t *self, map_t *symbol_table) {
+f64 expression_evaluate(Expression *self, HashMap *symbol_table) {
     assert(expression_is_arithmetic(self) && "expression must be arithmetic for evaluation!");
 
     switch (self->type) {
@@ -422,7 +422,7 @@ f64 expression_evaluate(expression_t *self, map_t *symbol_table) {
 }
 
 /// Checks if an expression is arithmetic
-bool expression_is_arithmetic(expression_t *self) {
+bool expression_is_arithmetic(Expression *self) {
     switch (self->type) {
         case EXPRESSION_STRING:
             return false;

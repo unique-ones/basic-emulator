@@ -24,8 +24,8 @@
 #include "utility.h"
 
 /// Reads the entire file into the specified buffer
-bool file_read(binary_buffer_t* buffer, const char* path) {
-    FILE* file = fopen(path, "rb");
+bool file_read(BinaryBuffer *buffer, const char *path) {
+    FILE *file = fopen(path, "rb");
     if (!file) {
         return false;
     }
@@ -34,7 +34,7 @@ bool file_read(binary_buffer_t* buffer, const char* path) {
     s32 size = (s32) ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    buffer->data = (char*) malloc(size);
+    buffer->data = (char *) malloc(size);
     if (buffer->data) {
         buffer->size = (u32) size;
         fread(buffer->data, sizeof(char), size, file);

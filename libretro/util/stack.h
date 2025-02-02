@@ -26,39 +26,39 @@
 
 #include "types.h"
 
-typedef struct stack {
-    void** data;
+typedef struct Stack {
+    void **data;
     u32 size;
     u32 capacity;
-} stack_t;
+} Stack;
 
 /// Allocates a new stack
 /// @param capacity The initial capacity
 /// @return A new stack instance
-stack_t* stack_new(u32 capacity);
+Stack *stack_new(u32 capacity);
 
 /// Grows the stack's capacity
 /// @param self The stack handle
 /// @param capacity The new capacity
-void stack_grow(stack_t* self, u32 capacity);
+void stack_grow(Stack *self, u32 capacity);
 
 /// Frees the stack entries except for the data itself
 /// @param self The stack handle
-void stack_free(stack_t* self);
+void stack_free(Stack *self);
 
 /// Pushes the specified data onto the stack
 /// @param self The stack handle
 /// @param data The data
-void stack_push(stack_t* self, void* data);
+void stack_push(Stack *self, void *data);
 
 /// Pops data from the stack
 /// @param self The stack handle
 /// @return The top-most data
-void* stack_pop(stack_t* self);
+void *stack_pop(Stack *self);
 
 /// Peeks the top element
 /// @param self The stack handle
 /// @return The top-most data
-void* stack_peek(stack_t* self);
+void *stack_peek(Stack *self);
 
 #endif// RETRO_UTIL_STACK_H

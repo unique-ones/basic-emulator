@@ -27,82 +27,82 @@
 #include "types.h"
 
 /// Forward declare node
-typedef struct node node_t;
+typedef struct ListNode ListNode;
 
-typedef struct node {
-    node_t *prev;
-    node_t *next;
+typedef struct ListNode {
+    ListNode *prev;
+    ListNode *next;
     void *data;
-} node_t;
+} ListNode;
 
 /// Allocates a new node instance
 /// @param data The data to be wrapped in a node
 /// @return A reference to node
-node_t *node_new(void *data);
+ListNode *node_new(void *data);
 
 /// Frees all associated data with the node except the data
 /// @param self A reference to node
-void node_free(node_t *self);
+void node_free(ListNode *self);
 
-typedef struct list {
-    node_t *head;
-    node_t *tail;
+typedef struct LinkedList {
+    ListNode *head;
+    ListNode *tail;
     u32 length;
     u32 capacity;// pre-allocation?
-} list_t;
+} LinkedList;
 
-typedef bool (*list_equal_function_t)(const void *, const void *);
+typedef bool (*ListEqualFunction)(const void *, const void *);
 
 /// Allocates a new list instance
 /// @return A new list instance
-list_t *list_new(void);
+LinkedList *linked_list_new(void);
 
 /// Frees all data associated with the list
 /// @param self The list handle
-void list_free(list_t *self);
+void linked_list_free(LinkedList *self);
 
 /// Clears the list
 /// @param self The list handle
-void list_clear(list_t *self);
+void linked_list_clear(LinkedList *self);
 
 /// Inserts a node at the specified index
 /// @param self The list handle
 /// @param idx The index to insert node at
 /// @param data The data which is to be inserted
-void list_insert(list_t *self, u32 idx, void *data);
+void linked_list_insert(LinkedList *self, u32 idx, void *data);
 
 /// Retrieves the data of the node at the specified index in the list
 /// @param self The list handle
 /// @param idx The index of node
 /// @return The data of the node at the specified index, or NULL
-void *list_at(list_t *self, u32 idx);
+void *linked_list_at(LinkedList *self, u32 idx);
 
 /// Appends the data to the list
 /// @param self The list handle
 /// @param data The data which is to be appended
-void list_append(list_t *self, void *data);
+void linked_list_append(LinkedList *self, void *data);
 
 /// Sets the first node of the list
 /// @param self The list handle
 /// @param data The data
-void list_set_head(list_t *self, void *data);
+void linked_list_set_head(LinkedList *self, void *data);
 
-/// Alias to list_append
+/// Alias to linked_list_append
 /// @param self The list handle
 /// @param data The data which is set as the tail (appended)
-void list_set_tail(list_t *self, void *data);
+void linked_list_set_tail(LinkedList *self, void *data);
 
 /// Tries to find the specified data using the specified equal function
 /// @param self The list handle
 /// @param data The data which shall be found
 /// @param equal The equality check function
 /// @return The node of the found data or NULL on failure
-node_t *list_find(list_t *self, void *data, list_equal_function_t equal);
+ListNode *linked_list_find(LinkedList *self, void *data, ListEqualFunction equal);
 
 /// Tries to remove the specified data using the specified equal function
 /// @param self The list handle
 /// @param data The data which shall be removed
 /// @param equal The equality check function
-void list_remove(list_t *self, void *data, list_equal_function_t equal);
+void linked_list_remove(LinkedList *self, void *data, ListEqualFunction equal);
 
 #endif// RETRO_UTIL_LIST_H

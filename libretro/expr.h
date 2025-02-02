@@ -33,7 +33,7 @@ enum {
     EXPRESSION_IDENTIFIER_LENGTH = 64
 };
 
-typedef enum expression_type {
+typedef enum ExpressionType {
     EXPRESSION_BINARY,
     EXPRESSION_NUMBER,
     EXPRESSION_VARIABLE,
@@ -41,41 +41,41 @@ typedef enum expression_type {
     EXPRESSION_UNARY,
     EXPRESSION_EXPONENTIAL,
     EXPRESSION_STRING
-} expression_type_t;
+} ExpressionType;
 
 /// Forward declare expression
-typedef struct expression expression_t;
+typedef struct Expression Expression;
 
-typedef enum operator{
+typedef enum Operator {
     OPERATOR_ADD,
     OPERATOR_SUB,
     OPERATOR_MUL,
     OPERATOR_DIV
-} operator_t;
+} Operator;
 
-typedef struct unary_expression {
-    operator_t operator;
-    expression_t *expression;
-} unary_expression_t;
+typedef struct UnaryExpression {
+    Operator operator;
+    Expression *expression;
+} UnaryExpression;
 
 /// Creates a new unary expression instance
 /// @param arena The arena for the allocation
 /// @param operator The operator
 /// @param expression The expression
 /// @return A new expression instance
-expression_t *unary_expression_new(arena_t *arena, operator_t operator, expression_t * expression);
+Expression *unary_expression_new(MemoryArena *arena, Operator operator, Expression * expression);
 
 /// Evaluates the unary expression
 /// @param self The expression instance
 /// @param symbol_table The symbol table
 /// @return The resulting value
-f64 unary_expression_evaluate(expression_t *self, map_t *symbol_table);
+f64 unary_expression_evaluate(Expression *self, HashMap *symbol_table);
 
-typedef struct binary_expression {
-    expression_t *left;
-    expression_t *right;
-    operator_t operator;
-} binary_expression_t;
+typedef struct BinaryExpression {
+    Expression *left;
+    Expression *right;
+    Operator operator;
+} BinaryExpression;
 
 /// Creates a new binary expression instance
 /// @param arena The arena for allocations
@@ -83,51 +83,51 @@ typedef struct binary_expression {
 /// @param right right expression
 /// @param operator binary operator
 /// @return A new expression instance
-expression_t *binary_expression_new(arena_t *arena, expression_t *left, expression_t *right, operator_t operator);
+Expression *binary_expression_new(MemoryArena *arena, Expression *left, Expression *right, Operator operator);
 
 /// Evaluates the binary expression
 /// @param self The expression instance
 /// @param symbol_table The symbol table
 /// @return The resulting value
-f64 binary_expression_evaluate(expression_t *self, map_t *symbol_table);
+f64 binary_expression_evaluate(Expression *self, HashMap *symbol_table);
 
-typedef struct variable_expression {
+typedef struct VariableExpression {
     char name[EXPRESSION_IDENTIFIER_LENGTH];
-} variable_expression_t;
+} VariableExpression;
 
 /// Creates a new variable expression instance
 /// @param arena The arena for allocations
 /// @param name The name of the variable
 /// @param length The length of the variable name
 /// @return A new expression instance
-expression_t *variable_expression_new(arena_t *arena, char *name, u32 length);
+Expression *variable_expression_new(MemoryArena *arena, char *name, u32 length);
 
 /// Evaluates the variable expression
 /// @param self The expression instance
 /// @param symbol_table The symbol table
 /// @return The resulting value
-f64 variable_expression_evaluate(expression_t *self, map_t *symbol_table);
+f64 variable_expression_evaluate(Expression *self, HashMap *symbol_table);
 
-typedef struct function_parameter {
-    expression_t *expression;
-    struct function_parameter *prev;
-    struct function_parameter *next;
-} function_parameter_t;
+typedef struct FunctionParameter {
+    Expression *expression;
+    struct FunctionParameter *prev;
+    struct FunctionParameter *next;
+} FunctionParameter;
 
 /// Creates a new function parameter instance
 /// @param arena The arena for allocations
 /// @param expression The expression
 /// @return A new function parameter instance
-function_parameter_t *function_parameter_new(arena_t *arena, expression_t *expression);
+FunctionParameter *function_parameter_new(MemoryArena *arena, Expression *expression);
 
-typedef struct function_expression {
+typedef struct FunctionExpression {
     char name[EXPRESSION_IDENTIFIER_LENGTH];
-    function_parameter_t *first_parameter;
-    function_parameter_t *last_parameter;
+    FunctionParameter *first_parameter;
+    FunctionParameter *last_parameter;
     u32 parameter_count;
-} function_expression_t;
+} FunctionExpression;
 
-typedef struct function_definition_builtin {
+typedef struct FunctionDefinitionBuiltin {
     enum {
         PARAMETER_COUNT_0 = 0,
         PARAMETER_COUNT_1 = 1,
@@ -139,125 +139,125 @@ typedef struct function_definition_builtin {
         f64 (*func1)(f64);
         f64 (*func2)(f64, f64);
     };
-} function_definition_builtin_t;
+} FunctionDefinitionBuiltin;
 
-typedef struct function_definition_variable {
-    expression_t *variable;
-    expression_t *body;
-} function_definition_variable_t;
+typedef struct FunctionDefinitionDynamic {
+    Expression *variable;
+    Expression *body;
+} FunctionDefinitionDynamic;
 
-typedef enum function_definition_type {
+typedef enum FunctionDefinitionType {
     FUNCTION_DEFINITION_BUILTIN,
-    FUNCTION_DEFINITION_VARIABLE
-} function_definition_type_t;
+    FUNCTION_DEFINITION_DYNAMIC
+} FunctionDefinitionType;
 
-typedef struct function_definition {
+typedef struct FunctionDefinition {
     const char *name;
-    function_definition_type_t type;
+    FunctionDefinitionType type;
     union {
-        function_definition_builtin_t builtin;
-        function_definition_variable_t variable;
+        FunctionDefinitionBuiltin builtin;
+        FunctionDefinitionDynamic variable;
     };
-} function_definition_t;
+} FunctionDefinition;
 
 /// Creates a new function expression instance
 /// @param arena The arena for allocations
 /// @param name The name of the function
 /// @param length The length of the function name
 /// @return A new expression instance
-expression_t *function_expression_new(arena_t *arena, char *name, u32 length);
+Expression *function_expression_new(MemoryArena *arena, char *name, u32 length);
 
 /// Pushes a parameter to the specified function expression
 /// @param arena The arena for allocations
 /// @param self The expression instance
 /// @param parameter The parameter
-void function_expression_push(arena_t *arena, expression_t *self, expression_t *parameter);
+void function_expression_push(MemoryArena *arena, Expression *self, Expression *parameter);
 
 /// Retrieves the parameter at the specified index
 /// @param self The expression instance
 /// @param index The parameter index
-function_parameter_t *function_expression_get_parameter(expression_t *self, u32 index);
+FunctionParameter *function_expression_get_parameter(Expression *self, u32 index);
 
 /// Evaluates the specified function expression
 /// @param self The function expression instance
 /// @param symbol_table The symbol table
 /// @return The resulting value
-f64 function_expression_evaluate(expression_t *self, map_t *symbol_table);
+f64 function_expression_evaluate(Expression *self, HashMap *symbol_table);
 
 /// Creates a new number expression instance
 /// @param arena The arena for allocations
 /// @param number The number
 /// @return A new expression instance
-expression_t *number_expression_new(arena_t *arena, f64 number);
+Expression *number_expression_new(MemoryArena *arena, f64 number);
 
 /// Evaluates the specified number expression
 /// @param self The expression instance
 /// @return The resulting value
-f64 number_expression_evaluate(expression_t *self);
+f64 number_expression_evaluate(Expression *self);
 
-typedef struct exponential_expression {
-    expression_t *base;
-    expression_t *exponent;
-} exponential_expression_t;
+typedef struct ExponentialExpression {
+    Expression *base;
+    Expression *exponent;
+} ExponentialExpression;
 
 /// Creates a new exponential expression instance
 /// @param arena The arena for allocations
 /// @param base The base of the exponential expression
 /// @param exponent The exponent of the exponential expression
 /// @return A new expression instance
-expression_t *exponential_expression_new(arena_t *arena, expression_t *base, expression_t *exponent);
+Expression *exponential_expression_new(MemoryArena *arena, Expression *base, Expression *exponent);
 
 /// Evaluates the specified exponential expression
 /// @param self The expression instance
 /// @param symbol_table The symbol table
 /// @return The resulting value
-f64 exponential_expression_evaluate(expression_t *self, map_t *symbol_table);
+f64 exponential_expression_evaluate(Expression *self, HashMap *symbol_table);
 
-typedef struct string_expression {
+typedef struct StringExpression {
     char *data;
     u32 length;
-} string_expression_t;
+} StringExpression;
 
 /// Creates a new string expression by storing the string in the provided arena
 /// @param arena The arena for allocations
 /// @param data A pointer to the string
 /// @param length The length of the string
-expression_t *string_expression_new(arena_t *arena, char *data, u32 length);
+Expression *string_expression_new(MemoryArena *arena, char *data, u32 length);
 
 /// What the fuck is this... we probably want to use shunting yard here at some point
-typedef struct expression {
-    expression_type_t type;
+typedef struct Expression {
+    ExpressionType type;
     union {
         // arthimetic expressions
-        unary_expression_t unary;
-        binary_expression_t binary;
-        variable_expression_t variable;
-        function_expression_t function;
-        exponential_expression_t exponential;
+        UnaryExpression unary;
+        BinaryExpression binary;
+        VariableExpression variable;
+        FunctionExpression function;
+        ExponentialExpression exponential;
         f64 number;
 
         // non-arithmetic expressions
-        string_expression_t string;
+        StringExpression string;
     };
-} expression_t;
+} Expression;
 
 /// Compiles an expression from a list of tokens
 /// @param arena The arena for allocations
 /// @param begin The first token
 /// @param end The last token
 /// @return The resulting expression
-expression_t *expression_compile(arena_t *arena, token_t *begin, token_t *end);
+Expression *expression_compile(MemoryArena *arena, Token *begin, Token *end);
 
 /// Evaluates the specified expression
 /// @param self The expression instance
 /// @param symbol_table The symbol table
 /// @return The resulting value
-f64 expression_evaluate(expression_t *self, map_t *symbol_table);
+f64 expression_evaluate(Expression *self, HashMap *symbol_table);
 
 /// Checks if an expression is arithmetic
 /// @param self The expression instance
 /// @param A boolean value that indicates whether the expression
 ///        is arithmetic or not
-bool expression_is_arithmetic(expression_t *self);
+bool expression_is_arithmetic(Expression *self);
 
 #endif// RETRO_EXPR_H

@@ -29,57 +29,57 @@
 #include "util/map.h"
 
 /// Forward declares
-typedef struct statement statement_t;
-typedef struct program_tree_node program_tree_node_t;
-typedef struct program_tree_iterator program_tree_iterator_t;
+typedef struct Statement Statement;
+typedef struct ProgramTreeNode ProgramTreeNode;
+typedef struct ProgramTreeIterator ProgramTreeIterator;
 
-typedef struct program_tree_node {
-    statement_t *stmt;
-    program_tree_node_t *left;
-    program_tree_node_t *right;
-} program_tree_node_t;
+typedef struct ProgramTreeNode {
+    Statement *stmt;
+    ProgramTreeNode *left;
+    ProgramTreeNode *right;
+} ProgramTreeNode;
 
-typedef struct program_tree_iterator {
-    statement_t *stmt;
-    program_tree_iterator_t *next;
-} program_tree_iterator_t;
+typedef struct ProgramTreeIterator {
+    Statement *stmt;
+    ProgramTreeIterator *next;
+} ProgramTreeIterator;
 
-typedef struct program_tree {
-    program_tree_node_t *root;
-    arena_t arena;
-} program_tree_t;
+typedef struct ProgramTree {
+    ProgramTreeNode *root;
+    MemoryArena arena;
+} ProgramTree;
 
 /// Creates a new program tree
 /// @param tree The program tree
-void program_tree_create(program_tree_t *tree);
+void program_tree_create(ProgramTree *tree);
 
 /// Destroys the program tree
 /// @param tree The program tree
-void program_tree_destroy(program_tree_t *tree);
+void program_tree_destroy(ProgramTree *tree);
 
 /// Clears all nodes of the program tree
-void program_tree_clear(program_tree_t *tree);
+void program_tree_clear(ProgramTree *tree);
 
 /// Inserts the given statement into the program tree
 /// @param tree The program tree
 /// @param stmt The statement
-void program_tree_insert(program_tree_t *tree, statement_t *stmt);
+void program_tree_insert(ProgramTree *tree, Statement *stmt);
 
 /// Retrieves a program tree node from the given line
 /// @param tree The program tree
 /// @param line The line which is requested
 /// @return The request program tree node or NULL
-program_tree_node_t *program_tree_get(program_tree_t *tree, u32 line);
+ProgramTreeNode *program_tree_get(ProgramTree *tree, u32 line);
 
 enum {
     PROGRAM_MARGIN_SIZE = 30,
     PROGRAM_MEMORY_SIZE = 0x10000
 };
 
-typedef struct program {
+typedef struct Program {
     /// The symbols which are stored in the program.
     /// Symbols can be function definitions or user defined variables.
-    map_t *symbols;
+    HashMap *symbols;
 
     /// The program memory, which is usually 64 Kb.
     /// TODO(plank): Not really in use yet, we want to write some data
@@ -88,13 +88,13 @@ typedef struct program {
     u8 memory[PROGRAM_MEMORY_SIZE];
 
     /// Required for text rendering
-    renderer_t *renderer;
+    Renderer *renderer;
 
     /// Next text position
-    f32vec2_t text_position;
+    F32Vector2 text_position;
 
     /// A tree map that stores the lines of the actual program.
-    program_tree_t lines;
+    ProgramTree lines;
 
     /// A boolean whose values indicates whether the program should wait
     /// for the users input to cancel execution. possible values are:
@@ -108,26 +108,26 @@ typedef struct program {
     s32 last_key;
 
     /// The arena in which all program objects are allocated in.
-    arena_t objects;
-} program_t;
+    MemoryArena objects;
+} Program;
 
 /// Creates a program which serves as the handle between emulator and AST
 /// @param self The program handle
 /// @param renderer The renderer
-void program_create(program_t *self, renderer_t *renderer);
+void program_create(Program *self, Renderer *renderer);
 
 /// Destroys the program and all its data
 /// @param self The program handle
-void program_destroy(program_t *self);
+void program_destroy(Program *self);
 
 /// Executes the program
 /// @param self The program handle
-void program_execute(program_t *self);
+void program_execute(Program *self);
 
 /// Submits formatted text to the renderer
 /// @param self The program handle
 /// @param fmt The text format string
 /// @param ... The variadic arguments
-void program_print_format(program_t *self, const char *fmt, ...);
+void program_print_format(Program *self, const char *fmt, ...);
 
 #endif// RETRO_PROG_H

@@ -28,12 +28,12 @@
 #include "lexer.h"
 #include "prog.h"
 
-typedef struct statement statement_t;
+typedef struct Statement Statement;
 
-typedef struct let_statement {
-    expression_t *variable;
-    expression_t *initializer;
-} let_statement_t;
+typedef struct LetStatement {
+    Expression *variable;
+    Expression *initializer;
+} LetStatement;
 
 /// Creates a new let statement
 /// @param arena The arena for allocations
@@ -41,19 +41,19 @@ typedef struct let_statement {
 /// @param variable The variable
 /// @param initializer The initializer value of the variable
 /// @return A new let statement
-statement_t *let_statement_new(arena_t *arena, u32 line, expression_t *variable, expression_t *initializer);
+Statement *let_statement_new(MemoryArena *arena, u32 line, Expression *variable, Expression *initializer);
 
 /// Creates a new clear statement
 /// @param arena The arena for allocations
 /// @param line The line of the statement
 /// @return A new clear statement
-statement_t *clear_statement_new(arena_t *arena, u32 line);
+Statement *clear_statement_new(MemoryArena *arena, u32 line);
 
-typedef struct def_fn_statement {
-    expression_t *name;
-    expression_t *variable;
-    expression_t *body;
-} def_fn_statement_t;
+typedef struct DefFnStatement {
+    Expression *name;
+    Expression *variable;
+    Expression *body;
+} DefFnStatement;
 
 /// Creates a new def fn statement
 /// @param arena The arena for allocations
@@ -62,29 +62,25 @@ typedef struct def_fn_statement {
 /// @param variable The variable that is used
 /// @param body The body of the function
 /// @return A new def fn statement
-statement_t *def_fn_statement_new(arena_t *arena,
-                                  u32 line,
-                                  expression_t *name,
-                                  expression_t *variable,
-                                  expression_t *body);
+Statement *def_fn_statement_new(MemoryArena *arena, u32 line, Expression *name, Expression *variable, Expression *body);
 
-typedef struct print_statement {
-    expression_t *printable;
-} print_statement_t;
+typedef struct PrintStatement {
+    Expression *printable;
+} PrintStatement;
 
 /// Creates a new print statement
 /// @param arena The arena for allocations
 /// @param line The line of the statement
 /// @param printable The printable expression
 /// @return A new print statement
-statement_t *print_statement_new(arena_t *arena, u32 line, expression_t *printable);
+Statement *print_statement_new(MemoryArena *arena, u32 line, Expression *printable);
 
 /// Creates a new run statement
 /// @param arena The arena for allocations
 /// @return A new run statement
-statement_t *run_statement_new(arena_t *arena);
+Statement *run_statement_new(MemoryArena *arena);
 
-typedef enum statement_type {
+typedef enum StatementType {
     // Variable Control
     STATEMENT_CLEAR,
     STATEMENT_LET,
@@ -93,41 +89,41 @@ typedef enum statement_type {
     // Emulator commands
     STATEMENT_PRINT,
     STATEMENT_RUN
-} statement_type_t;
+} StatementType;
 
-typedef struct statement {
+typedef struct Statement {
     u32 line;
-    statement_type_t type;
+    StatementType type;
     union {
-        let_statement_t let;
-        def_fn_statement_t def_fn;
-        print_statement_t print;
+        LetStatement let;
+        DefFnStatement def_fn;
+        PrintStatement print;
     };
-} statement_t;
+} Statement;
 
-typedef enum result_type {
+typedef enum ResultType {
     RESULT_OK,
     RESULT_ERROR,
-} result_type_t;
+} ResultType;
 
-typedef struct statement_result_t {
-    result_type_t type;
+typedef struct StatementResult {
+    ResultType type;
     union {
-        statement_t *statement;
+        Statement *statement;
         const char *error;
     };
-} statement_result_t;
+} StatementResult;
 
 /// Compiles a statement from a list of tokens
 /// @param arena The arena for allocations
 /// @param begin The first token in the statement
 /// @param end The last token in the statement
 /// @return The statement or nil if the statement where invalid
-statement_result_t statement_compile(arena_t *arena, token_t *begin, token_t *end);
+StatementResult statement_compile(MemoryArena *arena, Token *begin, Token *end);
 
 /// Executes the statement
 /// @param self The statement
 /// @param program The program state
-void statement_execute(statement_t *self, program_t *program);
+void statement_execute(Statement *self, Program *program);
 
 #endif// RETRO_STMT_H

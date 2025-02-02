@@ -33,6 +33,6 @@
 /// @param buffer The buffer where the content of the file is copied to
 /// @param path The path to the file
 /// @return Boolean value that indicates whether the file could be read
-bool file_read(binary_buffer_t* buffer, const char* path);
+bool file_read(BinaryBuffer *buffer, const char *path);
 
 #endif// RETRO_UTIL_UTILITY_H
