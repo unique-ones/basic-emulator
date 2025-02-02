@@ -24,9 +24,9 @@
 #ifndef RETRO_PROG_H
 #define RETRO_PROG_H
 
+#include "gpu/renderer.h"
 #include "util/arena.h"
 #include "util/map.h"
-#include "util/text.h"
 
 /// Forward declares
 typedef struct statement statement_t;
@@ -71,6 +71,11 @@ void program_tree_insert(program_tree_t *tree, statement_t *stmt);
 /// @return The request program tree node or NULL
 program_tree_node_t *program_tree_get(program_tree_t *tree, u32 line);
 
+enum {
+    PROGRAM_MARGIN_SIZE = 30,
+    PROGRAM_MEMORY_SIZE = 0x10000
+};
+
 typedef struct program {
     /// The symbols which are stored in the program.
     /// Symbols can be function definitions or user defined variables.
@@ -80,11 +85,13 @@ typedef struct program {
     /// TODO(plank): Not really in use yet, we want to write some data
     /// (like keyboard input) to specific memory locations as described
     /// in the Applesoft BASIC spec.
-    u8 *memory;
+    u8 memory[PROGRAM_MEMORY_SIZE];
 
-    /// The text output queue, which is what gets displayed on the screen.
-    /// Calls to functions like PRINT and HOME affect the output queue.
-    text_queue_t *output;
+    /// Required for text rendering
+    renderer_t *renderer;
+
+    /// Next text position
+    f32vec2_t text_position;
 
     /// A tree map that stores the lines of the actual program.
     program_tree_t lines;
@@ -106,8 +113,8 @@ typedef struct program {
 
 /// Creates a program which serves as the handle between emulator and AST
 /// @param self The program handle
-/// @param memory_size The desired size of the program memory
-void program_create(program_t *self, u32 memory_size);
+/// @param renderer The renderer
+void program_create(program_t *self, renderer_t *renderer);
 
 /// Destroys the program and all its data
 /// @param self The program handle
@@ -116,5 +123,11 @@ void program_destroy(program_t *self);
 /// Executes the program
 /// @param self The program handle
 void program_execute(program_t *self);
+
+/// Submits formatted text to the renderer
+/// @param self The program handle
+/// @param fmt The text format string
+/// @param ... The variadic arguments
+void program_print_format(program_t *self, const char *fmt, ...);
 
 #endif// RETRO_PROG_H

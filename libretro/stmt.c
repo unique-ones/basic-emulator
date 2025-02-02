@@ -174,10 +174,10 @@ static void statement_print_execute(statement_t *self, program_t *program) {
     expression_t *printable = self->print.printable;
     if (expression_is_arithmetic(printable)) {
         f64 result = expression_evaluate(printable, program->symbols);
-        text_queue_push_format(program->output, "%lf", result);
+        program_print_format(program, "%lf", result);
     } else {
         assert(printable->type == EXPRESSION_STRING && "printable must be arithmetic or string");
-        text_queue_push_format(program->output, "%.*s", printable->string.length, printable->string.data);
+        program_print_format(program, "%.*s", printable->string.length, printable->string.data);
     }
     program->no_wait = false;
 }

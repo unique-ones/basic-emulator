@@ -24,6 +24,7 @@
 #include "prog.h"
 #include "stmt.h"
 
+#include <stdarg.h>
 #include <stdlib.h>
 
 
@@ -110,14 +111,16 @@ program_tree_node_t *program_tree_get(program_tree_t *tree, u32 line) {
 }
 
 /// Creates a program which serves as the handle between emulator and AST
-void program_create(program_t *self, u32 memory_size) {
+void program_create(program_t *self, renderer_t *renderer) {
     self->objects = arena_identity(ALIGNMENT8);
     self->symbols = map_new();
-    self->memory = (u8 *) arena_alloc(&self->objects, memory_size);
+    self->renderer = renderer;
+    self->text_position.x = (f32) PROGRAM_MARGIN_SIZE;
+    self->text_position.y = (f32) PROGRAM_MARGIN_SIZE;
+
     program_tree_create(&self->lines);
     self->last_key = -1;
     self->no_wait = false;
-    self->output = text_queue_new();
 }
 
 /// Destroys the program and all its data
@@ -126,10 +129,7 @@ void program_destroy(program_t *self) {
 
     map_free(self->symbols);
     self->symbols = NULL;
-    self->memory = NULL;
-
-    text_queue_free(self->output);
-    self->output = NULL;
+    self->renderer = NULL;
 
     arena_destroy(&self->objects);
 }
@@ -153,4 +153,16 @@ static void program_tree_node_execute(program_tree_node_t *node, program_t *prog
 /// Executes the program
 void program_execute(program_t *self) {
     program_tree_node_execute(self->lines.root, self);
+}
+
+/// Submits formatted text to the renderer
+void program_print_format(program_t *self, const char *fmt, ...) {
+    char buffer[1024];
+    va_list list;
+    va_start(list, fmt);
+    u32 length = (u32) vsnprintf(buffer, sizeof buffer, fmt, list);
+    va_end(list);
+
+    static f32vec3_t msg = { 1.0f, 0.55f, 0.0f };
+    renderer_draw_text(self->renderer, &self->text_position, &msg, 0.5f, "%.*s", length, buffer);
 }
