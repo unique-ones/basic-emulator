@@ -1,25 +1,4 @@
-//
-// MIT License
-//
-// Copyright (c) 2024 Elias Engelbert Plank
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+// Copyright (c) 2025 Elias Engelbert Plank
 
 #include "stmt.h"
 
@@ -30,7 +9,7 @@
 #include "lexer.h"
 
 /// Creates a new let statement
-Statement *let_statement_new(MemoryArena *arena, u32 line, Expression *variable, Expression *initializer) {
+Statement *let_statement_new(MemoryArena *arena, usize line, Expression *variable, Expression *initializer) {
     Statement *self = arena_alloc(arena, sizeof(Statement));
     self->line = line;
     self->type = STATEMENT_LET;
@@ -40,7 +19,7 @@ Statement *let_statement_new(MemoryArena *arena, u32 line, Expression *variable,
 }
 
 /// Creates a new clear statement
-Statement *clear_statement_new(MemoryArena *arena, u32 line) {
+Statement *clear_statement_new(MemoryArena *arena, usize line) {
     Statement *self = arena_alloc(arena, sizeof(Statement));
     self->line = line;
     self->type = STATEMENT_CLEAR;
@@ -49,7 +28,7 @@ Statement *clear_statement_new(MemoryArena *arena, u32 line) {
 
 /// Creates a new def fn statement
 Statement *def_fn_statement_new(MemoryArena *arena,
-                                u32 line,
+                                usize line,
                                 Expression *name,
                                 Expression *variable,
                                 Expression *body) {
@@ -63,7 +42,7 @@ Statement *def_fn_statement_new(MemoryArena *arena,
 }
 
 /// Creates a new print statement
-Statement *print_statement_new(MemoryArena *arena, u32 line, Expression *printable) {
+Statement *print_statement_new(MemoryArena *arena, usize line, Expression *printable) {
     Statement *self = arena_alloc(arena, sizeof(Statement));
     self->line = line;
     self->type = STATEMENT_PRINT;
@@ -106,10 +85,10 @@ static StatementResult statement_result_make_error(const char *error) {
 }
 
 /// Compiles a statement from the token state
-static StatementResult statement_compile_internal(MemoryArena *arena, u32 line, TokenIterator *state);
+static StatementResult statement_compile_internal(MemoryArena *arena, usize line, TokenIterator *state);
 
 /// Compiles a let statement from the token state
-static StatementResult statement_compile_let(MemoryArena *arena, u32 line, TokenIterator *state) {
+static StatementResult statement_compile_let(MemoryArena *arena, usize line, TokenIterator *state) {
     if (match(state, TOKEN_LET)) {
         token_iterator_advance(state);
     }
@@ -128,7 +107,7 @@ static StatementResult statement_compile_let(MemoryArena *arena, u32 line, Token
     return statement_result_make_error("LET statement must take form of [ LET ] <identifier> = <initializer>");
 }
 
-static StatementResult statement_compile_def_fn(MemoryArena *arena, u32 line, TokenIterator *state) {
+static StatementResult statement_compile_def_fn(MemoryArena *arena, usize line, TokenIterator *state) {
     static const char *form_err = "DEF FN statement must take form of DEF FN <name>(<var>) = <body>";
     token_iterator_advance(state);
     if (!match(state, TOKEN_FN)) {
@@ -170,13 +149,13 @@ static StatementResult statement_compile_def_fn(MemoryArena *arena, u32 line, To
 }
 
 /// Compiles a clear statement
-static StatementResult statement_compile_clear(MemoryArena *arena, u32 line, TokenIterator *state) {
+static StatementResult statement_compile_clear(MemoryArena *arena, usize line, TokenIterator *state) {
     token_iterator_advance(state);
     return statement_result_make(clear_statement_new(arena, line));
 }
 
 /// Compiles a print statement
-static StatementResult statement_compile_print(MemoryArena *arena, u32 line, TokenIterator *state) {
+static StatementResult statement_compile_print(MemoryArena *arena, usize line, TokenIterator *state) {
     token_iterator_advance(state);
     Expression *printable = expression_compile(arena, state->current, state->end);
     if (printable == NULL) {
@@ -190,7 +169,7 @@ static StatementResult statement_compile_run(MemoryArena *arena) {
 }
 
 /// Compiles a statement from the token state
-static StatementResult statement_compile_internal(MemoryArena *arena, u32 line, TokenIterator *state) {
+static StatementResult statement_compile_internal(MemoryArena *arena, usize line, TokenIterator *state) {
     // Clear all variables
     if (match(state, TOKEN_CLEAR)) {
         return statement_compile_clear(arena, line, state);
@@ -237,7 +216,7 @@ StatementResult statement_compile(MemoryArena *arena, Token *begin, Token *end) 
 
     char *line_begin = line_token->lexeme;
     char *line_end = line_begin + line_token->length;
-    return statement_compile_internal(arena, strtoul(line_begin, &line_end, 10), &state);
+    return statement_compile_internal(arena, strtoull(line_begin, &line_end, 10), &state);
 }
 
 /// Executes a line statement

@@ -1,25 +1,4 @@
-//
-// MIT License
-//
-// Copyright (c) 2024 Elias Engelbert Plank
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+// Copyright (c) 2025 Elias Engelbert Plank
 
 #include <assert.h>
 #include <math.h>
@@ -71,7 +50,7 @@ f64 binary_expression_evaluate(Expression *self, HashMap *symbol_table) {
 }
 
 /// Creates a new variable expression instance
-Expression *variable_expression_new(MemoryArena *arena, char *name, u32 length) {
+Expression *variable_expression_new(MemoryArena *arena, char *name, usize length) {
     Expression *self = arena_alloc(arena, sizeof(Expression));
     self->type = EXPRESSION_VARIABLE;
     memset(self->variable.name, 0, sizeof self->variable.name);
@@ -98,7 +77,7 @@ FunctionParameter *function_parameter_new(MemoryArena *arena, Expression *expres
 }
 
 /// Creates a new function expression instance
-Expression *function_expression_new(MemoryArena *arena, char *name, u32 length) {
+Expression *function_expression_new(MemoryArena *arena, char *name, usize length) {
     Expression *self = arena_alloc(arena, sizeof(Expression));
     self->type = EXPRESSION_FUNCTION;
 
@@ -135,14 +114,14 @@ void function_expression_push(MemoryArena *arena, Expression *self, Expression *
 }
 
 /// Retrieves the parameter at the specified index
-FunctionParameter *function_expression_get_parameter(Expression *self, u32 index) {
+FunctionParameter *function_expression_get_parameter(Expression *self, usize index) {
     FunctionExpression *function = &self->function;
     if (function->first_parameter == NULL || index >= function->parameter_count) {
         return NULL;
     }
 
-    u32 iterator;
-    u32 iterator_limit;
+    usize iterator;
+    usize iterator_limit;
     FunctionParameter *temp;
     if (index < (function->parameter_count - index)) {
         temp = function->first_parameter;
@@ -237,7 +216,7 @@ f64 exponential_expression_evaluate(Expression *self, HashMap *symbol_table) {
 }
 
 /// Creates a new string expression by storing the string in the provided arena
-Expression *string_expression_new(MemoryArena *arena, char *data, u32 length) {
+Expression *string_expression_new(MemoryArena *arena, char *data, usize length) {
     Expression *self = arena_alloc(arena, sizeof(Expression));
     self->type = EXPRESSION_STRING;
     self->string.data = arena_alloc(arena, length);

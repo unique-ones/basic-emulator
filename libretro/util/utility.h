@@ -24,9 +24,6 @@
 #ifndef RETRO_UTIL_UTILITY_H
 #define RETRO_UTIL_UTILITY_H
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "types.h"
 
 /// Reads the entire file into the specified buffer

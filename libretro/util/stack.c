@@ -29,7 +29,7 @@
 #include <assert.h>
 
 /// Allocates a new stack
-Stack *stack_new(u32 capacity) {
+Stack *stack_new(usize capacity) {
     Stack *self = (Stack *) malloc(sizeof(Stack));
     self->capacity = capacity;
     self->size = 0;
@@ -38,7 +38,7 @@ Stack *stack_new(u32 capacity) {
 }
 
 /// Grows the stack's capacity
-void stack_grow(Stack *self, u32 capacity) {
+void stack_grow(Stack *self, usize capacity) {
     void **new_data = (void **) realloc(self->data, capacity * sizeof(void *));
     if (new_data) {
         self->data = new_data;

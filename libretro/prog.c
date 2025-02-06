@@ -1,25 +1,4 @@
-﻿//
-// MIT License
-//
-// Copyright (c) 2024 Elias Engelbert Plank
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+﻿// Copyright (c) 2025 Elias Engelbert Plank
 
 #include "prog.h"
 #include "stmt.h"
@@ -58,8 +37,8 @@ static ProgramTreeNode *program_tree_node_create(MemoryArena *arena, Statement *
 /// Insert the given statement at a feasible position starting at the specified node
 static void program_tree_node_insert(MemoryArena *arena, ProgramTreeNode *node, Statement *stmt) {
     // TODO(elias): program tree should probably be ordered into heap rather than tree
-    u32 node_line = node->stmt->line;
-    u32 stmt_line = stmt->line;
+    usize node_line = node->stmt->line;
+    usize stmt_line = stmt->line;
 
     ProgramTreeNode **walk_position = NULL;
     if (stmt_line > node_line) {
@@ -91,11 +70,11 @@ void program_tree_insert(ProgramTree *tree, Statement *stmt) {
     }
 }
 
-static ProgramTreeNode *program_tree_node_get(ProgramTreeNode *node, u32 line) {
+static ProgramTreeNode *program_tree_node_get(ProgramTreeNode *node, usize line) {
     if (node == NULL) {
         return NULL;
     }
-    u32 node_line = node->stmt->line;
+    usize node_line = node->stmt->line;
     if (node_line > line) {
         return program_tree_node_get(node->left, line);
     }
@@ -106,7 +85,7 @@ static ProgramTreeNode *program_tree_node_get(ProgramTreeNode *node, u32 line) {
 }
 
 /// Retrieves a program tree node from the given line
-ProgramTreeNode *program_tree_get(ProgramTree *tree, u32 line) {
+ProgramTreeNode *program_tree_get(ProgramTree *tree, usize line) {
     return program_tree_node_get(tree->root, line);
 }
 

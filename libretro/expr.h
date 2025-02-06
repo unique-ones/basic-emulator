@@ -1,25 +1,4 @@
-//
-// MIT License
-//
-// Copyright (c) 2024 Elias Engelbert Plank
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+// Copyright (c) 2025 Elias Engelbert Plank
 
 #ifndef RETRO_EXPR_H
 #define RETRO_EXPR_H
@@ -100,7 +79,7 @@ typedef struct VariableExpression {
 /// @param name The name of the variable
 /// @param length The length of the variable name
 /// @return A new expression instance
-Expression *variable_expression_new(MemoryArena *arena, char *name, u32 length);
+Expression *variable_expression_new(MemoryArena *arena, char *name, usize length);
 
 /// Evaluates the variable expression
 /// @param self The expression instance
@@ -124,7 +103,7 @@ typedef struct FunctionExpression {
     char name[EXPRESSION_IDENTIFIER_LENGTH];
     FunctionParameter *first_parameter;
     FunctionParameter *last_parameter;
-    u32 parameter_count;
+    usize parameter_count;
 } FunctionExpression;
 
 typedef struct FunctionDefinitionBuiltin {
@@ -165,7 +144,7 @@ typedef struct FunctionDefinition {
 /// @param name The name of the function
 /// @param length The length of the function name
 /// @return A new expression instance
-Expression *function_expression_new(MemoryArena *arena, char *name, u32 length);
+Expression *function_expression_new(MemoryArena *arena, char *name, usize length);
 
 /// Pushes a parameter to the specified function expression
 /// @param arena The arena for allocations
@@ -176,7 +155,7 @@ void function_expression_push(MemoryArena *arena, Expression *self, Expression *
 /// Retrieves the parameter at the specified index
 /// @param self The expression instance
 /// @param index The parameter index
-FunctionParameter *function_expression_get_parameter(Expression *self, u32 index);
+FunctionParameter *function_expression_get_parameter(Expression *self, usize index);
 
 /// Evaluates the specified function expression
 /// @param self The function expression instance
@@ -215,14 +194,14 @@ f64 exponential_expression_evaluate(Expression *self, HashMap *symbol_table);
 
 typedef struct StringExpression {
     char *data;
-    u32 length;
+    usize length;
 } StringExpression;
 
 /// Creates a new string expression by storing the string in the provided arena
 /// @param arena The arena for allocations
 /// @param data A pointer to the string
 /// @param length The length of the string
-Expression *string_expression_new(MemoryArena *arena, char *data, u32 length);
+Expression *string_expression_new(MemoryArena *arena, char *data, usize length);
 
 /// What the fuck is this... we probably want to use shunting yard here at some point
 typedef struct Expression {

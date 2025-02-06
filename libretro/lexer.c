@@ -1,25 +1,4 @@
-//
-// MIT License
-//
-// Copyright (c) 2024 Elias Engelbert Plank
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+// Copyright (c) 2025 Elias Engelbert Plank
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -28,7 +7,7 @@
 #include "lexer.h"
 
 /// Creates a new token instance
-Token *token_new(TokenType type, char *lexeme, u32 length) {
+Token *token_new(TokenType type, char *lexeme, usize length) {
     Token *self = malloc(sizeof(Token));
     self->prev = NULL;
     self->next = NULL;
@@ -79,7 +58,7 @@ void token_list_free(TokenList *self) {
 }
 
 /// Pushes a token to the specified token list
-void token_list_push(TokenList *self, TokenType type, char *lexeme, u32 length) {
+void token_list_push(TokenList *self, TokenType type, char *lexeme, usize length) {
     Token *token = token_new(type, lexeme, length);
     if (self->begin == NULL) {
         self->begin = token;
@@ -102,12 +81,12 @@ void token_list_push(TokenList *self, TokenType type, char *lexeme, u32 length) 
 
 typedef struct StringIterator {
     char *base;
-    u32 length;
-    u32 index;
+    usize length;
+    usize index;
 } StringIterator;
 
 /// Creates a string iterator
-static void string_iterator_create(StringIterator *self, char *base, u32 length) {
+static void string_iterator_create(StringIterator *self, char *base, usize length) {
     self->base = base;
     self->length = length;
     self->index = 0;
@@ -195,7 +174,7 @@ static TokenType tokenize_trivial_to_type(char current) {
 }
 
 /// Checks if two string views are equal
-static bool string_view_equal(const char *first, u32 first_size, const char *second, u32 second_size) {
+static bool string_view_equal(const char *first, usize first_size, const char *second, usize second_size) {
     if (first_size != second_size) {
         return false;
     }
@@ -203,7 +182,7 @@ static bool string_view_equal(const char *first, u32 first_size, const char *sec
 }
 
 /// Tokenizes the specified data
-TokenList *tokenize(char *data, u32 length) {
+TokenList *tokenize(char *data, usize length) {
     TokenList *list = token_list_new();
     StringIterator iterator;
     string_iterator_create(&iterator, data, length);
@@ -227,27 +206,27 @@ TokenList *tokenize(char *data, u32 length) {
         if (string_iterator_current(&iterator) == '"') {
             string_iterator_advance(&iterator);
             char *lexeme = iterator.base + iterator.index;
-            u32 begin_index = iterator.index;
+            usize begin_index = iterator.index;
 
             char previous = 0;
             while (string_iterator_current(&iterator) != '"' || previous == '\\') {
                 previous = string_iterator_current(&iterator);
                 string_iterator_advance(&iterator);
             }
-            u32 end_index = iterator.index;
-            u32 lexeme_length = end_index - begin_index;
+            usize end_index = iterator.index;
+            usize lexeme_length = end_index - begin_index;
             token_list_push(list, TOKEN_STRING, lexeme, lexeme_length);
         }
 
         // alphabetic characters
         if (isalpha(string_iterator_current(&iterator))) {
             char *lexeme = iterator.base + iterator.index;
-            u32 begin_index = iterator.index;
+            usize begin_index = iterator.index;
             while (isalpha(string_iterator_current(&iterator))) {
                 string_iterator_advance(&iterator);
             }
-            u32 end_index = iterator.index;
-            u32 lexeme_length = end_index - begin_index;
+            usize end_index = iterator.index;
+            usize lexeme_length = end_index - begin_index;
 
             if (string_view_equal(lexeme, lexeme_length, "PRINT", 5)) {
                 token_list_push(list, TOKEN_PRINT, lexeme, lexeme_length);
@@ -273,7 +252,7 @@ TokenList *tokenize(char *data, u32 length) {
         if (isdigit(string_iterator_current(&iterator))) {
             char *lexeme = iterator.base + iterator.index;
             TokenType type = TOKEN_NUMBER;
-            u32 begin_index = iterator.index;
+            usize begin_index = iterator.index;
             while (isdigit(string_iterator_current(&iterator))) {
                 string_iterator_advance(&iterator);
             }

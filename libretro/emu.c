@@ -1,25 +1,4 @@
-//
-// MIT License
-//
-// Copyright (c) 2023 Elias Engelbert Plank
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+// Copyright (c) 2025 Elias Engelbert Plank
 
 #include <ctype.h>
 #include <math.h>
@@ -38,7 +17,7 @@
 
 /// Finalizes an emulator pass by destroying associated data
 static void emulator_pass_finish(Emulator *self) {
-    text_queue_push(self->history, self->text.data, (u32) self->text.fill);
+    text_queue_push(self->history, self->text.data, (usize) self->text.fill);
     text_cursor_clear(&self->text);
     self->state = EMULATOR_STATE_INPUT;
 }
@@ -46,7 +25,7 @@ static void emulator_pass_finish(Emulator *self) {
 /// Runs an emulator pass
 static void emulator_pass(Emulator *self) {
     // Parse user input
-    TokenList *tokens = tokenize(self->text.data, (u32) self->text.fill);
+    TokenList *tokens = tokenize(self->text.data, (usize) self->text.fill);
     StatementResult result = statement_compile(&self->arena, tokens->begin, tokens->end);
     token_list_free(tokens);
 
@@ -148,7 +127,7 @@ static void emulator_add_builtin_symbols(Emulator *self) {
                                               .type = FUNCTION_DEFINITION_BUILTIN,
                                               .builtin = { .parameter_count = PARAMETER_COUNT_1, .func1 = tan } } };
 
-    for (u32 index = 0; index < STACK_ARRAY_SIZE(builtin); ++index) {
+    for (usize index = 0; index < STACK_ARRAY_SIZE(builtin); ++index) {
         FunctionDefinition *function = builtin + index;
         hash_map_insert(self->program.symbols, function->name, function);
     }

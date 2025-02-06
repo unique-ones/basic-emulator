@@ -1,25 +1,4 @@
-//
-// MIT License
-//
-// Copyright (c) 2024 Elias Engelbert Plank
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+// Copyright (c) 2025 Elias Engelbert Plank
 
 #include "glyph.h"
 #include "util/utility.h"
@@ -31,8 +10,8 @@
 // clang-format on
 
 /// Creates a glyph cache for the specified font
-glyph_cache_t *glyph_cache_new(const char *path) {
-    glyph_cache_t *self = (glyph_cache_t *) malloc(sizeof(glyph_cache_t));
+GlyphCache *glyph_cache_new(const char *path) {
+    GlyphCache *self = (GlyphCache *) malloc(sizeof(GlyphCache));
 
     BinaryBuffer font_data;
     if (!file_read(&font_data, path)) {
@@ -124,12 +103,12 @@ glyph_cache_t *glyph_cache_new(const char *path) {
 }
 
 /// Destroys the glyph cache and its glyph atlas
-void glyph_cache_free(glyph_cache_t *self) {
+void glyph_cache_free(GlyphCache *self) {
     texture_destroy(&self->atlas);
     free(self);
 }
 
 /// Fetches the specified symbol from the glyph cache
-void glyph_cache_acquire(glyph_cache_t *self, GlyphInfo *info, char symbol) {
+void glyph_cache_acquire(GlyphCache *self, GlyphInfo *info, char symbol) {
     *info = *(self->info + symbol - 32);
 }

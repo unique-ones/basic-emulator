@@ -28,16 +28,16 @@
 
 typedef struct TextCursor {
     char *data;
-    s32 fill;
-    s32 cursor;
-    u32 capacity;
+    usize fill;
+    usize cursor;
+    usize capacity;
     bool submit;
 } TextCursor;
 
 /// Creates a text cursor with the specified capacity
 /// @param self The text cursor handle
 /// @param capacity The capacity of the text cursor
-void text_cursor_create(TextCursor *self, u32 capacity);
+void text_cursor_create(TextCursor *self, usize capacity);
 
 /// Destroys the text cursor and frees its data
 /// @param self The text cursor handle
@@ -57,7 +57,7 @@ bool text_cursor_remove(TextCursor *self);
 /// Advances the cursor by the specified offset
 /// @param self The text cursor handle
 /// @param offset The offset
-void text_cursor_advance(TextCursor *self, s32 offset);
+void text_cursor_advance(TextCursor *self, ssize offset);
 
 /// Checks if the text cursor buffer is full
 /// @return A boolean value that indicates whether the buffer is full
@@ -71,14 +71,14 @@ typedef struct TextEntry {
     struct TextEntry *prev;
     struct TextEntry *next;
     char *data;
-    u32 length;
+    usize length;
 } TextEntry;
 
 /// Creates a new text entry
 /// @param data The text data
 /// @param length The length of the text
 /// @return A new text entry
-TextEntry *text_entry_new(char *data, u32 length);
+TextEntry *text_entry_new(char *data, usize length);
 
 /// Frees the text entry
 /// @param self The text entry handle
@@ -87,7 +87,7 @@ void text_entry_free(TextEntry *self);
 typedef struct TextQueue {
     TextEntry *begin;
     TextEntry *end;
-    u32 entries;
+    usize entries;
 } TextQueue;
 
 /// Creates a new text queue
@@ -106,7 +106,7 @@ void text_queue_clear(TextQueue *self);
 /// @param self The text queue handle
 /// @param data The text data
 /// @param length The text length
-void text_queue_push(TextQueue *self, char *data, u32 length);
+void text_queue_push(TextQueue *self, char *data, usize length);
 
 /// Pushes format strings to the text queue
 /// @param self The text queue handle

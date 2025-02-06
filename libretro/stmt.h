@@ -1,25 +1,4 @@
-//
-// MIT License
-//
-// Copyright (c) 2024 Elias Engelbert Plank
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+// Copyright (c) 2025 Elias Engelbert Plank
 
 #ifndef RETRO_STMT_H
 #define RETRO_STMT_H
@@ -41,13 +20,13 @@ typedef struct LetStatement {
 /// @param variable The variable
 /// @param initializer The initializer value of the variable
 /// @return A new let statement
-Statement *let_statement_new(MemoryArena *arena, u32 line, Expression *variable, Expression *initializer);
+Statement *let_statement_new(MemoryArena *arena, usize line, Expression *variable, Expression *initializer);
 
 /// Creates a new clear statement
 /// @param arena The arena for allocations
 /// @param line The line of the statement
 /// @return A new clear statement
-Statement *clear_statement_new(MemoryArena *arena, u32 line);
+Statement *clear_statement_new(MemoryArena *arena, usize line);
 
 typedef struct DefFnStatement {
     Expression *name;
@@ -62,7 +41,11 @@ typedef struct DefFnStatement {
 /// @param variable The variable that is used
 /// @param body The body of the function
 /// @return A new def fn statement
-Statement *def_fn_statement_new(MemoryArena *arena, u32 line, Expression *name, Expression *variable, Expression *body);
+Statement *def_fn_statement_new(MemoryArena *arena,
+                                usize line,
+                                Expression *name,
+                                Expression *variable,
+                                Expression *body);
 
 typedef struct PrintStatement {
     Expression *printable;
@@ -73,7 +56,7 @@ typedef struct PrintStatement {
 /// @param line The line of the statement
 /// @param printable The printable expression
 /// @return A new print statement
-Statement *print_statement_new(MemoryArena *arena, u32 line, Expression *printable);
+Statement *print_statement_new(MemoryArena *arena, usize line, Expression *printable);
 
 /// Creates a new run statement
 /// @param arena The arena for allocations
@@ -92,7 +75,7 @@ typedef enum StatementType {
 } StatementType;
 
 typedef struct Statement {
-    u32 line;
+    usize line;
     StatementType type;
     union {
         LetStatement let;

@@ -1,25 +1,4 @@
-//
-// MIT License
-//
-// Copyright (c) 2024 Elias Engelbert Plank
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+// Copyright (c) 2025 Elias Engelbert Plank
 
 #ifndef RETRO_LEXER_H
 #define RETRO_LEXER_H
@@ -65,7 +44,7 @@ typedef struct Token {
     struct Token *next;
     TokenType type;
     char *lexeme;
-    u32 length;
+    usize length;
 } Token;
 
 /// Creates a new token instance
@@ -73,7 +52,7 @@ typedef struct Token {
 /// @param lexeme The string of the token
 /// @param length The length of the lexeme
 /// @return A new token instance
-Token *token_new(TokenType type, char *lexeme, u32 length);
+Token *token_new(TokenType type, char *lexeme, usize length);
 
 /// Frees the specified token instance
 /// @param self The token instance
@@ -82,7 +61,7 @@ void token_free(Token *self);
 typedef struct TokenList {
     Token *begin;
     Token *end;
-    u32 tokens;
+    usize tokens;
 } TokenList;
 
 /// Creates a new token list instance
@@ -102,13 +81,13 @@ void token_list_free(TokenList *self);
 /// @param type The type of the token
 /// @param lexeme The string of the token
 /// @param length The length of the lexeme
-void token_list_push(TokenList *self, TokenType type, char *lexeme, u32 length);
+void token_list_push(TokenList *self, TokenType type, char *lexeme, usize length);
 
 /// Tokenizes the specified data
 /// @param data The string that shall be tokenized
 /// @param length The length of the string
 /// @return A new token list
-TokenList *tokenize(char *data, u32 length);
+TokenList *tokenize(char *data, usize length);
 
 typedef struct TokenIterator {
     Token *current;

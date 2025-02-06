@@ -1,25 +1,4 @@
-//
-// MIT License
-//
-// Copyright (c) 2024 Elias Engelbert Plank
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+// Copyright (c) 2025 Elias Engelbert Plank
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,7 +8,7 @@
 #include "util/math.h"
 
 /// Creates an input buffer
-void input_buffer_create(InputBuffer *self, u32 capacity) {
+void input_buffer_create(InputBuffer *self, usize capacity) {
     self->fill = 0;
     self->cursor = 0;
     self->data = (char *) malloc(capacity);
@@ -55,10 +34,10 @@ bool input_buffer_emplace(InputBuffer *self, char data) {
 
 /// Reorders the input buffer (i.e. compactifies)
 static void input_buffer_reorder(InputBuffer *buffer) {
-    for (s32 i = 0; i < buffer->fill; i++) {
+    for (usize i = 0; i < buffer->fill; i++) {
         char *current = buffer->data + i;
         if (*current == -1) {
-            memcpy(current, current + 1, (size_t) (buffer->fill - i - 1));
+            memcpy(current, current + 1, (usize) (buffer->fill - i - 1));
             buffer->fill--;
             if (i < buffer->cursor) {
                 buffer->cursor--;
@@ -78,11 +57,11 @@ bool input_buffer_remove(InputBuffer *self) {
 }
 
 /// Advances the cursor by the specified offset
-void input_buffer_advance_cursor(InputBuffer *self, s32 offset) {
+void input_buffer_advance_cursor(InputBuffer *self, s64 offset) {
     self->cursor = s32_clamp(self->cursor + offset, 0, self->fill);
 }
 
 /// Checks if the input buffer is full
 bool input_buffer_is_full(InputBuffer *self) {
-    return self->fill == (s32) self->capacity;
+    return self->fill == (usize) self->capacity;
 }

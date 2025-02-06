@@ -28,19 +28,19 @@
 
 typedef struct Stack {
     void **data;
-    u32 size;
-    u32 capacity;
+    usize size;
+    usize capacity;
 } Stack;
 
 /// Allocates a new stack
 /// @param capacity The initial capacity
 /// @return A new stack instance
-Stack *stack_new(u32 capacity);
+Stack *stack_new(usize capacity);
 
 /// Grows the stack's capacity
 /// @param self The stack handle
 /// @param capacity The new capacity
-void stack_grow(Stack *self, u32 capacity);
+void stack_grow(Stack *self, usize capacity);
 
 /// Frees the stack entries except for the data itself
 /// @param self The stack handle

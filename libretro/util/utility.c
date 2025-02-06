@@ -23,6 +23,9 @@
 
 #include "utility.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 /// Reads the entire file into the specified buffer
 bool file_read(BinaryBuffer *buffer, const char *path) {
     FILE *file = fopen(path, "rb");
