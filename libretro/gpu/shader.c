@@ -2,6 +2,9 @@
 
 #include "shader.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 /// Compiles the specified shader type from source
 static u32 shader_compile(BinaryBuffer *source, u32 type) {
     u32 program = glCreateShader(type);

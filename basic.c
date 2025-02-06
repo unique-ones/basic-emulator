@@ -24,6 +24,8 @@ int main() {
 
     while (display_running(&display)) {
         renderer_resize(&renderer, display.width, display.height);
+
+        // CRT rendering can be toggled with F2
         if (emulator.enable_crt) {
             renderer_begin_capture(&renderer);
         }

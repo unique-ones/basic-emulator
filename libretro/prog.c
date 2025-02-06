@@ -4,8 +4,8 @@
 #include "stmt.h"
 
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
-
 
 /// Creates a new program tree
 void program_tree_create(ProgramTree *tree) {
