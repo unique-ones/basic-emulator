@@ -3,7 +3,7 @@
 #ifndef RETRO_ARCH_TIME_H
 #define RETRO_ARCH_TIME_H
 
-#include "../types.h"
+#include "core/types.h"
 
 /// Sends the current thread of execution to sleep for the specified time
 /// @param milliseconds The time in milliseconds

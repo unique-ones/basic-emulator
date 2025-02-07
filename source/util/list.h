@@ -24,7 +24,7 @@
 #ifndef RETRO_UTIL_LIST_H
 #define RETRO_UTIL_LIST_H
 
-#include "types.h"
+#include "core/types.h"
 
 /// Forward declare node
 typedef struct ListNode ListNode;

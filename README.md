@@ -2,7 +2,7 @@
 
 Basic-Emulator is a simple Applesoft-Basic Emulator.
 
-![crt-emulator](./media/crt.png)
+![crt-emulator](img/crt.png)
 
 ## Usage
 

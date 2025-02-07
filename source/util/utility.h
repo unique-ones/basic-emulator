@@ -21,17 +21,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef RETRO_UTIL_RANDOM_H
-#define RETRO_UTIL_RANDOM_H
+#ifndef RETRO_UTIL_UTILITY_H
+#define RETRO_UTIL_UTILITY_H
 
-#include "types.h"
+#include "core/types.h"
 
-/// Seeds the random number generator
-/// @param seed The seed value
-void random_seed(u64 seed);
+/// Reads the entire file into the specified buffer
+/// @param buffer The buffer where the content of the file is copied to
+/// @param path The path to the file
+/// @return Boolean value that indicates whether the file could be read
+bool file_read(BinaryBuffer *buffer, const char *path);
 
-/// Retrieves an unsigned 64-bit random number
-/// @return The random number
-u64 random_u64(void);
-
-#endif// RETRO_UTIL_RANDOM_H
+#endif// RETRO_UTIL_UTILITY_H

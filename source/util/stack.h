@@ -24,7 +24,7 @@
 #ifndef RETRO_UTIL_STACK_H
 #define RETRO_UTIL_STACK_H
 
-#include "types.h"
+#include "core/types.h"
 
 typedef struct Stack {
     void **data;

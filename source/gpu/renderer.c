@@ -395,12 +395,12 @@ void renderer_draw_text_with_cursor(Renderer const *self,
 }
 
 /// Captures all following draw commands into a frame buffer
-void renderer_begin_capture(Renderer const *self) {
+void renderer_crt_begin_capture(Renderer const *self) {
     frame_buffer_bind(&self->capture);
 }
 
 /// Ends the capture of draw commands
-void renderer_end_capture(Renderer const *self) {
+void renderer_crt_end_capture(Renderer const *self) {
     // unbind frame buffer in order to actually render stuff now
     frame_buffer_unbind();
     render_group_clear(self->post.group);

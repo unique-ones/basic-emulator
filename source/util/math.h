@@ -24,7 +24,7 @@
 #ifndef RETRO_UTIL_MATH_H
 #define RETRO_UTIL_MATH_H
 
-#include "types.h"
+#include "core/types.h"
 
 /// Returns the greater of the two passed variables
 /// @param a The first variable

@@ -3,7 +3,7 @@
 #ifndef RETRO_GPU_BUFFER_H
 #define RETRO_GPU_BUFFER_H
 
-#include "types.h"
+#include "core/types.h"
 
 typedef enum ShaderType {
     INT = 0,

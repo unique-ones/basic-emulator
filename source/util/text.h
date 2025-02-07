@@ -24,7 +24,7 @@
 #ifndef RETRO_UTIL_TEXT_H
 #define RETRO_UTIL_TEXT_H
 
-#include "types.h"
+#include "core/types.h"
 
 typedef struct TextCursor {
     char *data;

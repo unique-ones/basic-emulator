@@ -9,20 +9,14 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Add subprojects
-add_subdirectory(libretro)
+add_subdirectory(source)
 
-add_executable(basic "basic.c")
-target_include_directories(basic PUBLIC ${CMAKE_SOURCE_DIR})
-target_link_libraries(basic PUBLIC "libretro")
 
 # Copy Assets to the Output Directory
 file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 # Copy compile commands
 # Compile commands for clangd
-if(EXISTS "${CMAKE_INSTALL_PREFIX}/compile_commands.json")
+if (EXISTS "${CMAKE_INSTALL_PREFIX}/compile_commands.json")
     file(CREATE_LINK "${CMAKE_INSTALL_PREFIX}/compile_commands.json" "${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json")
-endif()
-
-enable_testing()
-add_subdirectory(tests)
+endif ()

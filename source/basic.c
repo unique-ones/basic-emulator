@@ -1,6 +1,8 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
-#include <libretro/retro.h>
+#include "core/display.h"
+#include "gpu/renderer.h"
+#include "core/emu.h"
 
 int main() {
     Display display;
@@ -19,15 +21,15 @@ int main() {
     display_key_callback(&display, emulator_key_callback);
     display_char_callback(&display, emulator_char_callback);
 
-    F32Vector3 amber = { 1.0f, 0.6f, 0.0f };
-    F32Vector3 amber_dimmed = { 0.9f, 0.5f, 0.0f };
+    F32Vector3 const amber = { 1.0f, 0.6f, 0.0f };
+    F32Vector3 const amber_dimmed = { 0.9f, 0.5f, 0.0f };
 
     while (display_running(&display)) {
         renderer_resize(&renderer, display.width, display.height);
 
         // CRT rendering can be toggled with F2
         if (emulator.enable_crt) {
-            renderer_begin_capture(&renderer);
+            renderer_crt_begin_capture(&renderer);
         }
         renderer_clear();
 
@@ -50,7 +52,11 @@ int main() {
                                        it->data);
                     renderer_end_batch(&renderer);
                 }
+
+                // reset draw cursor
                 position_iterator.x = 30.0f;
+
+                // draw current input buffer
                 renderer_begin_batch(&renderer);
                 renderer_draw_text_with_cursor(&renderer, &position_iterator, &amber, 0.5f, emulator.text.cursor,
                                                "%.*s", emulator.text.fill, emulator.text.data);
@@ -72,7 +78,7 @@ int main() {
         }
 
         if (emulator.enable_crt) {
-            renderer_end_capture(&renderer);
+            renderer_crt_end_capture(&renderer);
         }
 
         // stage 3

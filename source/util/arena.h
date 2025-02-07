@@ -24,7 +24,7 @@
 #ifndef RETRO_UTILS_ARENA_H
 #define RETRO_UTILS_ARENA_H
 
-#include "types.h"
+#include "core/types.h"
 
 typedef void *(*ReserveFunction)(usize);
 typedef void (*ReleaseFunction)(void *);

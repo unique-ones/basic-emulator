@@ -224,10 +224,10 @@ void renderer_draw_text_with_cursor(Renderer const *self,
 
 /// Captures all following draw commands into a frame buffer
 /// @param self The renderer handle
-void renderer_begin_capture(Renderer const *self);
+void renderer_crt_begin_capture(Renderer const *self);
 
 /// Ends the capture of draw commands
 /// @param self The renderer handle
-void renderer_end_capture(Renderer const *self);
+void renderer_crt_end_capture(Renderer const *self);
 
 #endif// RETRO_GPU_RENDERER_H

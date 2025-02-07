@@ -3,7 +3,7 @@
 #ifndef RETRO_GPU_TEXTURE_H
 #define RETRO_GPU_TEXTURE_H
 
-#include "types.h"
+#include "core/types.h"
 
 typedef struct Texture {
     u32 handle;
