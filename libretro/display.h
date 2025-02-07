@@ -26,22 +26,22 @@ bool display_create(Display *self, const char *title, s32 width, s32 height);
 
 /// Destroys the window
 /// @param self The display handle
-void display_destroy(Display *self);
+void display_destroy(Display const *self);
 
 /// Sets the argument that gets passed to every callback
 /// @param self The display handle
 /// @param arg The argument pointer
-void display_callback_argument(Display *self, void *arg);
+void display_callback_argument(Display const *self, void *arg);
 
 /// Sets the key callback for the display
 /// @param self The display handle
 /// @param callback The callback
-void display_key_callback(Display *self, GLFWkeyfun callback);
+void display_key_callback(Display const *self, GLFWkeyfun callback);
 
 /// Sets the char callback for the display
 /// @param self The display handle
 /// @param callback The callback
-void display_char_callback(Display *self, GLFWcharfun callback);
+void display_char_callback(Display const *self, GLFWcharfun callback);
 
 /// Updates the title of the window
 /// @param self The display handle
@@ -59,7 +59,7 @@ void display_update_input(Display *self);
 
 /// Checks if the window should be closed or not
 /// @param self The display handle
-/// @return A boolean value that indicates the the display wants to be closed
-bool display_running(Display *self);
+/// @return A boolean value that indicates that the display wants to be closed
+bool display_running(Display const *self);
 
 #endif// RETRO_DISPLAY_H

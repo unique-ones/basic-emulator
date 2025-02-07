@@ -1,17 +1,19 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
+#include <glad/glad.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "display.h"
 
 /// Callback for framebuffer resize events
-static void display_framebuffer_callback(GLFWwindow *handle, s32 width, s32 height) {
+static void display_framebuffer_callback(GLFWwindow *handle, s32 const width, s32 const height) {
     glViewport(0, 0, width, height);
 }
 
-/// Converts OpenGL severities to human readable strings
-static const char *severity_string(u32 severity) {
+/// Converts OpenGL severities to human-readable strings
+static const char *severity_string(u32 const severity) {
     switch (severity) {
         case GL_DEBUG_SEVERITY_HIGH: {
             return "HIGH_SEVERITY";
@@ -32,8 +34,13 @@ static const char *severity_string(u32 severity) {
 }
 
 /// OpenGL error callback function
-static void
-display_error_callback(u32 source, u32 type, u32 id, u32 severity, s32 length, const char *message, const void *user) {
+static void display_error_callback(u32 source,
+                                   u32 const type,
+                                   u32 const id,
+                                   u32 const severity,
+                                   s32 const length,
+                                   char const *message,
+                                   void const *user) {
     if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
         return;
     }
@@ -46,7 +53,7 @@ display_error_callback(u32 source, u32 type, u32 id, u32 severity, s32 length, c
 }
 
 /// Creates a new window and a corresponding OpenGL context
-bool display_create(Display *self, const char *title, s32 width, s32 height) {
+bool display_create(Display *self, char const *title, s32 const width, s32 const height) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -79,7 +86,7 @@ bool display_create(Display *self, const char *title, s32 width, s32 height) {
 }
 
 /// Sets the argument that gets passed to every callback
-void display_callback_argument(Display *self, void *arg) {
+void display_callback_argument(Display const *self, void *arg) {
     glfwSetWindowUserPointer(self->handle, arg);
 }
 
@@ -90,7 +97,7 @@ void display_title(Display *self, const char *title) {
 }
 
 /// Destroys the window
-void display_destroy(Display *self) {
+void display_destroy(Display const *self) {
     glfwDestroyWindow(self->handle);
     glfwTerminate();
 }
@@ -98,8 +105,8 @@ void display_destroy(Display *self) {
 /// Swaps front and back buffer
 f64 display_update_frame(Display *self) {
     glfwSwapBuffers(self->handle);
-    f64 time = glfwGetTime();
-    f64 frame_time = time - self->time;
+    f64 const time = glfwGetTime();
+    f64 const frame_time = time - self->time;
     self->time = time;
     return frame_time;
 }
@@ -111,16 +118,16 @@ void display_update_input(Display *self) {
 }
 
 /// Checks if the window should be closed or not
-bool display_running(Display *self) {
+bool display_running(Display const *self) {
     return self->running && !glfwWindowShouldClose(self->handle);
 }
 
 /// Sets the key callback for the display
-void display_key_callback(Display *self, GLFWkeyfun callback) {
+void display_key_callback(Display const *self, GLFWkeyfun const callback) {
     glfwSetKeyCallback(self->handle, callback);
 }
 
 /// Sets the char callback for the display
-void display_char_callback(Display *self, GLFWcharfun callback) {
+void display_char_callback(Display const *self, GLFWcharfun const callback) {
     glfwSetCharCallback(self->handle, callback);
 }

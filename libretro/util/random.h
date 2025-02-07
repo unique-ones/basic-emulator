@@ -30,7 +30,7 @@
 /// @param seed The seed value
 void random_seed(u64 seed);
 
-/// Retrieves a unsigned 64 bit random number
+/// Retrieves an unsigned 64-bit random number
 /// @return The random number
 u64 random_u64(void);
 

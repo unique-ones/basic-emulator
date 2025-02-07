@@ -48,7 +48,7 @@ Expression *unary_expression_new(MemoryArena *arena, Operator operator, Expressi
 /// @param self The expression instance
 /// @param symbol_table The symbol table
 /// @return The resulting value
-f64 unary_expression_evaluate(Expression *self, HashMap *symbol_table);
+f64 unary_expression_evaluate(Expression const *self, HashMap const *symbol_table);
 
 typedef struct BinaryExpression {
     Expression *left;
@@ -68,7 +68,7 @@ Expression *binary_expression_new(MemoryArena *arena, Expression *left, Expressi
 /// @param self The expression instance
 /// @param symbol_table The symbol table
 /// @return The resulting value
-f64 binary_expression_evaluate(Expression *self, HashMap *symbol_table);
+f64 binary_expression_evaluate(Expression const *self, HashMap const *symbol_table);
 
 typedef struct VariableExpression {
     char name[EXPRESSION_IDENTIFIER_LENGTH];
@@ -79,13 +79,13 @@ typedef struct VariableExpression {
 /// @param name The name of the variable
 /// @param length The length of the variable name
 /// @return A new expression instance
-Expression *variable_expression_new(MemoryArena *arena, char *name, usize length);
+Expression *variable_expression_new(MemoryArena *arena, char const *name, usize length);
 
 /// Evaluates the variable expression
 /// @param self The expression instance
 /// @param symbol_table The symbol table
 /// @return The resulting value
-f64 variable_expression_evaluate(Expression *self, HashMap *symbol_table);
+f64 variable_expression_evaluate(Expression const *self, HashMap const *symbol_table);
 
 typedef struct FunctionParameter {
     Expression *expression;
@@ -144,7 +144,7 @@ typedef struct FunctionDefinition {
 /// @param name The name of the function
 /// @param length The length of the function name
 /// @return A new expression instance
-Expression *function_expression_new(MemoryArena *arena, char *name, usize length);
+Expression *function_expression_new(MemoryArena *arena, char const *name, usize length);
 
 /// Pushes a parameter to the specified function expression
 /// @param arena The arena for allocations
@@ -155,13 +155,13 @@ void function_expression_push(MemoryArena *arena, Expression *self, Expression *
 /// Retrieves the parameter at the specified index
 /// @param self The expression instance
 /// @param index The parameter index
-FunctionParameter *function_expression_get_parameter(Expression *self, usize index);
+FunctionParameter *function_expression_get_parameter(Expression const *self, usize index);
 
 /// Evaluates the specified function expression
 /// @param self The function expression instance
 /// @param symbol_table The symbol table
 /// @return The resulting value
-f64 function_expression_evaluate(Expression *self, HashMap *symbol_table);
+f64 function_expression_evaluate(Expression const *self, HashMap const *symbol_table);
 
 /// Creates a new number expression instance
 /// @param arena The arena for allocations
@@ -172,7 +172,7 @@ Expression *number_expression_new(MemoryArena *arena, f64 number);
 /// Evaluates the specified number expression
 /// @param self The expression instance
 /// @return The resulting value
-f64 number_expression_evaluate(Expression *self);
+f64 number_expression_evaluate(Expression const *self);
 
 typedef struct ExponentialExpression {
     Expression *base;
@@ -190,7 +190,7 @@ Expression *exponential_expression_new(MemoryArena *arena, Expression *base, Exp
 /// @param self The expression instance
 /// @param symbol_table The symbol table
 /// @return The resulting value
-f64 exponential_expression_evaluate(Expression *self, HashMap *symbol_table);
+f64 exponential_expression_evaluate(Expression const *self, HashMap const *symbol_table);
 
 typedef struct StringExpression {
     char *data;
@@ -201,13 +201,13 @@ typedef struct StringExpression {
 /// @param arena The arena for allocations
 /// @param data A pointer to the string
 /// @param length The length of the string
-Expression *string_expression_new(MemoryArena *arena, char *data, usize length);
+Expression *string_expression_new(MemoryArena *arena, char const *data, usize length);
 
 /// What the fuck is this... we probably want to use shunting yard here at some point
 typedef struct Expression {
     ExpressionType type;
     union {
-        // arthimetic expressions
+        // arithmetic expressions
         UnaryExpression unary;
         BinaryExpression binary;
         VariableExpression variable;
@@ -231,12 +231,12 @@ Expression *expression_compile(MemoryArena *arena, Token *begin, Token *end);
 /// @param self The expression instance
 /// @param symbol_table The symbol table
 /// @return The resulting value
-f64 expression_evaluate(Expression *self, HashMap *symbol_table);
+f64 expression_evaluate(Expression const *self, HashMap const *symbol_table);
 
 /// Checks if an expression is arithmetic
 /// @param self The expression instance
 /// @param A boolean value that indicates whether the expression
 ///        is arithmetic or not
-bool expression_is_arithmetic(Expression *self);
+bool expression_is_arithmetic(Expression const *self);
 
 #endif// RETRO_EXPR_H

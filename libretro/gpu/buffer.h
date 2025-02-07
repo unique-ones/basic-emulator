@@ -39,7 +39,7 @@ void vertex_buffer_destroy(VertexBuffer *self);
 /// @param self The vertex buffer handle
 /// @param data A pointer to the first element of the data
 /// @param size The size of the data in bytes
-void vertex_buffer_data(VertexBuffer *self, const void *data, u32 size);
+void vertex_buffer_data(VertexBuffer const *self, const void *data, u32 size);
 
 /// Sets the attribute layout for the specified buffer
 /// @param self The vertex buffer handle
@@ -48,7 +48,7 @@ void vertex_buffer_layout(VertexBuffer *self, VertexBufferLayout *layout);
 
 /// Binds the vertex buffer
 /// @param self The vertex buffer handle
-void vertex_buffer_bind(VertexBuffer *self);
+void vertex_buffer_bind(VertexBuffer const *self);
 
 /// Unbinds the currently bound vertex buffer
 void vertex_buffer_unbind(void);
@@ -64,7 +64,7 @@ void index_buffer_create(IndexBuffer *self);
 
 /// Destroys the index buffer
 /// @param self The index buffer handle
-void index_buffer_destroy(IndexBuffer *self);
+void index_buffer_destroy(IndexBuffer const *self);
 
 /// Sets the data for the specified index buffer
 /// @param self The index buffer handle
@@ -74,7 +74,7 @@ void index_buffer_data(IndexBuffer *self, const u32 *data, u32 count);
 
 /// Binds the specified buffer
 /// @param self The index buffer handle
-void index_buffer_bind(IndexBuffer *self);
+void index_buffer_bind(IndexBuffer const *self);
 
 /// Unbinds the currently bound index buffer
 void index_buffer_unbind(void);
@@ -91,7 +91,7 @@ void vertex_array_create(VertexArray *self);
 
 /// Destroys the vertex array
 /// @param self The vertex array handle
-void vertex_array_destroy(VertexArray *self);
+void vertex_array_destroy(VertexArray const *self);
 
 /// Sets the vertex buffer for the vertex array, this sets all the specified attributes
 /// @param self The vertex array handle
@@ -105,7 +105,7 @@ void vertex_array_index_buffer(VertexArray *self, IndexBuffer *index_buffer);
 
 /// Binds the vertex array
 /// @param self The vertex array handle
-void vertex_array_bind(VertexArray *self);
+void vertex_array_bind(VertexArray const *self);
 
 /// Unbinds the currently bound vertex array
 void vertex_array_unbind(void);
@@ -129,11 +129,11 @@ typedef struct FrameBuffer {
 /// @param self The frame buffer handle
 /// @param spec The frame buffer specification
 /// @return A boolean value that indicates whether the frame buffer could be created
-bool frame_buffer_create(FrameBuffer *self, FrameBufferSpecification *spec);
+bool frame_buffer_create(FrameBuffer *self, FrameBufferSpecification const *spec);
 
 /// Destroys the frame buffer
 /// @param self The frame buffer handle
-void frame_buffer_destroy(FrameBuffer *self);
+void frame_buffer_destroy(FrameBuffer const *self);
 
 /// Invalidates the frame buffer, this needs to be called whenever the frame buffer is resized
 /// @param self The frame buffer handle
@@ -149,12 +149,12 @@ bool frame_buffer_resize(FrameBuffer *self, s32 width, s32 height);
 
 /// Binds the specified frame buffer for rendering
 /// @param self The frame buffer handle
-void frame_buffer_bind(FrameBuffer *self);
+void frame_buffer_bind(FrameBuffer const *self);
 
 /// Binds the texture of the frame buffer at the specified sampler slot
 /// @param self The frame buffer handle
 /// @param slot The sampler slot
-void frame_buffer_bind_texture(FrameBuffer *self, u32 slot);
+void frame_buffer_bind_texture(FrameBuffer const *self, u32 slot);
 
 /// Unbinds the currently bound frame buffer
 void frame_buffer_unbind(void);

@@ -28,23 +28,23 @@
 
 typedef struct TextCursor {
     char *data;
-    usize fill;
-    usize cursor;
-    usize capacity;
+    ssize fill;
+    ssize cursor;
+    ssize capacity;
     bool submit;
 } TextCursor;
 
 /// Creates a text cursor with the specified capacity
 /// @param self The text cursor handle
 /// @param capacity The capacity of the text cursor
-void text_cursor_create(TextCursor *self, usize capacity);
+void text_cursor_create(TextCursor *self, ssize capacity);
 
 /// Destroys the text cursor and frees its data
 /// @param self The text cursor handle
-void text_cursor_destroy(TextCursor *self);
+void text_cursor_destroy(TextCursor const *self);
 
 /// Inserts a character into the text cursor buffer at the cursor position
-/// @param self The text cursor handle handle
+/// @param self The text cursor handle
 /// @param data The character
 /// @return A boolean value that indicates whether the character could be emplaced
 bool text_cursor_emplace(TextCursor *self, char data);
@@ -61,7 +61,7 @@ void text_cursor_advance(TextCursor *self, ssize offset);
 
 /// Checks if the text cursor buffer is full
 /// @return A boolean value that indicates whether the buffer is full
-bool text_cursor_is_full(TextCursor *self);
+bool text_cursor_is_full(TextCursor const *self);
 
 /// Clears the buffer of the text cursor
 /// @param self The text cursor handle
@@ -78,7 +78,7 @@ typedef struct TextEntry {
 /// @param data The text data
 /// @param length The length of the text
 /// @return A new text entry
-TextEntry *text_entry_new(char *data, usize length);
+TextEntry *text_entry_new(char const *data, usize length);
 
 /// Frees the text entry
 /// @param self The text entry handle
@@ -106,7 +106,7 @@ void text_queue_clear(TextQueue *self);
 /// @param self The text queue handle
 /// @param data The text data
 /// @param length The text length
-void text_queue_push(TextQueue *self, char *data, usize length);
+void text_queue_push(TextQueue *self, char const *data, usize length);
 
 /// Pushes format strings to the text queue
 /// @param self The text queue handle

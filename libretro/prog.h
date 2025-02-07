@@ -48,7 +48,7 @@ void program_tree_insert(ProgramTree *tree, Statement *stmt);
 /// @param tree The program tree
 /// @param line The line which is requested
 /// @return The request program tree node or NULL
-ProgramTreeNode *program_tree_get(ProgramTree *tree, usize line);
+ProgramTreeNode *program_tree_get(ProgramTree const *tree, usize line);
 
 enum {
     PROGRAM_MARGIN_SIZE = 30,

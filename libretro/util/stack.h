@@ -59,6 +59,6 @@ void *stack_pop(Stack *self);
 /// Peeks the top element
 /// @param self The stack handle
 /// @return The top-most data
-void *stack_peek(Stack *self);
+void *stack_peek(Stack const *self);
 
 #endif// RETRO_UTIL_STACK_H

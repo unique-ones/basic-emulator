@@ -8,7 +8,7 @@
 #include "util/math.h"
 
 /// Creates an input buffer
-void input_buffer_create(InputBuffer *self, usize capacity) {
+void input_buffer_create(InputBuffer *self, ssize const capacity) {
     self->fill = 0;
     self->cursor = 0;
     self->data = (char *) malloc(capacity);
@@ -17,12 +17,12 @@ void input_buffer_create(InputBuffer *self, usize capacity) {
 }
 
 /// Destroys the input buffer and frees its data
-void input_buffer_destroy(InputBuffer *self) {
+void input_buffer_destroy(InputBuffer const *self) {
     free(self->data);
 }
 
 /// Inserts a character into the input buffer
-bool input_buffer_emplace(InputBuffer *self, char data) {
+bool input_buffer_emplace(InputBuffer *self, char const data) {
     if (input_buffer_is_full(self)) {
         return false;
     }
@@ -32,12 +32,12 @@ bool input_buffer_emplace(InputBuffer *self, char data) {
     return true;
 }
 
-/// Reorders the input buffer (i.e. compactifies)
+/// Reorders the input buffer (i.e. compactions)
 static void input_buffer_reorder(InputBuffer *buffer) {
     for (usize i = 0; i < buffer->fill; i++) {
         char *current = buffer->data + i;
         if (*current == -1) {
-            memcpy(current, current + 1, (usize) (buffer->fill - i - 1));
+            memcpy(current, current + 1, (buffer->fill - i - 1));
             buffer->fill--;
             if (i < buffer->cursor) {
                 buffer->cursor--;
@@ -57,11 +57,11 @@ bool input_buffer_remove(InputBuffer *self) {
 }
 
 /// Advances the cursor by the specified offset
-void input_buffer_advance_cursor(InputBuffer *self, s64 offset) {
-    self->cursor = s32_clamp(self->cursor + offset, 0, self->fill);
+void input_buffer_advance_cursor(InputBuffer *self, ssize const offset) {
+    self->cursor = s64_clamp(self->cursor + offset, 0, self->fill);
 }
 
 /// Checks if the input buffer is full
-bool input_buffer_is_full(InputBuffer *self) {
-    return self->fill == (usize) self->capacity;
+bool input_buffer_is_full(InputBuffer const *self) {
+    return self->fill == self->capacity;
 }

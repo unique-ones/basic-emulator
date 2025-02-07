@@ -17,7 +17,7 @@
 
 /// Finalizes an emulator pass by destroying associated data
 static void emulator_pass_finish(Emulator *self) {
-    text_queue_push(self->history, self->text.data, (usize) self->text.fill);
+    text_queue_push(self->history, self->text.data, self->text.fill);
     text_cursor_clear(&self->text);
     self->state = EMULATOR_STATE_INPUT;
 }
@@ -25,8 +25,8 @@ static void emulator_pass_finish(Emulator *self) {
 /// Runs an emulator pass
 static void emulator_pass(Emulator *self) {
     // Parse user input
-    TokenList *tokens = tokenize(self->text.data, (usize) self->text.fill);
-    StatementResult result = statement_compile(&self->arena, tokens->begin, tokens->end);
+    TokenList *tokens = tokenize(self->text.data, self->text.fill);
+    StatementResult const result = statement_compile(&self->arena, tokens->begin, tokens->end);
     token_list_free(tokens);
 
     F32Vector2 position = { 30.0f, 30.0f };
@@ -71,7 +71,7 @@ static void *emulator_pass_platform(void *self) {
 #endif
 
 /// Random number generation as of applesoft basic
-static f64 rnd(f64 x) {
+static f64 rnd(f64 const x) {
     static f64 previous = 0.5;
     if (x == 0.0) {
         return previous;
@@ -85,7 +85,7 @@ static f64 rnd(f64 x) {
 }
 
 /// Retrieves the sign of the specified number
-static f64 sgn(f64 x) {
+static f64 sgn(f64 const x) {
     if (x > 0.0) {
         return 1.0;
     }
@@ -96,7 +96,7 @@ static f64 sgn(f64 x) {
 }
 
 /// Adds all builtin symbols to the emulator symbol table
-static void emulator_add_builtin_symbols(Emulator *self) {
+static void emulator_add_builtin_symbols(Emulator const *self) {
     // available math functions
     static FunctionDefinition builtin[] = { { .name = "ABS",
                                               .type = FUNCTION_DEFINITION_BUILTIN,
@@ -163,7 +163,7 @@ void emulator_run(Emulator *self) {
 }
 
 /// Key callback handler for handling GLFW key input
-void emulator_key_callback(GLFWwindow *handle, s32 key, s32 scancode, s32 action, s32 mods) {
+void emulator_key_callback(GLFWwindow *handle, s32 const key, s32 const scancode, s32 const action, s32 const mods) {
     if (action != GLFW_PRESS && action != GLFW_REPEAT) {
         return;
     }
@@ -200,7 +200,7 @@ void emulator_key_callback(GLFWwindow *handle, s32 key, s32 scancode, s32 action
 }
 
 /// Char callback handler for handling GLFW char input
-void emulator_char_callback(GLFWwindow *handle, u32 unicode) {
+void emulator_char_callback(GLFWwindow *handle, u32 const unicode) {
     Emulator *self = glfwGetWindowUserPointer(handle);
     if (self) {
         text_cursor_emplace(&self->text, (char) toupper((char) unicode));

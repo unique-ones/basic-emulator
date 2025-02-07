@@ -5,9 +5,6 @@
 
 #include <stdint.h>
 
-#include <glad/glad.h>
-#include <stddef.h>
-
 typedef int8_t s8;
 typedef int16_t s16;
 typedef int32_t s32;
@@ -54,6 +51,24 @@ typedef struct S32Vector4 {
     s32 z;
     s32 w;
 } S32Vector4;
+
+typedef struct U32Vector2 {
+    u32 x;
+    u32 y;
+} U32Vector2;
+
+typedef struct U32Vector3 {
+    u32 x;
+    u32 y;
+    u32 z;
+} U32Vector3;
+
+typedef struct U32Vector4 {
+    u32 x;
+    u32 y;
+    u32 z;
+    u32 w;
+} U32Vector4;
 
 typedef struct F32Vector2 {
     f32 x;

@@ -52,7 +52,7 @@ typedef struct Token {
 /// @param lexeme The string of the token
 /// @param length The length of the lexeme
 /// @return A new token instance
-Token *token_new(TokenType type, char *lexeme, usize length);
+Token *token_new(TokenType type, char const *lexeme, usize length);
 
 /// Frees the specified token instance
 /// @param self The token instance
@@ -81,7 +81,7 @@ void token_list_free(TokenList *self);
 /// @param type The type of the token
 /// @param lexeme The string of the token
 /// @param length The length of the lexeme
-void token_list_push(TokenList *self, TokenType type, char *lexeme, usize length);
+void token_list_push(TokenList *self, TokenType type, char const *lexeme, usize length);
 
 /// Tokenizes the specified data
 /// @param data The string that shall be tokenized
@@ -97,7 +97,7 @@ typedef struct TokenIterator {
 /// Checks if the token iterator reached the end
 /// @param self The token iterator
 /// @return A boolean that indicates whether the iterator is at the end
-bool token_iterator_end(TokenIterator *self);
+bool token_iterator_end(TokenIterator const *self);
 
 /// Returns an invalid token
 /// @return An invalid token
@@ -106,12 +106,12 @@ Token *token_iterator_invalid(void);
 /// Retrieves the current token
 /// @param self The token iterator
 /// @return The current token
-Token *token_iterator_current(TokenIterator *self);
+Token *token_iterator_current(TokenIterator const *self);
 
 /// Retrieves the next token
 /// @param self The token iterator
 /// @return The next token
-Token *token_iterator_next(TokenIterator *self);
+Token *token_iterator_next(TokenIterator const *self);
 
 /// Advances the token cursor by one
 /// @param self The token iterator

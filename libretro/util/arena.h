@@ -65,7 +65,7 @@ typedef struct MemoryArena {
 /// Creates a new memory arena
 /// @param spec The arena specification
 /// @return Memory arena with one block
-MemoryArena arena_make(ArenaSpecification *spec);
+MemoryArena arena_make(ArenaSpecification const *spec);
 
 /// Creates an identity memory arena
 /// @param alignment The alignment for the allocations
@@ -76,14 +76,14 @@ MemoryArena arena_make(ArenaSpecification *spec);
 MemoryArena arena_identity(MemoryAlignment alignment);
 
 /// Destroys the specified memory arena
-/// @param arena The arena
+/// @param self The arena
 void arena_destroy(MemoryArena *self);
 
 /// Allocates a block of memory in the specified arena
-/// @param arena The arena
+/// @param self The arena
 /// @param size The size of the requested block
 /// @return Memory
-void *arena_alloc(MemoryArena *self, u32 size);
+void *arena_alloc(MemoryArena *self, usize size);
 
 /// Begins a temporary scope where all subsequent allocations are freed after
 /// calling arena_end_temporary(). Note that previous allocations are not

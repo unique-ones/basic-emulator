@@ -7,7 +7,7 @@
 #include "lexer.h"
 
 /// Creates a new token instance
-Token *token_new(TokenType type, char *lexeme, usize length) {
+Token *token_new(TokenType type, char const *lexeme, usize const length) {
     Token *self = malloc(sizeof(Token));
     self->prev = NULL;
     self->next = NULL;
@@ -39,10 +39,9 @@ TokenList *token_list_new(void) {
 /// Clears the specified token list (i.e. deletes all tokens)
 void token_list_clear(TokenList *self) {
     Token *it = self->begin;
-    Token *tmp;
 
     while (it != NULL) {
-        tmp = it;
+        Token *tmp = it;
         it = it->next;
         token_free(tmp);
     }
@@ -58,7 +57,11 @@ void token_list_free(TokenList *self) {
 }
 
 /// Pushes a token to the specified token list
-void token_list_push(TokenList *self, TokenType type, char *lexeme, usize length) {
+void token_list_push(TokenList *self, TokenType const type, char const *lexeme, usize const length) {
+    if (self == NULL) {
+        return;
+    }
+
     Token *token = token_new(type, lexeme, length);
     if (self->begin == NULL) {
         self->begin = token;
@@ -86,7 +89,7 @@ typedef struct StringIterator {
 } StringIterator;
 
 /// Creates a string iterator
-static void string_iterator_create(StringIterator *self, char *base, usize length) {
+static void string_iterator_create(StringIterator *self, char *base, usize const length) {
     self->base = base;
     self->length = length;
     self->index = 0;
@@ -100,22 +103,22 @@ static void string_iterator_advance(StringIterator *self) {
 }
 
 /// Retrieves the current char of the iterator
-static char string_iterator_current(StringIterator *self) {
+static char string_iterator_current(StringIterator const *self) {
     return self->base[self->index];
 }
 
 /// Retrieves the next char of the iterator
-static char string_iterator_next(StringIterator *self) {
+static char string_iterator_next(StringIterator const *self) {
     return self->base[self->index + 1];
 }
 
 /// Checks if the iterator is at the end
-static bool string_iterator_end(StringIterator *self) {
+static bool string_iterator_end(StringIterator const *self) {
     return self->index == self->length - 1;
 }
 
 /// Checks if the specified char is a trivial token
-static bool tokenize_is_trivial_token(char current) {
+static bool tokenize_is_trivial_token(char const current) {
     switch (current) {
         case ':':
         case '(':
@@ -138,7 +141,7 @@ static bool tokenize_is_trivial_token(char current) {
 }
 
 /// Converts a trivial token to the corresponding token type
-static TokenType tokenize_trivial_to_type(char current) {
+static TokenType tokenize_trivial_to_type(char const current) {
     switch (current) {
         case ':':
             return TOKEN_COLON;
@@ -174,7 +177,7 @@ static TokenType tokenize_trivial_to_type(char current) {
 }
 
 /// Checks if two string views are equal
-static bool string_view_equal(const char *first, usize first_size, const char *second, usize second_size) {
+static bool string_view_equal(const char *first, usize const first_size, const char *second, usize const second_size) {
     if (first_size != second_size) {
         return false;
     }
@@ -182,7 +185,7 @@ static bool string_view_equal(const char *first, usize first_size, const char *s
 }
 
 /// Tokenizes the specified data
-TokenList *tokenize(char *data, usize length) {
+TokenList *tokenize(char *data, usize const length) {
     TokenList *list = token_list_new();
     StringIterator iterator;
     string_iterator_create(&iterator, data, length);
@@ -196,7 +199,7 @@ TokenList *tokenize(char *data, usize length) {
         // check if we have a trivial token (i.e. token of length 1)
         char current_trivial = string_iterator_current(&iterator);
         if (tokenize_is_trivial_token(current_trivial)) {
-            TokenType type = tokenize_trivial_to_type(current_trivial);
+            TokenType const type = tokenize_trivial_to_type(current_trivial);
             token_list_push(list, type, &current_trivial, 1);
             string_iterator_advance(&iterator);
             continue;
@@ -205,27 +208,27 @@ TokenList *tokenize(char *data, usize length) {
         // string-literals
         if (string_iterator_current(&iterator) == '"') {
             string_iterator_advance(&iterator);
-            char *lexeme = iterator.base + iterator.index;
-            usize begin_index = iterator.index;
+            char const *lexeme = iterator.base + iterator.index;
+            usize const begin_index = iterator.index;
 
             char previous = 0;
             while (string_iterator_current(&iterator) != '"' || previous == '\\') {
                 previous = string_iterator_current(&iterator);
                 string_iterator_advance(&iterator);
             }
-            usize end_index = iterator.index;
-            usize lexeme_length = end_index - begin_index;
+            usize const end_index = iterator.index;
+            usize const lexeme_length = end_index - begin_index;
             token_list_push(list, TOKEN_STRING, lexeme, lexeme_length);
         }
 
         // alphabetic characters
         if (isalpha(string_iterator_current(&iterator))) {
-            char *lexeme = iterator.base + iterator.index;
-            usize begin_index = iterator.index;
+            char const *lexeme = iterator.base + iterator.index;
+            usize const begin_index = iterator.index;
             while (isalpha(string_iterator_current(&iterator))) {
                 string_iterator_advance(&iterator);
             }
-            usize end_index = iterator.index;
+            usize const end_index = iterator.index;
             usize lexeme_length = end_index - begin_index;
 
             if (string_view_equal(lexeme, lexeme_length, "PRINT", 5)) {
@@ -250,9 +253,9 @@ TokenList *tokenize(char *data, usize length) {
 
         // numbers
         if (isdigit(string_iterator_current(&iterator))) {
-            char *lexeme = iterator.base + iterator.index;
+            char const *lexeme = iterator.base + iterator.index;
             TokenType type = TOKEN_NUMBER;
-            usize begin_index = iterator.index;
+            usize const begin_index = iterator.index;
             while (isdigit(string_iterator_current(&iterator))) {
                 string_iterator_advance(&iterator);
             }
@@ -272,7 +275,7 @@ TokenList *tokenize(char *data, usize length) {
 }
 
 /// Checks if the token iterator reached the end
-bool token_iterator_end(TokenIterator *self) {
+bool token_iterator_end(TokenIterator const *self) {
     return self->current == self->end;
 }
 
@@ -288,7 +291,7 @@ Token *token_iterator_invalid(void) {
 }
 
 /// Retrieves the current token
-Token *token_iterator_current(TokenIterator *self) {
+Token *token_iterator_current(TokenIterator const *self) {
     if (self->current) {
         return self->current;
     }
@@ -296,7 +299,7 @@ Token *token_iterator_current(TokenIterator *self) {
 }
 
 /// Retrieves the next token
-Token *token_iterator_next(TokenIterator *self) {
+Token *token_iterator_next(TokenIterator const *self) {
     if (!token_iterator_end(self)) {
         return self->current->next;
     }

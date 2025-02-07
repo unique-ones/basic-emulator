@@ -26,8 +26,8 @@
 #include "arena.h"
 
 /// Aligns the specified size according to arena alignment
-u32 arena_alignment_size(MemoryArena *self, u32 size) {
-    u32 align_distance = size % self->alignment;
+usize arena_alignment_size(MemoryArena const *self, usize size) {
+    usize const align_distance = size % self->alignment;
     if (align_distance != 0) {
         size += align_distance;
     }
@@ -35,30 +35,30 @@ u32 arena_alignment_size(MemoryArena *self, u32 size) {
 }
 
 /// Aligns the used offset according to arena alignment
-u32 arena_alignment_offset(MemoryArena *self) {
+usize arena_alignment_offset(MemoryArena const *self) {
     return arena_alignment_size(self, self->current->used);
 }
 
-MemoryBlock *arena_block_new(MemoryArena *self, u32 requested_size, bool temporary) {
+MemoryBlock *arena_block_new(MemoryArena *self, usize const requested_size, bool const temporary) {
     // Default block size is 4 Kb, which should be a page?
-    u32 block_size = 4 * 1024;
+    usize const block_size = 4 * 1024;
 
     // At this point, the requested size is already aligned
-    u32 actual_size = requested_size > block_size ? requested_size : block_size;
+    usize const actual_size = requested_size > block_size ? requested_size : block_size;
 
-    MemoryBlock *blck = (MemoryBlock *) self->reserve(sizeof(MemoryBlock) + actual_size);
-    blck->base = (u8 *) blck + sizeof(MemoryBlock);
-    blck->size = actual_size;
-    blck->used = 0;
-    blck->before = NULL;
-    blck->id = self->blocks++;
-    blck->temporary = temporary;
+    MemoryBlock *block = self->reserve(sizeof(MemoryBlock) + actual_size);
+    block->base = (u8 *) block + sizeof(MemoryBlock);
+    block->size = actual_size;
+    block->used = 0;
+    block->before = NULL;
+    block->id = self->blocks++;
+    block->temporary = temporary;
     self->total_memory += block_size;
-    return blck;
+    return block;
 }
 
 /// Creates a new memory arena
-MemoryArena arena_make(ArenaSpecification *spec) {
+MemoryArena arena_make(ArenaSpecification const *spec) {
     MemoryArena result;
     result.alignment = spec->alignment;
     result.reserve = spec->reserve;
@@ -71,7 +71,7 @@ MemoryArena arena_make(ArenaSpecification *spec) {
 }
 
 /// Creates an identity memory arena
-MemoryArena arena_identity(MemoryAlignment alignment) {
+MemoryArena arena_identity(MemoryAlignment const alignment) {
     ArenaSpecification spec;
     spec.alignment = alignment;
     spec.reserve = malloc;
@@ -92,21 +92,21 @@ void arena_destroy(MemoryArena *self) {
     self->current = NULL;
 }
 
-static void arena_append_block(MemoryArena *self, MemoryBlock *blck) {
-    blck->before = self->current;
-    self->current = blck;
+static void arena_append_block(MemoryArena *self, MemoryBlock *block) {
+    block->before = self->current;
+    self->current = block;
 }
 
 /// Allocates a block of memory in the specified arena
-void *arena_alloc(MemoryArena *self, u32 size) {
-    u32 aligned_size = arena_alignment_size(self, size);
+void *arena_alloc(MemoryArena *self, usize const size) {
+    usize const aligned_size = arena_alignment_size(self, size);
 
     if (self->current->used + aligned_size > self->current->size) {
-        MemoryBlock *blck = arena_block_new(self, aligned_size, self->temporary);
-        arena_append_block(self, blck);
+        MemoryBlock *block = arena_block_new(self, aligned_size, self->temporary);
+        arena_append_block(self, block);
     }
 
-    u32 aligned_offset = arena_alignment_offset(self);
+    usize const aligned_offset = arena_alignment_offset(self);
     u8 *result = self->current->base + aligned_offset;
     self->current->used = aligned_offset + aligned_size;
     return result;
@@ -117,8 +117,8 @@ void *arena_alloc(MemoryArena *self, u32 size) {
 /// affected.
 void arena_begin_temporary(MemoryArena *self) {
     self->temporary = true;
-    MemoryBlock *blck = arena_block_new(self, 0, true);
-    arena_append_block(self, blck);
+    MemoryBlock *block = arena_block_new(self, 0, true);
+    arena_append_block(self, block);
 }
 
 /// Ends the temporary scope by freeing all memory allocations that are

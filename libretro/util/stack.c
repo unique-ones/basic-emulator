@@ -29,8 +29,8 @@
 #include <assert.h>
 
 /// Allocates a new stack
-Stack *stack_new(usize capacity) {
-    Stack *self = (Stack *) malloc(sizeof(Stack));
+Stack *stack_new(usize const capacity) {
+    Stack *self = malloc(sizeof(Stack));
     self->capacity = capacity;
     self->size = 0;
     self->data = (void **) malloc(capacity * sizeof(void *));
@@ -38,8 +38,8 @@ Stack *stack_new(usize capacity) {
 }
 
 /// Grows the stack's capacity
-void stack_grow(Stack *self, usize capacity) {
-    void **new_data = (void **) realloc(self->data, capacity * sizeof(void *));
+void stack_grow(Stack *self, usize const capacity) {
+    void **new_data = realloc(self->data, capacity * sizeof(void *));
     if (new_data) {
         self->data = new_data;
         self->capacity = capacity;
@@ -74,7 +74,7 @@ void *stack_pop(Stack *self) {
 }
 
 /// Peeks the top element
-void *stack_peek(Stack *self) {
+void *stack_peek(Stack const *self) {
     if (self->size == 0) {
         return NULL;
     }

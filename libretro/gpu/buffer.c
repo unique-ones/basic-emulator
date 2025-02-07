@@ -1,11 +1,13 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
+#include <glad/glad.h>
+#include <stddef.h>
 #include <stdio.h>
 
 #include "buffer.h"
 
 /// Converts a shader type to its stride in bytes
-static s32 shader_type_stride(ShaderType type) {
+static s32 shader_type_stride(ShaderType const type) {
     switch (type) {
         case INT:
             return sizeof(GLint);
@@ -29,7 +31,7 @@ static s32 shader_type_stride(ShaderType type) {
 }
 
 /// Converts a shader type to its OpenGL base type
-static s32 shader_type_opengl(ShaderType type) {
+static s32 shader_type_opengl(ShaderType const type) {
     switch (type) {
         case INT:
         case INT2:
@@ -47,7 +49,7 @@ static s32 shader_type_opengl(ShaderType type) {
 }
 
 /// Calculates the number of primitives in a shader type
-static s32 shader_type_primitives(ShaderType type) {
+static s32 shader_type_primitives(ShaderType const type) {
     switch (type) {
         case INT:
             return 1;
@@ -71,10 +73,10 @@ static s32 shader_type_primitives(ShaderType type) {
 }
 
 /// Calculates the total stride of a vertex buffer layout
-static s32 vertex_buffer_layout_stride(VertexBufferLayout *layout) {
+static s32 vertex_buffer_layout_stride(VertexBufferLayout const *layout) {
     s32 stride = 0;
     for (u32 i = 0; i < layout->count; i++) {
-        ShaderType attribute = *(layout->attributes + i);
+        ShaderType const attribute = *(layout->attributes + i);
         stride += shader_type_stride(attribute);
     }
     return stride;
@@ -95,7 +97,7 @@ void vertex_buffer_destroy(VertexBuffer *self) {
 }
 
 /// Sets the data for the vertex buffer
-void vertex_buffer_data(VertexBuffer *self, const void *data, u32 size) {
+void vertex_buffer_data(VertexBuffer const *self, const void *data, u32 const size) {
     glBindBuffer(GL_ARRAY_BUFFER, self->handle);
     glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
 }
@@ -106,7 +108,7 @@ void vertex_buffer_layout(VertexBuffer *self, VertexBufferLayout *layout) {
 }
 
 /// Binds the vertex buffer
-void vertex_buffer_bind(VertexBuffer *self) {
+void vertex_buffer_bind(VertexBuffer const *self) {
     glBindBuffer(GL_ARRAY_BUFFER, self->handle);
 }
 
@@ -124,19 +126,19 @@ void index_buffer_create(IndexBuffer *self) {
 }
 
 /// Destroys the index buffer
-void index_buffer_destroy(IndexBuffer *self) {
+void index_buffer_destroy(IndexBuffer const *self) {
     glDeleteBuffers(1, &self->handle);
 }
 
 /// Sets the data for the specified index buffer
-void index_buffer_data(IndexBuffer *self, const u32 *data, u32 count) {
+void index_buffer_data(IndexBuffer *self, const u32 *data, u32 const count) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self->handle);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr) (count * sizeof count), data, GL_DYNAMIC_DRAW);
     self->count = count;
 }
 
 /// Binds the specified buffer
-void index_buffer_bind(IndexBuffer *self) {
+void index_buffer_bind(IndexBuffer const *self) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self->handle);
 }
 
@@ -155,7 +157,7 @@ void vertex_array_create(VertexArray *self) {
 }
 
 /// Destroys the vertex array
-void vertex_array_destroy(VertexArray *self) {
+void vertex_array_destroy(VertexArray const *self) {
     glDeleteVertexArrays(1, &self->handle);
 }
 
@@ -165,11 +167,11 @@ void vertex_array_vertex_buffer(VertexArray *self, VertexBuffer *vertex_buffer) 
     vertex_buffer_bind(vertex_buffer);
 
     s64 offset = 0;
-    s32 stride = vertex_buffer_layout_stride(vertex_buffer->layout);
+    s32 const stride = vertex_buffer_layout_stride(vertex_buffer->layout);
     for (u32 i = 0; i < vertex_buffer->layout->count; i++) {
         glEnableVertexAttribArray(i);
-        ShaderType attribute = *(vertex_buffer->layout->attributes + i);
-        GLenum opengl_type = (GLenum) shader_type_opengl(attribute);
+        ShaderType const attribute = *(vertex_buffer->layout->attributes + i);
+        GLenum const opengl_type = (GLenum) shader_type_opengl(attribute);
         if (opengl_type == GL_FLOAT) {
             glVertexAttribPointer(i, shader_type_primitives(attribute), opengl_type, GL_FALSE, stride,
                                   (const void *) offset);
@@ -189,7 +191,7 @@ void vertex_array_index_buffer(VertexArray *self, IndexBuffer *index_buffer) {
 }
 
 /// Binds the vertex array
-void vertex_array_bind(VertexArray *self) {
+void vertex_array_bind(VertexArray const *self) {
     glBindVertexArray(self->handle);
 }
 
@@ -199,7 +201,7 @@ void vertex_array_unbind(void) {
 }
 
 /// Creates a frame buffer of specified size
-bool frame_buffer_create(FrameBuffer *self, FrameBufferSpecification *spec) {
+bool frame_buffer_create(FrameBuffer *self, FrameBufferSpecification const *spec) {
     self->handle = 0;
     self->texture_handle = 0;
     self->render_handle = 0;
@@ -208,14 +210,14 @@ bool frame_buffer_create(FrameBuffer *self, FrameBufferSpecification *spec) {
 }
 
 /// Destroys the frame buffer
-void frame_buffer_destroy(FrameBuffer *self) {
+void frame_buffer_destroy(FrameBuffer const *self) {
     glDeleteFramebuffers(1, &self->handle);
     glDeleteTextures(1, &self->texture_handle);
     glDeleteRenderbuffers(1, &self->render_handle);
 }
 
 /// Checks if the frame buffer is complete
-static bool frame_buffer_is_valid(FrameBuffer *buffer) {
+static bool frame_buffer_is_valid(FrameBuffer const *buffer) {
     frame_buffer_bind(buffer);
     return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 }
@@ -255,7 +257,7 @@ bool frame_buffer_invalidate(FrameBuffer *self) {
 }
 
 /// Resizes the frame buffer
-bool frame_buffer_resize(FrameBuffer *self, s32 width, s32 height) {
+bool frame_buffer_resize(FrameBuffer *self, s32 const width, s32 const height) {
     if (width <= 0 || height <= 0 || (width == self->spec.width && height == self->spec.height)) {
         return false;
     }
@@ -265,13 +267,13 @@ bool frame_buffer_resize(FrameBuffer *self, s32 width, s32 height) {
 }
 
 /// Binds the specified frame buffer for rendering
-void frame_buffer_bind(FrameBuffer *self) {
+void frame_buffer_bind(FrameBuffer const *self) {
     glBindFramebuffer(GL_FRAMEBUFFER, self->handle);
     glViewport(0, 0, self->spec.width, self->spec.height);
 }
 
 /// Binds the texture of the frame buffer at the specified sampler slot
-void frame_buffer_bind_texture(FrameBuffer *self, u32 slot) {
+void frame_buffer_bind_texture(FrameBuffer const *self, u32 const slot) {
     glBindTextureUnit(slot, self->texture_handle);
 }
 

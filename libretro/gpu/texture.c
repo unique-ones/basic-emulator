@@ -1,5 +1,7 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
+#include <glad/glad.h>
+
 #include "texture.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -30,17 +32,17 @@ bool texture_create(Texture *self, const char *path) {
 }
 
 /// Destroys the specified texture and its data
-void texture_destroy(Texture *self) {
+void texture_destroy(Texture const *self) {
     free(self->data);
     glDeleteTextures(1, &self->handle);
 }
 
 /// Binds the texture to the sampler at the specified slot
-void texture_bind(Texture *self, u32 slot) {
+void texture_bind(Texture const *self, u32 const slot) {
     glBindTextureUnit(slot, self->handle);
 }
 
 /// Unbinds the currently bound texture at the specified sampler slot
-void texture_unbind(u32 slot) {
+void texture_unbind(u32 const slot) {
     glBindTextureUnit(slot, 0);
 }

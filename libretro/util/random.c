@@ -26,12 +26,12 @@
 static u64 random_state = 42;
 
 /// Seeds the random number generator
-void random_seed(u64 seed) {
+void random_seed(u64 const seed) {
     random_state = seed;
     random_u64();
 }
 
-/// Retrieves a unsigned 64 bit random number
+/// Retrieves an unsigned 64-bit random number
 u64 random_u64(void) {
     u64 x = random_state;
     x ^= x << 13;

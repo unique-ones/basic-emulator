@@ -21,14 +21,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "list.h"
 
 /// Allocates a new node instance
 ListNode *node_new(void *data) {
-    ListNode *self = (ListNode *) malloc(sizeof(ListNode));
+    ListNode *self = malloc(sizeof(ListNode));
     self->prev = NULL;
     self->next = NULL;
     self->data = data;
@@ -42,7 +41,7 @@ void node_free(ListNode *self) {
 
 /// Allocates a new list instance
 LinkedList *linked_list_new(void) {
-    LinkedList *self = (LinkedList *) malloc(sizeof(LinkedList));
+    LinkedList *self = malloc(sizeof(LinkedList));
     self->head = NULL;
     self->tail = NULL;
     self->length = 0;
@@ -59,10 +58,9 @@ void linked_list_free(LinkedList *self) {
 /// Clears the list
 void linked_list_clear(LinkedList *self) {
     ListNode *it = self->head;
-    ListNode *tmp;
 
     while (it != NULL) {
-        tmp = it;
+        ListNode *tmp = it;
         it = it->next;
         node_free(tmp);
     }
@@ -112,7 +110,7 @@ void linked_list_set_tail(LinkedList *self, void *data) {
 }
 
 /// Inserts a node at the specified index
-void linked_list_insert(LinkedList *self, u32 idx, void *data) {
+void linked_list_insert(LinkedList *self, usize idx, void *data) {
     if (self->head == NULL) {
         linked_list_set_head(self, data);
         return;
@@ -133,13 +131,13 @@ void linked_list_insert(LinkedList *self, u32 idx, void *data) {
 }
 
 /// Retrieves the data of the node at the specified index in the list
-void *linked_list_at(LinkedList *self, u32 idx) {
+void *linked_list_at(LinkedList const *self, usize const idx) {
     if (self->head == NULL || idx >= self->length) {
         return NULL;
     }
 
-    u32 iterator;
-    u32 iterator_limit;
+    usize iterator;
+    usize iterator_limit;
     ListNode *temp;
     if (idx < (self->length - idx)) {
         temp = self->head;
@@ -158,7 +156,7 @@ void *linked_list_at(LinkedList *self, u32 idx) {
 }
 
 /// Tries to find the specified data using the specified equal function
-ListNode *linked_list_find(LinkedList *self, void *data, ListEqualFunction equal) {
+ListNode *linked_list_find(LinkedList const *self, void const *data, ListEqualFunction const equal) {
     if (self->head == NULL || data == NULL || equal == NULL) {
         return NULL;
     }
@@ -172,7 +170,7 @@ ListNode *linked_list_find(LinkedList *self, void *data, ListEqualFunction equal
 }
 
 /// Tries to remove the specified data using the specified equal function
-void linked_list_remove(LinkedList *self, void *data, ListEqualFunction equal) {
+void linked_list_remove(LinkedList *self, void const *data, ListEqualFunction const equal) {
     if (self->head == NULL || data == NULL || equal == NULL) {
         return;
     }

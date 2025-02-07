@@ -36,6 +36,6 @@ void glyph_cache_free(GlyphCache *self);
 /// @param self The glyph cache handle
 /// @param info The glyph info handle where the data is placed into
 /// @param symbol The symbol that shall be fetched
-void glyph_cache_acquire(GlyphCache *self, GlyphInfo *info, char symbol);
+void glyph_cache_acquire(GlyphCache const *self, GlyphInfo *info, char symbol);
 
 #endif// RETRO_GPU_GLYPH_H

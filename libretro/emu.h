@@ -53,7 +53,7 @@ void emulator_key_callback(GLFWwindow *handle, s32 key, s32 scancode, s32 action
 
 /// Char callback handler for handling GLFW char input
 /// @param handle The glfw window handle
-/// @param unicode The character in unicode
+/// @param unicode The character in Unicode
 void emulator_char_callback(GLFWwindow *handle, u32 unicode);
 
 #endif// RETRO_EMU_H

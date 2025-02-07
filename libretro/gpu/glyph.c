@@ -1,5 +1,8 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
+#include <glad/glad.h>
+#include <stddef.h>
+
 #include "glyph.h"
 #include "util/utility.h"
 
@@ -10,8 +13,8 @@
 // clang-format on
 
 /// Creates a glyph cache for the specified font
-GlyphCache *glyph_cache_new(const char *path) {
-    GlyphCache *self = (GlyphCache *) malloc(sizeof(GlyphCache));
+GlyphCache *glyph_cache_new(char const *path) {
+    GlyphCache *self = malloc(sizeof(GlyphCache));
 
     BinaryBuffer font_data;
     if (!file_read(&font_data, path)) {
@@ -25,28 +28,28 @@ GlyphCache *glyph_cache_new(const char *path) {
         return false;
     }
     FT_Face face;
-    if (FT_New_Memory_Face(library, (FT_Byte *) font_data.data, (FT_Long) font_data.size, 0, &face)) {
+    if (FT_New_Memory_Face(library, (FT_Byte *) font_data.data, font_data.size, 0, &face)) {
         free(font_data.data);
         font_data.size = 0;
         FT_Done_FreeType(library);
         return false;
     }
-    FT_Set_Pixel_Sizes(face, 0, (s32) FONT_SIZE);
+    FT_Set_Pixel_Sizes(face, 0, FONT_SIZE);
 
     // calculate combined size of glyphs
     S32Vector2 size = { 0, 0 };
-    for (s32 i = 32; i < 128; i++) {
-        if (FT_Load_Char(face, (FT_ULong) i, FT_LOAD_RENDER)) {
+    for (u32 i = 32; i < 128; i++) {
+        if (FT_Load_Char(face, i, FT_LOAD_RENDER)) {
             fprintf(stderr, "could not load character: %c\n", (char) i);
             continue;
         }
         GlyphInfo *info = (self->info + i - 32);
-        info->size.x = face->glyph->bitmap.width;
-        info->size.y = face->glyph->bitmap.rows;
+        info->size.x = (s32) face->glyph->bitmap.width;
+        info->size.y = (s32) face->glyph->bitmap.rows;
         info->bearing.x = face->glyph->bitmap_left;
         info->bearing.y = face->glyph->bitmap_top;
-        info->advance.x = face->glyph->advance.x >> 6;
-        info->advance.y = face->glyph->advance.y >> 6;
+        info->advance.x = (s32) face->glyph->advance.x >> 6;
+        info->advance.y = (s32) face->glyph->advance.y >> 6;
         info->texture_span.x = 0.0f;
         info->texture_span.y = 0.0f;
         info->texture_offset = 0.0f;
@@ -67,7 +70,7 @@ GlyphCache *glyph_cache_new(const char *path) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    s32 length = size.x * size.y;
+    s32 const length = size.x * size.y;
     u8 *data = malloc(length);
     if (data == NULL) {
         assert(false && "Unable to allocate data for blank texture!");
@@ -76,7 +79,7 @@ GlyphCache *glyph_cache_new(const char *path) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, size.x, size.y, 0, GL_RED, GL_UNSIGNED_BYTE, data);
     free(data);
 
-    GLint swizzle[] = { GL_ZERO, GL_ZERO, GL_ZERO, GL_RED };
+    GLint const swizzle[] = { GL_ZERO, GL_ZERO, GL_ZERO, GL_RED };
     glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
 
     s32 offset = 0;
@@ -87,8 +90,8 @@ GlyphCache *glyph_cache_new(const char *path) {
         }
         GlyphInfo *info = self->info + i;
         info->texture_offset = (f32) offset / (f32) size.x;
-        info->texture_span.x = info->size.x / (f32) size.x;
-        info->texture_span.y = info->size.y / (f32) size.y;
+        info->texture_span.x = (f32) info->size.x / (f32) size.x;
+        info->texture_span.y = (f32) info->size.y / (f32) size.y;
         info->bearing.y -= size.y - info->size.y;
         glTexSubImage2D(GL_TEXTURE_2D, 0, offset, 0, info->size.x, info->size.y, GL_RED, GL_UNSIGNED_BYTE,
                         face->glyph->bitmap.buffer);
@@ -109,6 +112,6 @@ void glyph_cache_free(GlyphCache *self) {
 }
 
 /// Fetches the specified symbol from the glyph cache
-void glyph_cache_acquire(GlyphCache *self, GlyphInfo *info, char symbol) {
+void glyph_cache_acquire(GlyphCache const *self, GlyphInfo *info, char const symbol) {
     *info = *(self->info + symbol - 32);
 }

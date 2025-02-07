@@ -27,7 +27,7 @@ void program_tree_clear(ProgramTree *tree) {
 
 /// Creates a program tree node
 static ProgramTreeNode *program_tree_node_create(MemoryArena *arena, Statement *stmt) {
-    ProgramTreeNode *self = (ProgramTreeNode *) arena_alloc(arena, sizeof(ProgramTreeNode));
+    ProgramTreeNode *self = arena_alloc(arena, sizeof(ProgramTreeNode));
     self->left = NULL;
     self->right = NULL;
     self->stmt = stmt;
@@ -37,8 +37,8 @@ static ProgramTreeNode *program_tree_node_create(MemoryArena *arena, Statement *
 /// Insert the given statement at a feasible position starting at the specified node
 static void program_tree_node_insert(MemoryArena *arena, ProgramTreeNode *node, Statement *stmt) {
     // TODO(elias): program tree should probably be ordered into heap rather than tree
-    usize node_line = node->stmt->line;
-    usize stmt_line = stmt->line;
+    usize const node_line = node->stmt->line;
+    usize const stmt_line = stmt->line;
 
     ProgramTreeNode **walk_position = NULL;
     if (stmt_line > node_line) {
@@ -54,7 +54,6 @@ static void program_tree_node_insert(MemoryArena *arena, ProgramTreeNode *node, 
     // No node at walk position
     if (*walk_position == NULL) {
         *walk_position = program_tree_node_create(arena, stmt);
-        return;
     } else {
         // Node at walk position, traverse down
         program_tree_node_insert(arena, *walk_position, stmt);
@@ -70,11 +69,11 @@ void program_tree_insert(ProgramTree *tree, Statement *stmt) {
     }
 }
 
-static ProgramTreeNode *program_tree_node_get(ProgramTreeNode *node, usize line) {
+static ProgramTreeNode *program_tree_node_get(ProgramTreeNode *node, usize const line) {
     if (node == NULL) {
         return NULL;
     }
-    usize node_line = node->stmt->line;
+    usize const node_line = node->stmt->line;
     if (node_line > line) {
         return program_tree_node_get(node->left, line);
     }
@@ -85,7 +84,7 @@ static ProgramTreeNode *program_tree_node_get(ProgramTreeNode *node, usize line)
 }
 
 /// Retrieves a program tree node from the given line
-ProgramTreeNode *program_tree_get(ProgramTree *tree, usize line) {
+ProgramTreeNode *program_tree_get(ProgramTree const *tree, usize const line) {
     return program_tree_node_get(tree->root, line);
 }
 
@@ -114,7 +113,7 @@ void program_destroy(Program *self) {
 }
 
 /// Executes a program tree node
-static void program_tree_node_execute(ProgramTreeNode *node, Program *program) {
+static void program_tree_node_execute(ProgramTreeNode const *node, Program *program) {
     if (node == NULL) {
         return;
     }

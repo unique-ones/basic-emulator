@@ -47,8 +47,8 @@ void node_free(ListNode *self);
 typedef struct LinkedList {
     ListNode *head;
     ListNode *tail;
-    u32 length;
-    u32 capacity;// pre-allocation?
+    usize length;
+    usize capacity;// pre-allocation?
 } LinkedList;
 
 typedef bool (*ListEqualFunction)(const void *, const void *);
@@ -69,13 +69,13 @@ void linked_list_clear(LinkedList *self);
 /// @param self The list handle
 /// @param idx The index to insert node at
 /// @param data The data which is to be inserted
-void linked_list_insert(LinkedList *self, u32 idx, void *data);
+void linked_list_insert(LinkedList *self, usize idx, void *data);
 
 /// Retrieves the data of the node at the specified index in the list
 /// @param self The list handle
 /// @param idx The index of node
 /// @return The data of the node at the specified index, or NULL
-void *linked_list_at(LinkedList *self, u32 idx);
+void *linked_list_at(LinkedList const *self, usize idx);
 
 /// Appends the data to the list
 /// @param self The list handle
@@ -97,12 +97,12 @@ void linked_list_set_tail(LinkedList *self, void *data);
 /// @param data The data which shall be found
 /// @param equal The equality check function
 /// @return The node of the found data or NULL on failure
-ListNode *linked_list_find(LinkedList *self, void *data, ListEqualFunction equal);
+ListNode *linked_list_find(LinkedList const *self, void const *data, ListEqualFunction equal);
 
 /// Tries to remove the specified data using the specified equal function
 /// @param self The list handle
 /// @param data The data which shall be removed
 /// @param equal The equality check function
-void linked_list_remove(LinkedList *self, void *data, ListEqualFunction equal);
+void linked_list_remove(LinkedList *self, void const *data, ListEqualFunction equal);
 
 #endif// RETRO_UTIL_LIST_H

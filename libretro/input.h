@@ -7,20 +7,20 @@
 
 typedef struct InputBuffer {
     char *data;
-    usize fill;
-    usize cursor;
-    usize capacity;
+    ssize fill;
+    ssize cursor;
+    ssize capacity;
     bool submit;
 } InputBuffer;
 
 /// Creates an input buffer
 /// @param self The buffer handle
 /// @param capacity The capacity of the input buffer
-void input_buffer_create(InputBuffer *self, usize capacity);
+void input_buffer_create(InputBuffer *self, ssize capacity);
 
 /// Destroys the input buffer and frees its data
 /// @param self The buffer handle
-void input_buffer_destroy(InputBuffer *self);
+void input_buffer_destroy(InputBuffer const *self);
 
 /// Inserts a character into the input buffer
 /// @param self The buffer handle
@@ -36,10 +36,10 @@ bool input_buffer_remove(InputBuffer *self);
 /// Advances the cursor by the specified offset
 /// @param self The input buffer handle
 /// @param offset The offset
-void input_buffer_advance_cursor(InputBuffer *self, s64 offset);
+void input_buffer_advance_cursor(InputBuffer *self, ssize offset);
 
 /// Checks if the input buffer is full
 /// @return A boolean value that indicates whether the input buffer is full or not
-bool input_buffer_is_full(InputBuffer *self);
+bool input_buffer_is_full(InputBuffer const *self);
 
 #endif// RETRO_INPUT_H
