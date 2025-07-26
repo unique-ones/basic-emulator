@@ -1,11 +1,5 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
-#include <glad/glad.h>
-#include <stddef.h>
-#include <stdio.h>
-
-#include "buffer.h"
-
 /// Converts a shader type to its stride in bytes
 static s32 shader_type_stride(ShaderType const type) {
     switch (type) {

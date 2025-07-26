@@ -1,20 +1,5 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
-#include <ctype.h>
-#include <math.h>
-#include <stdlib.h>
-#include <time.h>
-
-#include "arch/thread.h"
-#include "arch/time.h"
-#include "emu.h"
-#include "expr.h"
-#include "lexer.h"
-#include "stmt.h"
-#include "util/random.h"
-
-#include <GLFW/glfw3.h>
-
 /// Finalizes an emulator pass by destroying associated data
 static void emulator_pass_finish(Emulator *self) {
     text_queue_push(self->history, self->text.data, self->text.fill);

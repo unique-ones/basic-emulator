@@ -3,9 +3,6 @@
 #ifndef RETRO_GPU_GLYPH_H
 #define RETRO_GPU_GLYPH_H
 
-#include "texture.h"
-#include "util/math.h"
-
 enum {
     FONT_SIZE = 48
 };

@@ -1,14 +1,5 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
-#include <assert.h>
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "expr.h"
-
-#include <stdio.h>
-
 /// Creates a new unary expression instance
 Expression *unary_expression_new(MemoryArena *arena, Operator const operator, Expression * expression) {
     Expression *self = arena_alloc(arena, sizeof(Expression));

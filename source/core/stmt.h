@@ -3,10 +3,6 @@
 #ifndef RETRO_STMT_H
 #define RETRO_STMT_H
 
-#include "expr.h"
-#include "lexer.h"
-#include "prog.h"
-
 typedef struct Statement Statement;
 
 typedef struct LetStatement {

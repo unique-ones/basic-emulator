@@ -1,12 +1,5 @@
 ﻿// Copyright (c) 2025 Elias Engelbert Plank
 
-#include "prog.h"
-#include "stmt.h"
-
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 /// Creates a new program tree
 void program_tree_create(ProgramTree *tree) {
     tree->root = NULL;

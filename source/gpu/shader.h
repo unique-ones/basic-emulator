@@ -3,8 +3,6 @@
 #ifndef RETRO_GPU_SHADER_H
 #define RETRO_GPU_SHADER_H
 
-#include "util/utility.h"
-
 typedef struct Shader {
     u32 handle;
 } Shader;

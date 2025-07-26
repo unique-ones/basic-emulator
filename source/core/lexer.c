@@ -1,13 +1,7 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
-#include <ctype.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "lexer.h"
-
 /// Creates a new token instance
-Token *token_new(TokenType type, char const *lexeme, usize const length) {
+Token *token_new(TokenType const type, char const *lexeme, usize const length) {
     Token *self = malloc(sizeof(Token));
     self->prev = NULL;
     self->next = NULL;
@@ -196,7 +190,7 @@ TokenList *tokenize(char *data, usize const length) {
             continue;
         }
 
-        // check if we have a trivial token (i.e. token of length 1)
+        // check if we have a trivial token (i.e., token of length 1)
         char current_trivial = string_iterator_current(&iterator);
         if (tokenize_is_trivial_token(current_trivial)) {
             TokenType const type = tokenize_trivial_to_type(current_trivial);
@@ -226,6 +220,8 @@ TokenList *tokenize(char *data, usize const length) {
             char const *lexeme = iterator.base + iterator.index;
             usize const begin_index = iterator.index;
 
+            // NOTE(elias): could include a shortcut here because once we stumble upon
+            // a numeric character, we know that it can only be an identifier.
             while (isalnum(string_iterator_current(&iterator))) {
                 string_iterator_advance(&iterator);
             }

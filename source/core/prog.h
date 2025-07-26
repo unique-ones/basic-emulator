@@ -3,10 +3,6 @@
 #ifndef RETRO_PROG_H
 #define RETRO_PROG_H
 
-#include "gpu/renderer.h"
-#include "util/arena.h"
-#include "util/map.h"
-
 /// Forward declares
 typedef struct Statement Statement;
 typedef struct ProgramTreeNode ProgramTreeNode;

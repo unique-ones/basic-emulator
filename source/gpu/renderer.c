@@ -1,14 +1,5 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
-#include <glad/glad.h>
-#include <stdarg.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "renderer.h"
-
 /// Creates a new render command
 RenderCommand *render_command_new(Vertex const *vertices, u32 const *indices) {
     RenderCommand *self = malloc(sizeof(RenderCommand));

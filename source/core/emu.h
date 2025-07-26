@@ -3,12 +3,6 @@
 #ifndef RETRO_EMU_H
 #define RETRO_EMU_H
 
-#include <GLFW/glfw3.h>
-
-#include "gpu/renderer.h"
-#include "prog.h"
-#include "util/text.h"
-
 typedef enum EmulatorState {
     EMULATOR_STATE_INPUT = 0,
     EMULATOR_STATE_EXECUTION = 1

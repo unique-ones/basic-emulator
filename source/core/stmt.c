@@ -1,13 +1,5 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
-#include "stmt.h"
-
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
-#include "expr.h"
-#include "lexer.h"
-
 /// Creates a new let statement
 Statement *let_statement_new(MemoryArena *arena, usize const line, Expression *variable, Expression *initializer) {
     Statement *self = arena_alloc(arena, sizeof(Statement));

@@ -1,10 +1,7 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
-#ifndef RETRO_TYPES_H
-#define RETRO_TYPES_H
-
-#include <stdint.h>
-#include <stddef.h>
+#ifndef TYPES_H
+#define TYPES_H
 
 typedef int8_t s8;
 typedef int16_t s16;
@@ -104,4 +101,4 @@ typedef struct BinaryBuffer {
     u32 size;
 } BinaryBuffer;
 
-#endif// RETRO_TYPES_H
+#endif// TYPES_H
