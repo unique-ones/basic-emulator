@@ -1,4 +1,4 @@
-#version 450 core
+#version 410 core
 layout (location = 0) out vec4 out_color;
 layout (location = 0) in vec3 passed_color;
 layout (location = 1) in vec2 passed_texture_coordinates;

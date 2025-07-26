@@ -4,6 +4,7 @@
 #define RETRO_TYPES_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 typedef int8_t s8;
 typedef int16_t s16;
@@ -15,7 +16,7 @@ typedef uint16_t u16;
 typedef uint32_t u32;
 typedef uint64_t u64;
 
-typedef u64 usize;
+typedef size_t usize;
 typedef s64 ssize;
 
 typedef u8 bool;

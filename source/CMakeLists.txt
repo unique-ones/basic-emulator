@@ -1,8 +1,10 @@
 include(FetchContent)
 FetchContent_Declare(glfw GIT_REPOSITORY https://github.com/glfw/glfw.git)
-FetchContent_Declare(freetype GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git)
-FetchContent_Declare(harfbuzz GIT_REPOSITORY https://github.com/harfbuzz/harfbuzz.git GIT_TAG "8.4.0")
-FetchContent_MakeAvailable(glfw freetype harfbuzz)
+FetchContent_MakeAvailable(glfw)
+FetchContent_Declare(harfbuzz GIT_REPOSITORY https://github.com/harfbuzz/harfbuzz.git GIT_TAG "11.3.2")
+FetchContent_MakeAvailable(harfbuzz)
+FetchContent_Declare(freetype GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git GIT_TAG "VER-2-13-3")
+FetchContent_MakeAvailable(freetype)
 
 file(GLOB RETRO_SOURCES
         ${CMAKE_CURRENT_LIST_DIR}/*.c

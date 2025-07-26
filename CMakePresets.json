@@ -67,6 +67,23 @@
       }
     },
     {
+      "name": "darwin",
+      "hidden": true,
+      "inherits": [
+        "default"
+      ],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "TARGET_BUILD_PLATFORM": "darwin"
+      }
+    },
+    {
       "name": "win-64-debug",
       "inherits": [
         "win",
@@ -91,6 +108,20 @@
       "name": "lin-64-release",
       "inherits": [
         "lin",
+        "release"
+      ]
+    },
+    {
+      "name": "darwin-64-debug",
+      "inherits": [
+        "darwin",
+        "debug"
+      ]
+    },
+    {
+      "name": "darwin-64-release",
+      "inherits": [
+        "darwin",
         "release"
       ]
     }
@@ -102,20 +133,8 @@
       "jobs": 16
     },
     {
-      "name": "lin",
-      "hidden": true,
-      "inherits": [
-        "default"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Linux"
-      }
-    },
-    {
-      "name": "win",
-      "hidden": true,
+      "name": "win-64-debug",
+      "configurePreset": "win-64-debug",
       "inherits": [
         "default"
       ],
@@ -126,32 +145,64 @@
       }
     },
     {
-      "name": "win-64-debug",
-      "configurePreset": "win-64-debug",
-      "inherits": [
-        "win"
-      ]
-    },
-    {
       "name": "win-64-release",
       "configurePreset": "win-64-release",
       "inherits": [
-        "win"
-      ]
+        "default"
+      ],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
     },
     {
       "name": "lin-64-debug",
       "configurePreset": "lin-64-debug",
       "inherits": [
-        "lin"
-      ]
+        "default"
+      ],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
     },
     {
       "name": "lin-64-release",
       "configurePreset": "lin-64-release",
       "inherits": [
-        "lin"
-      ]
+        "default"
+      ],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "darwin-64-debug",
+      "configurePreset": "darwin-64-debug",
+      "inherits": [
+        "default"
+      ],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "darwin-64-release",
+      "configurePreset": "darwin-64-release",
+      "inherits": [
+        "default"
+      ],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
     }
   ]
 }
