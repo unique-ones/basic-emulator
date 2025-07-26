@@ -1,12 +1,5 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
-#include <glad/glad.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "display.h"
-
 /// Callback for framebuffer resize events
 static void display_framebuffer_callback(GLFWwindow *handle, s32 const width, s32 const height) {
     glViewport(0, 0, width, height);

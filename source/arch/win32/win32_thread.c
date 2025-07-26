@@ -1,9 +1,5 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
-#include <Windows.h>
-
-#include "../thread.h"
-
 /// Creates a new thread with the specified runner
 Thread thread_create(ThreadRunner runner, void *arg) {
     Thread thread = CreateThread(NULL, 0, runner, arg, 0, NULL);

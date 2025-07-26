@@ -3,8 +3,6 @@
 #ifndef RETRO_INPUT_H
 #define RETRO_INPUT_H
 
-#include "types.h"
-
 typedef struct InputBuffer {
     char *data;
     ssize fill;

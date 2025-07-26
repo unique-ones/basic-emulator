@@ -1,10 +1,5 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
-#include <pthread.h>
-#include <stdlib.h>
-
-#include "../thread.h"
-
 /// Creates a new thread with the specified runner
 Thread thread_create(ThreadRunner runner, void *arg) {
     pthread_t thread;

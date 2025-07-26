@@ -3,8 +3,6 @@
 #ifndef RETRO_ARCH_THREAD_H
 #define RETRO_ARCH_THREAD_H
 
-#include "core/types.h"
-
 #ifdef LIBRETRO_PLATFORM_WIN32
 
 typedef void *Thread;

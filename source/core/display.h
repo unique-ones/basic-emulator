@@ -3,10 +3,6 @@
 #ifndef RETRO_DISPLAY_H
 #define RETRO_DISPLAY_H
 
-#include "types.h"
-
-#include <GLFW/glfw3.h>
-
 typedef struct Display {
     GLFWwindow *handle;
     const char *title;

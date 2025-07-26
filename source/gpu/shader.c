@@ -1,12 +1,5 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
-#include "shader.h"
-
-#include <glad/glad.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 /// Compiles the specified shader type from source
 static u32 shader_compile(BinaryBuffer const *source, u32 const type) {
     u32 const program = glCreateShader(type);

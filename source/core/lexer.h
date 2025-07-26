@@ -3,8 +3,6 @@
 #ifndef RETRO_LEXER_H
 #define RETRO_LEXER_H
 
-#include "types.h"
-
 typedef enum TokenType {
     TOKEN_IDENTIFIER,
     TOKEN_NUMBER,

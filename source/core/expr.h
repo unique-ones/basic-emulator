@@ -3,11 +3,6 @@
 #ifndef RETRO_EXPR_H
 #define RETRO_EXPR_H
 
-#include "lexer.h"
-#include "types.h"
-#include "util/arena.h"
-#include "util/map.h"
-
 enum {
     EXPRESSION_IDENTIFIER_LENGTH = 64
 };

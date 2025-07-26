@@ -1,8 +1,21 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
-#include "core/display.h"
-#include "gpu/renderer.h"
-#include "core/emu.h"
+#include <assert.h>
+#include <ctype.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#include "types.h"
+
+// clang-format off
+#include "arch/arch.c"
+#include "util/util.c"
+#include "gpu/gpu.c"
+#include "core/core.c"
+// clang-format on
 
 int main() {
     Display display;

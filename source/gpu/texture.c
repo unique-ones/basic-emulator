@@ -1,12 +1,5 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
-#include <glad/glad.h>
-
-#include "texture.h"
-
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-
 /// Loads a texture from the given path and uploads it to the gpu
 bool texture_create(Texture *self, const char *path) {
     self->handle = 0;

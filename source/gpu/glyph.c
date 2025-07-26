@@ -1,17 +1,5 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
-#include <glad/glad.h>
-#include <stddef.h>
-
-#include "glyph.h"
-#include "util/utility.h"
-
-// clang-format off
-#include <assert.h>
-#include <ft2build.h>
-#include <freetype/freetype.h>
-// clang-format on
-
 /// Creates a glyph cache for the specified font
 GlyphCache *glyph_cache_new(char const *path) {
     GlyphCache *self = malloc(sizeof(GlyphCache));

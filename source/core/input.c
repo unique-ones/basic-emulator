@@ -1,12 +1,5 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "input.h"
-#include "util/math.h"
-
 /// Creates an input buffer
 void input_buffer_create(InputBuffer *self, ssize const capacity) {
     self->fill = 0;

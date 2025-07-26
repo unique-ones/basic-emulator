@@ -3,11 +3,6 @@
 #ifndef RETRO_GPU_RENDERER_H
 #define RETRO_GPU_RENDERER_H
 
-#include "arch/thread.h"
-#include "buffer.h"
-#include "glyph.h"
-#include "shader.h"
-
 enum {
     QUAD_VERTICES = 4,
     QUAD_INDICES = 6
