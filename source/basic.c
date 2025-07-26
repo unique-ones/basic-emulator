@@ -16,6 +16,13 @@
 #include "core/core.c"
 // clang-format on
 
+// TODO(elias):
+// [ ] get rid of malloc everywhere except for arena
+// [ ] separate parsing and interpreting/executing
+// [ ] add proper symbol resolving during execution
+// [ ] revisit prog.c - replace binary tree with heap
+// [ ] clean up arena implementation
+
 int main() {
     Display display;
     display_create(&display, "Emulator", 800, 600);
