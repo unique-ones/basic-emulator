@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
 /// Creates a new render command
-RenderCommand *render_command_new(Vertex const *vertices, u32 const *indices) {
+static RenderCommand *render_command_new(Vertex const *vertices, u32 const *indices) {
     RenderCommand *self = malloc(sizeof(RenderCommand));
     self->prev = NULL;
     self->next = NULL;
@@ -11,12 +11,12 @@ RenderCommand *render_command_new(Vertex const *vertices, u32 const *indices) {
 }
 
 /// Frees the specified render command instance
-void render_command_free(RenderCommand *self) {
+static void render_command_free(RenderCommand *self) {
     free(self);
 }
 
 /// Creates a new render group
-RenderGroup *render_group_new(void) {
+static RenderGroup *render_group_new(void) {
     RenderGroup *self = malloc(sizeof(RenderGroup));
     self->begin = NULL;
     self->end = NULL;
@@ -40,7 +40,7 @@ RenderGroup *render_group_new(void) {
 }
 
 /// Clears the specified render group (i.e. deletes the commands)
-void render_group_clear(RenderGroup *self) {
+static void render_group_clear(RenderGroup *self) {
     mutex_lock(self->mutex);
     RenderCommand *it = self->begin;
 
@@ -57,7 +57,7 @@ void render_group_clear(RenderGroup *self) {
 }
 
 /// Frees the specified render group (i.e. delete the commands and free memory)
-void render_group_free(RenderGroup *self) {
+static void render_group_free(RenderGroup *self) {
     render_group_clear(self);
     mutex_free(self->mutex);
     index_buffer_destroy(&self->index_buffer);
@@ -67,7 +67,7 @@ void render_group_free(RenderGroup *self) {
 }
 
 /// Pushes a set of vertices and indices to the render group
-void render_group_push(RenderGroup *self, Vertex const *vertices, u32 const *indices) {
+static void render_group_push(RenderGroup *self, Vertex const *vertices, u32 const *indices) {
     while (self->commands >= RENDER_GROUP_COMMANDS_MAX)
         ;
 
@@ -93,7 +93,7 @@ void render_group_push(RenderGroup *self, Vertex const *vertices, u32 const *ind
 }
 
 /// Creates the post-processing pipeline
-void post_processing_create(PostProcessing *self) {
+static void post_processing_create(PostProcessing *self) {
     FrameBufferSpecification spec = { .width = 800,
                                       .height = 600,
                                       .internal_format = GL_RGBA16F,
@@ -115,7 +115,7 @@ void post_processing_create(PostProcessing *self) {
 }
 
 /// Destroys the post-processing pipeline
-void post_processing_destroy(PostProcessing const *self) {
+static void post_processing_destroy(PostProcessing const *self) {
     shader_destroy(&self->downsample_shader);
     shader_destroy(&self->upsample_shader);
     shader_destroy(&self->blending_shader);
@@ -138,17 +138,17 @@ static void renderer_draw_indexed(VertexArray const *vertex_array, Shader const 
 }
 
 /// Clears the currently bound frame buffer
-void renderer_clear(void) {
+static void renderer_clear(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 /// Sets the clear color
-void renderer_clear_color(F32Vector4 const *color) {
+static void renderer_clear_color(F32Vector4 const *color) {
     glClearColor(color->x, color->y, color->z, color->w);
 }
 
 /// Creates a new renderer and initializes its pipeline
-void renderer_create(Renderer *self, const char *font) {
+static void renderer_create(Renderer *self, const char *font) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -170,7 +170,7 @@ void renderer_create(Renderer *self, const char *font) {
 }
 
 /// Destroys the specified renderer
-void renderer_destroy(Renderer const *self) {
+static void renderer_destroy(Renderer const *self) {
     shader_destroy(&self->glyph_shader);
     render_group_free(self->glyph_group);
     glyph_cache_free(self->glyphs);
@@ -181,7 +181,7 @@ void renderer_destroy(Renderer const *self) {
 }
 
 /// Begins a renderer batch by resetting all render groups
-void renderer_begin_batch(Renderer const *self) {
+static void renderer_begin_batch(Renderer const *self) {
     render_group_clear(self->glyph_group);
     render_group_clear(self->quad_group);
 }
@@ -216,7 +216,7 @@ static void render_group_submit(RenderGroup *group, Shader const *shader) {
 }
 
 /// Ends a renderer batch by submitting the commands of all render groups
-void renderer_end_batch(Renderer const *self) {
+static void renderer_end_batch(Renderer const *self) {
     render_group_submit(self->quad_group, &self->quad_shader);
 
     texture_bind(&self->glyphs->atlas, 0);
@@ -225,7 +225,7 @@ void renderer_end_batch(Renderer const *self) {
 }
 
 /// Indicate to the renderer that a resize is necessary
-void renderer_resize(Renderer *self, s32 const width, s32 const height) {
+static void renderer_resize(Renderer *self, s32 const width, s32 const height) {
     F32Mat4 orthogonal;
     f32mat4_create_orthogonal(&orthogonal, 0.0f, (f32) width, (f32) height, 0.0f);
     shader_uniform_f32mat4(&self->glyph_shader, "uniform_transform", &orthogonal);
@@ -243,10 +243,10 @@ void renderer_resize(Renderer *self, s32 const width, s32 const height) {
 }
 
 /// Draws a quad at the given position
-void renderer_draw_quad(Renderer const *self,
-                        F32Vector2 const *position,
-                        F32Vector2 const *size,
-                        F32Vector3 const *color) {
+static void renderer_draw_quad(Renderer const *self,
+                               F32Vector2 const *position,
+                               F32Vector2 const *size,
+                               F32Vector3 const *color) {
     Vertex const vertices[] = { { { position->x, position->y, 0.0f }, *color, { 0.0f, 1.0f } },
                                 { { position->x, position->y + size->y, 0.0f }, *color, { 0.0f, 0.0f } },
                                 { { position->x + size->x, position->y + size->y, 0.0f }, *color, { 1.0f, 0.0f } },
@@ -259,11 +259,11 @@ void renderer_draw_quad(Renderer const *self,
 }
 
 /// Draws the specified symbol at the given position
-void renderer_draw_symbol(Renderer const *self,
-                          GlyphInfo const *symbol,
-                          F32Vector2 const *position,
-                          F32Vector3 const *color,
-                          f32 const scale) {
+static void renderer_draw_symbol(Renderer const *self,
+                                 GlyphInfo const *symbol,
+                                 F32Vector2 const *position,
+                                 F32Vector3 const *color,
+                                 f32 const scale) {
     // clang-format off
     F32Vector2 const scaled_size = { (f32) symbol->size.x * scale, (f32) symbol->size.y * scale };
     F32Vector2 const scaled_position = {
@@ -285,12 +285,12 @@ void renderer_draw_symbol(Renderer const *self,
 }
 
 /// Draws the specified text at the given position
-void renderer_draw_text(Renderer const *self,
-                        F32Vector2 *position,
-                        F32Vector3 const *color,
-                        f32 const scale,
-                        const char *fmt,
-                        ...) {
+static void renderer_draw_text(Renderer const *self,
+                               F32Vector2 *position,
+                               F32Vector3 const *color,
+                               f32 const scale,
+                               const char *fmt,
+                               ...) {
     char text_buffer[0x1000];
     va_list list;
     va_start(list, fmt);
@@ -333,13 +333,13 @@ static void renderer_draw_indicator(Renderer const *self,
 }
 
 /// Draws the cursor and the specified text at the given position
-void renderer_draw_text_with_cursor(Renderer const *self,
-                                    F32Vector2 *position,
-                                    F32Vector3 const *color,
-                                    f32 const scale,
-                                    u32 const cursor_index,
-                                    const char *fmt,
-                                    ...) {
+static void renderer_draw_text_with_cursor(Renderer const *self,
+                                           F32Vector2 *position,
+                                           F32Vector3 const *color,
+                                           f32 const scale,
+                                           u32 const cursor_index,
+                                           const char *fmt,
+                                           ...) {
     char text_buffer[0x1000];
     va_list list;
     va_start(list, fmt);
@@ -386,12 +386,12 @@ void renderer_draw_text_with_cursor(Renderer const *self,
 }
 
 /// Captures all following draw commands into a frame buffer
-void renderer_crt_begin_capture(Renderer const *self) {
+static void renderer_crt_begin_capture(Renderer const *self) {
     frame_buffer_bind(&self->capture);
 }
 
 /// Ends the capture of draw commands
-void renderer_crt_end_capture(Renderer const *self) {
+static void renderer_crt_end_capture(Renderer const *self) {
     // unbind frame buffer in order to actually render stuff now
     frame_buffer_unbind();
     render_group_clear(self->post.group);

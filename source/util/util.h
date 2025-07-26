@@ -3,6 +3,8 @@
 #ifndef RETRO_UTIL_H
 #define RETRO_UTIL_H
 
+#include "types.h"
+
 #include "arena.h"
 #include "file.h"
 #include "list.h"

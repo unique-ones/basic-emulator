@@ -1,7 +1,8 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
 /// Creates a new token instance
-Token *token_new(TokenType const type, char const *lexeme, usize const length) {
+static Token *token_new(TokenType const type, char const *lexeme, usize const length) {
+    // TODO(elias): use arena allocation
     Token *self = malloc(sizeof(Token));
     self->prev = NULL;
     self->next = NULL;
@@ -13,7 +14,7 @@ Token *token_new(TokenType const type, char const *lexeme, usize const length) {
 }
 
 /// Frees the specified token instance
-void token_free(Token *self) {
+static void token_free(Token *self) {
     self->prev = NULL;
     self->next = NULL;
     free(self->lexeme);
@@ -22,7 +23,7 @@ void token_free(Token *self) {
 }
 
 /// Creates a new token list instance
-TokenList *token_list_new(void) {
+static TokenList *token_list_new(void) {
     TokenList *self = malloc(sizeof(TokenList));
     self->begin = NULL;
     self->end = NULL;
@@ -31,7 +32,7 @@ TokenList *token_list_new(void) {
 }
 
 /// Clears the specified token list (i.e. deletes all tokens)
-void token_list_clear(TokenList *self) {
+static void token_list_clear(TokenList *self) {
     Token *it = self->begin;
 
     while (it != NULL) {
@@ -45,13 +46,13 @@ void token_list_clear(TokenList *self) {
 }
 
 /// Frees the specified token list (i.e. deletes tokens and free list)
-void token_list_free(TokenList *self) {
+static void token_list_free(TokenList *self) {
     token_list_clear(self);
     free(self);
 }
 
 /// Pushes a token to the specified token list
-void token_list_push(TokenList *self, TokenType const type, char const *lexeme, usize const length) {
+static void token_list_push(TokenList *self, TokenType const type, char const *lexeme, usize const length) {
     if (self == NULL) {
         return;
     }
@@ -107,12 +108,12 @@ static char string_iterator_next(StringIterator const *self) {
 }
 
 /// Checks if the iterator is at the end
-static bool string_iterator_end(StringIterator const *self) {
+static b32 string_iterator_end(StringIterator const *self) {
     return self->index == self->length - 1;
 }
 
 /// Checks if the specified char is a trivial token
-static bool tokenize_is_trivial_token(char const current) {
+static b32 tokenize_is_trivial_token(char const current) {
     switch (current) {
         case ':':
         case '(':
@@ -171,7 +172,7 @@ static TokenType tokenize_trivial_to_type(char const current) {
 }
 
 /// Checks if two string views are equal
-static bool string_view_equal(const char *first, usize const first_size, const char *second, usize const second_size) {
+static b32 string_view_equal(const char *first, usize const first_size, const char *second, usize const second_size) {
     if (first_size != second_size) {
         return false;
     }
@@ -179,7 +180,7 @@ static bool string_view_equal(const char *first, usize const first_size, const c
 }
 
 /// Tokenizes the specified data
-TokenList *tokenize(char *data, usize const length) {
+static TokenList *tokenize(char *data, usize const length) {
     TokenList *list = token_list_new();
     StringIterator iterator;
     string_iterator_create(&iterator, data, length);
@@ -273,12 +274,12 @@ TokenList *tokenize(char *data, usize const length) {
 }
 
 /// Checks if the token iterator reached the end
-bool token_iterator_end(TokenIterator const *self) {
+static b32 token_iterator_end(TokenIterator const *self) {
     return self->current == self->end;
 }
 
 /// Returns an invalid token
-Token *token_iterator_invalid(void) {
+static Token *token_iterator_invalid(void) {
     static Token token = { 0 };
     token.type = TOKEN_INVALID;
     token.lexeme = "";
@@ -289,7 +290,7 @@ Token *token_iterator_invalid(void) {
 }
 
 /// Retrieves the current token
-Token *token_iterator_current(TokenIterator const *self) {
+static Token *token_iterator_current(TokenIterator const *self) {
     if (self->current) {
         return self->current;
     }
@@ -297,7 +298,7 @@ Token *token_iterator_current(TokenIterator const *self) {
 }
 
 /// Retrieves the next token
-Token *token_iterator_next(TokenIterator const *self) {
+static Token *token_iterator_next(TokenIterator const *self) {
     if (!token_iterator_end(self)) {
         return self->current->next;
     }
@@ -305,7 +306,7 @@ Token *token_iterator_next(TokenIterator const *self) {
 }
 
 /// Advances the token cursor by one
-void token_iterator_advance(TokenIterator *self) {
+static void token_iterator_advance(TokenIterator *self) {
     if (!token_iterator_end(self)) {
         self->current = self->current->next;
     } else {

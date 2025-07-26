@@ -1,7 +1,8 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
 /// Allocates a new stack
-Stack *stack_new(usize const capacity) {
+static Stack *
+stack_new(usize const capacity) {
     Stack *self = malloc(sizeof(Stack));
     self->capacity = capacity;
     self->size = 0;
@@ -10,7 +11,8 @@ Stack *stack_new(usize const capacity) {
 }
 
 /// Grows the stack's capacity
-void stack_grow(Stack *self, usize const capacity) {
+static void
+stack_grow(Stack *self, usize const capacity) {
     void **new_data = realloc(self->data, capacity * sizeof(void *));
     if (new_data) {
         self->data = new_data;
@@ -21,7 +23,8 @@ void stack_grow(Stack *self, usize const capacity) {
 }
 
 /// Frees the stack entries except for the data itself
-void stack_free(Stack *self) {
+static void
+stack_free(Stack *self) {
     free(self->data);
     self->capacity = 0;
     self->size = 0;
@@ -29,7 +32,8 @@ void stack_free(Stack *self) {
 }
 
 /// Pushes the specified data onto the stack
-void stack_push(Stack *self, void *data) {
+static void
+stack_push(Stack *self, void *data) {
     if (self->size == self->capacity) {
         // If we run out of memory, allocate twice the capacity
         stack_grow(self, self->capacity * 2);
@@ -38,7 +42,8 @@ void stack_push(Stack *self, void *data) {
 }
 
 /// Pops data from the stack
-void *stack_pop(Stack *self) {
+static void *
+stack_pop(Stack *self) {
     if (self->size == 0) {
         return NULL;
     }
@@ -46,7 +51,8 @@ void *stack_pop(Stack *self) {
 }
 
 /// Peeks the top element
-void *stack_peek(Stack const *self) {
+static void *
+stack_peek(Stack const *self) {
     if (self->size == 0) {
         return NULL;
     }

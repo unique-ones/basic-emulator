@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
 /// Creates a new unary expression instance
-Expression *unary_expression_new(MemoryArena *arena, Operator const operator, Expression * expression) {
+static Expression *unary_expression_new(MemoryArena *arena, Operator const operator, Expression * expression) {
     Expression *self = arena_alloc(arena, sizeof(Expression));
     self->type = EXPRESSION_UNARY;
     self->unary.operator= operator;
@@ -10,13 +10,16 @@ Expression *unary_expression_new(MemoryArena *arena, Operator const operator, Ex
 }
 
 /// Evaluates the unary expression
-f64 unary_expression_evaluate(Expression const *self, HashMap const *symbol_table) {
+static f64 unary_expression_evaluate(Expression const *self, HashMap const *symbol_table) {
     f64 const value = expression_evaluate(self->unary.expression, symbol_table);
     return self->unary.operator== OPERATOR_ADD ? value : - 1.0 * value;
 }
 
 /// Creates a new binary expression instance
-Expression *binary_expression_new(MemoryArena *arena, Expression *left, Expression *right, Operator const operator) {
+static Expression *binary_expression_new(MemoryArena *arena,
+                                         Expression *left,
+                                         Expression *right,
+                                         Operator const operator) {
     Expression *self = arena_alloc(arena, sizeof(Expression));
     self->type = EXPRESSION_BINARY;
     self->binary.left = left;
@@ -26,7 +29,7 @@ Expression *binary_expression_new(MemoryArena *arena, Expression *left, Expressi
 }
 
 /// Evaluates the binary expression
-f64 binary_expression_evaluate(Expression const *self, HashMap const *symbol_table) {
+static f64 binary_expression_evaluate(Expression const *self, HashMap const *symbol_table) {
     f64 const left = expression_evaluate(self->binary.left, symbol_table);
     f64 const right = expression_evaluate(self->binary.right, symbol_table);
     switch (self->binary.operator) {
@@ -43,7 +46,7 @@ f64 binary_expression_evaluate(Expression const *self, HashMap const *symbol_tab
 }
 
 /// Creates a new variable expression instance
-Expression *variable_expression_new(MemoryArena *arena, char const *name, usize const length) {
+static Expression *variable_expression_new(MemoryArena *arena, char const *name, usize const length) {
     Expression *self = arena_alloc(arena, sizeof(Expression));
     self->type = EXPRESSION_VARIABLE;
     memset(self->variable.name, 0, sizeof self->variable.name);
@@ -52,7 +55,7 @@ Expression *variable_expression_new(MemoryArena *arena, char const *name, usize 
 }
 
 /// Evaluates the variable expression
-f64 variable_expression_evaluate(Expression const *self, HashMap const *symbol_table) {
+static f64 variable_expression_evaluate(Expression const *self, HashMap const *symbol_table) {
     Expression *initializer = hash_map_find(symbol_table, self->variable.name);
     if (initializer) {
         return expression_evaluate(initializer, symbol_table);
@@ -70,7 +73,7 @@ FunctionParameter *function_parameter_new(MemoryArena *arena, Expression *expres
 }
 
 /// Creates a new function expression instance
-Expression *function_expression_new(MemoryArena *arena, char const *name, usize const length) {
+static Expression *function_expression_new(MemoryArena *arena, char const *name, usize const length) {
     Expression *self = arena_alloc(arena, sizeof(Expression));
     self->type = EXPRESSION_FUNCTION;
 
@@ -85,7 +88,7 @@ Expression *function_expression_new(MemoryArena *arena, char const *name, usize 
 }
 
 /// Pushes a parameter to the specified function expression
-void function_expression_push(MemoryArena *arena, Expression *self, Expression *parameter) {
+static void function_expression_push(MemoryArena *arena, Expression *self, Expression *parameter) {
     FunctionParameter *entry = function_parameter_new(arena, parameter);
     FunctionExpression *function = &self->function;
     if (function->first_parameter == NULL) {
@@ -107,7 +110,7 @@ void function_expression_push(MemoryArena *arena, Expression *self, Expression *
 }
 
 /// Retrieves the parameter at the specified index
-FunctionParameter *function_expression_get_parameter(Expression const *self, usize const index) {
+static FunctionParameter *function_expression_get_parameter(Expression const *self, usize const index) {
     FunctionExpression const *function = &self->function;
     if (function->first_parameter == NULL || index >= function->parameter_count) {
         return NULL;
@@ -136,7 +139,7 @@ FunctionParameter *function_expression_get_parameter(Expression const *self, usi
     (expression_evaluate(function_expression_get_parameter(self, index)->expression, symbol_table))
 
 /// Evaluates the specified function expression
-f64 function_expression_evaluate(Expression const *self, HashMap const *symbol_table) {
+static f64 function_expression_evaluate(Expression const *self, HashMap const *symbol_table) {
     FunctionExpression const *function = &self->function;
     FunctionDefinition const *definition = hash_map_find(symbol_table, function->name);
     if (definition == NULL) {
@@ -183,7 +186,7 @@ f64 function_expression_evaluate(Expression const *self, HashMap const *symbol_t
 #undef EXPR_PARAM
 
 /// Creates a new number expression instance
-Expression *number_expression_new(MemoryArena *arena, f64 const number) {
+static Expression *number_expression_new(MemoryArena *arena, f64 const number) {
     Expression *self = arena_alloc(arena, sizeof(Expression));
     self->type = EXPRESSION_NUMBER;
     self->number = number;
@@ -191,12 +194,12 @@ Expression *number_expression_new(MemoryArena *arena, f64 const number) {
 }
 
 /// Evaluates the specified number expression
-f64 number_expression_evaluate(Expression const *self) {
+static f64 number_expression_evaluate(Expression const *self) {
     return self->number;
 }
 
 /// Creates a new exponential expression instance
-Expression *exponential_expression_new(MemoryArena *arena, Expression *base, Expression *exponent) {
+static Expression *exponential_expression_new(MemoryArena *arena, Expression *base, Expression *exponent) {
     Expression *self = arena_alloc(arena, sizeof(Expression));
     self->type = EXPRESSION_EXPONENTIAL;
     self->exponential.base = base;
@@ -205,13 +208,13 @@ Expression *exponential_expression_new(MemoryArena *arena, Expression *base, Exp
 }
 
 /// Evaluates the specified exponential expression
-f64 exponential_expression_evaluate(Expression const *self, HashMap const *symbol_table) {
+static f64 exponential_expression_evaluate(Expression const *self, HashMap const *symbol_table) {
     return pow(expression_evaluate(self->exponential.base, symbol_table),
                expression_evaluate(self->exponential.exponent, symbol_table));
 }
 
 /// Creates a new string expression by storing the string in the provided arena
-Expression *string_expression_new(MemoryArena *arena, char const *data, usize const length) {
+static Expression *string_expression_new(MemoryArena *arena, char const *data, usize const length) {
     Expression *self = arena_alloc(arena, sizeof(Expression));
     self->type = EXPRESSION_STRING;
     self->string.data = arena_alloc(arena, length);
@@ -219,7 +222,6 @@ Expression *string_expression_new(MemoryArena *arena, char const *data, usize co
     memcpy(self->string.data, data, length);
     return self;
 }
-
 
 /// Parses an addition or subtraction expression
 static Expression *expression_add_or_sub(MemoryArena *arena, TokenIterator *state);
@@ -366,7 +368,7 @@ static Expression *expression_arithmetic_or_final(MemoryArena *arena, TokenItera
 }
 
 /// Compiles an expression from a list of tokens
-Expression *expression_compile(MemoryArena *arena, Token *begin, Token *end) {
+static Expression *expression_compile(MemoryArena *arena, Token *begin, Token *end) {
     TokenIterator state = { 0 };
     state.current = begin;
     state.end = end;
@@ -374,7 +376,7 @@ Expression *expression_compile(MemoryArena *arena, Token *begin, Token *end) {
 }
 
 /// Evaluates the specified expression
-f64 expression_evaluate(Expression const *self, HashMap const *symbol_table) {
+static f64 expression_evaluate(Expression const *self, HashMap const *symbol_table) {
     assert(expression_is_arithmetic(self) && "expression must be arithmetic for evaluation!");
 
     switch (self->type) {
@@ -397,7 +399,7 @@ f64 expression_evaluate(Expression const *self, HashMap const *symbol_table) {
 }
 
 /// Checks if an expression is arithmetic
-bool expression_is_arithmetic(Expression const *self) {
+static b32 expression_is_arithmetic(Expression const *self) {
     switch (self->type) {
         case EXPRESSION_STRING:
             return false;

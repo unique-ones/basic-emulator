@@ -119,7 +119,7 @@ static void emulator_add_builtin_symbols(Emulator const *self) {
 }
 
 /// Creates a new emulator instance
-void emulator_create(Emulator *self, Renderer *renderer) {
+static void emulator_create(Emulator *self, Renderer *renderer) {
     self->state = EMULATOR_STATE_INPUT;
     self->mode = EMULATOR_MODE_TEXT;
     self->renderer = renderer;
@@ -133,7 +133,7 @@ void emulator_create(Emulator *self, Renderer *renderer) {
 }
 
 /// Destroys the emulator and frees all its associated data
-void emulator_destroy(Emulator *self) {
+static void emulator_destroy(Emulator *self) {
     program_destroy(&self->program);
     text_cursor_destroy(&self->text);
     text_queue_free(self->history);
@@ -141,14 +141,18 @@ void emulator_destroy(Emulator *self) {
 }
 
 /// Runs an emulation pass
-void emulator_run(Emulator *self) {
+static void emulator_run(Emulator *self) {
     self->state = EMULATOR_STATE_EXECUTION;
     self->text.submit = false;
     thread_create(emulator_pass_platform, self);
 }
 
 /// Key callback handler for handling GLFW key input
-void emulator_key_callback(GLFWwindow *handle, s32 const key, s32 const scancode, s32 const action, s32 const mods) {
+static void emulator_key_callback(GLFWwindow *handle,
+                                  s32 const key,
+                                  s32 const scancode,
+                                  s32 const action,
+                                  s32 const mods) {
     if (action != GLFW_PRESS && action != GLFW_REPEAT) {
         return;
     }
@@ -185,7 +189,7 @@ void emulator_key_callback(GLFWwindow *handle, s32 const key, s32 const scancode
 }
 
 /// Char callback handler for handling GLFW char input
-void emulator_char_callback(GLFWwindow *handle, u32 const unicode) {
+static void emulator_char_callback(GLFWwindow *handle, u32 const unicode) {
     Emulator *self = glfwGetWindowUserPointer(handle);
     if (self) {
         text_cursor_emplace(&self->text, (char) toupper((char) unicode));

@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
 /// Allocates a new node instance
-ListNode *node_new(void *data) {
+static ListNode *node_new(void *data) {
     ListNode *self = malloc(sizeof(ListNode));
     self->prev = NULL;
     self->next = NULL;
@@ -10,12 +10,12 @@ ListNode *node_new(void *data) {
 }
 
 /// Frees all associated data with the node except the data
-void node_free(ListNode *self) {
+static void node_free(ListNode *self) {
     free(self);
 }
 
 /// Allocates a new list instance
-LinkedList *linked_list_new(void) {
+static LinkedList *linked_list_new(void) {
     LinkedList *self = malloc(sizeof(LinkedList));
     self->head = NULL;
     self->tail = NULL;
@@ -25,13 +25,13 @@ LinkedList *linked_list_new(void) {
 }
 
 /// Frees all data associated with the list
-void linked_list_free(LinkedList *self) {
+static void linked_list_free(LinkedList *self) {
     linked_list_clear(self);
     free(self);
 }
 
 /// Clears the list
-void linked_list_clear(LinkedList *self) {
+static void linked_list_clear(LinkedList *self) {
     ListNode *it = self->head;
 
     while (it != NULL) {
@@ -45,7 +45,7 @@ void linked_list_clear(LinkedList *self) {
 }
 
 /// Appends the data to the list
-void linked_list_append(LinkedList *self, void *data) {
+static void linked_list_append(LinkedList *self, void *data) {
     ListNode *node = node_new(data);
 
     if (self->head == NULL) {
@@ -65,7 +65,7 @@ void linked_list_append(LinkedList *self, void *data) {
 }
 
 /// Sets the first node of the list
-void linked_list_set_head(LinkedList *self, void *data) {
+static void linked_list_set_head(LinkedList *self, void *data) {
     ListNode *node = node_new(data);
 
     node->next = self->head;
@@ -80,12 +80,12 @@ void linked_list_set_head(LinkedList *self, void *data) {
 }
 
 /// Alias to linked_list_append
-void linked_list_set_tail(LinkedList *self, void *data) {
+static void linked_list_set_tail(LinkedList *self, void *data) {
     linked_list_append(self, data);
 }
 
 /// Inserts a node at the specified index
-void linked_list_insert(LinkedList *self, usize idx, void *data) {
+static void linked_list_insert(LinkedList *self, usize idx, void *data) {
     if (self->head == NULL) {
         linked_list_set_head(self, data);
         return;
@@ -106,7 +106,7 @@ void linked_list_insert(LinkedList *self, usize idx, void *data) {
 }
 
 /// Retrieves the data of the node at the specified index in the list
-void *linked_list_at(LinkedList const *self, usize const idx) {
+static void *linked_list_at(LinkedList const *self, usize const idx) {
     if (self->head == NULL || idx >= self->length) {
         return NULL;
     }
@@ -131,7 +131,7 @@ void *linked_list_at(LinkedList const *self, usize const idx) {
 }
 
 /// Tries to find the specified data using the specified equal function
-ListNode *linked_list_find(LinkedList const *self, void const *data, ListEqualFunction const equal) {
+static ListNode *linked_list_find(LinkedList const *self, void const *data, ListEqualFunction const equal) {
     if (self->head == NULL || data == NULL || equal == NULL) {
         return NULL;
     }
@@ -145,7 +145,7 @@ ListNode *linked_list_find(LinkedList const *self, void const *data, ListEqualFu
 }
 
 /// Tries to remove the specified data using the specified equal function
-void linked_list_remove(LinkedList *self, void const *data, ListEqualFunction const equal) {
+static void linked_list_remove(LinkedList *self, void const *data, ListEqualFunction const equal) {
     if (self->head == NULL || data == NULL || equal == NULL) {
         return;
     }

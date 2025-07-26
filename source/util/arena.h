@@ -26,7 +26,7 @@ typedef struct MemoryBlock {
     u8 *base;
     MemoryBlock *before;
     usize id;
-    bool temporary;
+    b32 temporary;
 } MemoryBlock;
 
 typedef struct MemoryArena {
@@ -36,13 +36,13 @@ typedef struct MemoryArena {
     ReleaseFunction release;
     u32 blocks;
     u32 total_memory;
-    bool temporary;
+    b32 temporary;
 } MemoryArena;
 
 /// Creates a new memory arena
 /// @param spec The arena specification
 /// @return Memory arena with one block
-MemoryArena arena_make(ArenaSpecification const *spec);
+static MemoryArena arena_make(ArenaSpecification const *spec);
 
 /// Creates an identity memory arena
 /// @param alignment The alignment for the allocations
@@ -50,28 +50,28 @@ MemoryArena arena_make(ArenaSpecification const *spec);
 ///
 /// @note An identity arena is an arena with malloc and free
 ///       as reserve/release functions
-MemoryArena arena_identity(MemoryAlignment alignment);
+static MemoryArena arena_identity(MemoryAlignment alignment);
 
 /// Destroys the specified memory arena
 /// @param self The arena
-void arena_destroy(MemoryArena *self);
+static void arena_destroy(MemoryArena *self);
 
 /// Allocates a block of memory in the specified arena
 /// @param self The arena
 /// @param size The size of the requested block
 /// @return Memory
-void *arena_alloc(MemoryArena *self, usize size);
+static void *arena_alloc(MemoryArena *self, usize size);
 
 /// Begins a temporary scope where all subsequent allocations are freed after
 /// calling arena_end_temporary(). Note that previous allocations are not
 /// affected.
 /// @param self The arena
-void arena_begin_temporary(MemoryArena *self);
+static void arena_begin_temporary(MemoryArena *self);
 
 /// Ends the temporary scope by freeing all memory allocations that are
 /// marked as temporary.
 /// @param self The arena
-void arena_end_temporary(MemoryArena *self);
+static void arena_end_temporary(MemoryArena *self);
 
 
 #endif// RETRO_UTILS_ARENA_H

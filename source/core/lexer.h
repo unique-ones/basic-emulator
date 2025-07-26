@@ -50,11 +50,11 @@ typedef struct Token {
 /// @param lexeme The string of the token
 /// @param length The length of the lexeme
 /// @return A new token instance
-Token *token_new(TokenType type, char const *lexeme, usize length);
+static Token *token_new(TokenType type, char const *lexeme, usize length);
 
 /// Frees the specified token instance
 /// @param self The token instance
-void token_free(Token *self);
+static void token_free(Token *self);
 
 typedef struct TokenList {
     Token *begin;
@@ -64,28 +64,28 @@ typedef struct TokenList {
 
 /// Creates a new token list instance
 /// @return A new token list
-TokenList *token_list_new(void);
+static TokenList *token_list_new(void);
 
 /// Clears the specified token list (i.e. deletes all tokens)
 /// @param self The token list instance
-void token_list_clear(TokenList *self);
+static void token_list_clear(TokenList *self);
 
 /// Frees the specified token list (i.e. deletes tokens and free list)
 /// @param self The token list instance
-void token_list_free(TokenList *self);
+static void token_list_free(TokenList *self);
 
 /// Pushes a token to the specified token list
 /// @param self The token list instance
 /// @param type The type of the token
 /// @param lexeme The string of the token
 /// @param length The length of the lexeme
-void token_list_push(TokenList *self, TokenType type, char const *lexeme, usize length);
+static void token_list_push(TokenList *self, TokenType type, char const *lexeme, usize length);
 
 /// Tokenizes the specified data
 /// @param data The string that shall be tokenized
 /// @param length The length of the string
 /// @return A new token list
-TokenList *tokenize(char *data, usize length);
+static TokenList *tokenize(char *data, usize length);
 
 typedef struct TokenIterator {
     Token *current;
@@ -94,25 +94,25 @@ typedef struct TokenIterator {
 
 /// Checks if the token iterator reached the end
 /// @param self The token iterator
-/// @return A boolean that indicates whether the iterator is at the end
-bool token_iterator_end(TokenIterator const *self);
+/// @return A b32ean that indicates whether the iterator is at the end
+static b32 token_iterator_end(TokenIterator const *self);
 
 /// Returns an invalid token
 /// @return An invalid token
-Token *token_iterator_invalid(void);
+static Token *token_iterator_invalid(void);
 
 /// Retrieves the current token
 /// @param self The token iterator
 /// @return The current token
-Token *token_iterator_current(TokenIterator const *self);
+static Token *token_iterator_current(TokenIterator const *self);
 
 /// Retrieves the next token
 /// @param self The token iterator
 /// @return The next token
-Token *token_iterator_next(TokenIterator const *self);
+static Token *token_iterator_next(TokenIterator const *self);
 
 /// Advances the token cursor by one
 /// @param self The token iterator
-void token_iterator_advance(TokenIterator *self);
+static void token_iterator_advance(TokenIterator *self);
 
 #endif// RETRO_LEXER_H

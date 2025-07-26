@@ -6,10 +6,7 @@ FetchContent_MakeAvailable(harfbuzz)
 FetchContent_Declare(freetype GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git GIT_TAG "VER-2-13-3")
 FetchContent_MakeAvailable(freetype)
 
-file(GLOB RETRO_SOURCES
-        ${CMAKE_CURRENT_LIST_DIR}/basic.c)
-
-add_executable(basic ${RETRO_SOURCES} "${CMAKE_SOURCE_DIR}/extern/glad/glad.h" "${CMAKE_SOURCE_DIR}/extern/glad/glad.c" "${CMAKE_SOURCE_DIR}/extern/stb_image.h")
+add_executable(basic basic.c "${CMAKE_SOURCE_DIR}/extern/glad/glad.h" "${CMAKE_SOURCE_DIR}/extern/glad/glad.c" "${CMAKE_SOURCE_DIR}/extern/stb_image.h")
 target_include_directories(basic PUBLIC ${CMAKE_SOURCE_DIR}/extern/ ${CMAKE_SOURCE_DIR}/source)
 target_link_libraries(basic PUBLIC "glfw" "freetype" "harfbuzz")
 

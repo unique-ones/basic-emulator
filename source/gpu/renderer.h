@@ -28,11 +28,11 @@ typedef struct RenderCommand {
 /// @param vertices A list of vertices, must be exactly 4
 /// @param indices A list of indices, must be exactly 6
 /// @return A new render command instance
-RenderCommand *render_command_new(Vertex const *vertices, u32 const *indices);
+static RenderCommand *render_command_new(Vertex const *vertices, u32 const *indices);
 
 /// Frees the specified render command instance
 /// @param self The render command
-void render_command_free(RenderCommand *self);
+static void render_command_free(RenderCommand *self);
 
 enum {
     RENDER_GROUP_COMMANDS_MAX = 512
@@ -60,22 +60,22 @@ typedef struct RenderGroup {
 
 /// Creates a new render group
 /// @return A new render group
-RenderGroup *render_group_new(void);
+static RenderGroup *render_group_new(void);
 
 /// Clears the specified render group (i.e. deletes the commands)
 /// @param self The render group handle
-void render_group_clear(RenderGroup *self);
+static void render_group_clear(RenderGroup *self);
 
 /// Frees the specified render group (i.e. delete the commands and free memory)
 /// @param self The render group handle
-void render_group_free(RenderGroup *self);
+static void render_group_free(RenderGroup *self);
 
 /// Pushes a set of vertices and indices to the render group
 /// @note blocks while there are too many commands in the render group
 /// @param self The render group handle
 /// @param vertices The vertex data, must be exactly 4
 /// @param indices The indices data, must be exactly 6
-void render_group_push(RenderGroup *self, Vertex const *vertices, u32 const *indices);
+static void render_group_push(RenderGroup *self, Vertex const *vertices, u32 const *indices);
 
 enum {
     BLOOM_MIPS = 6
@@ -104,11 +104,11 @@ typedef struct PostProcessing {
 
 /// Creates the post-processing pipeline
 /// @param self The post-processing handle
-void post_processing_create(PostProcessing *self);
+static void post_processing_create(PostProcessing *self);
 
 /// Destroys the post-processing pipeline
 /// @param self The post-processing handle
-void post_processing_destroy(PostProcessing const *self);
+static void post_processing_destroy(PostProcessing const *self);
 
 typedef struct Renderer {
     /// The glyph shader contains the logic to render a glyph using the
@@ -136,44 +136,44 @@ typedef struct Renderer {
 } Renderer;
 
 /// Clears the currently bound frame buffer
-void renderer_clear(void);
+static void renderer_clear(void);
 
 /// Sets the clear color
 /// @param color The color value for clear calls
-void renderer_clear_color(F32Vector4 const *color);
+static void renderer_clear_color(F32Vector4 const *color);
 
 /// Creates a new renderer and initializes its pipeline
 /// @param self The renderer handle
 /// @param font The font path
-void renderer_create(Renderer *self, const char *font);
+static void renderer_create(Renderer *self, const char *font);
 
 /// Destroys the specified renderer
 /// @param self The renderer handle
-void renderer_destroy(Renderer const *self);
+static void renderer_destroy(Renderer const *self);
 
 /// Begins a renderer batch by resetting all render groups
 /// @param self The renderer handle
-void renderer_begin_batch(Renderer const *self);
+static void renderer_begin_batch(Renderer const *self);
 
 /// Ends a renderer batch by submitting the commands of all render groups
 /// @param self The renderer handle
-void renderer_end_batch(Renderer const *self);
+static void renderer_end_batch(Renderer const *self);
 
 /// Indicate to the renderer that a resize is necessary
 /// @param self The renderer handle
 /// @param width The new width
 /// @param height The new height
-void renderer_resize(Renderer *self, s32 width, s32 height);
+static void renderer_resize(Renderer *self, s32 width, s32 height);
 
 /// Draws a quad at the given position
 /// @param self The renderer handle
 /// @param position The position where the quad shall be drawn
 /// @param size The size of the quad
 /// @param color The color of the quad
-void renderer_draw_quad(Renderer const *self,
-                        F32Vector2 const *position,
-                        F32Vector2 const *size,
-                        F32Vector3 const *color);
+static void renderer_draw_quad(Renderer const *self,
+                               F32Vector2 const *position,
+                               F32Vector2 const *size,
+                               F32Vector3 const *color);
 
 /// Draws the specified symbol at the given position
 /// @param self The renderer handle
@@ -181,11 +181,11 @@ void renderer_draw_quad(Renderer const *self,
 /// @param position The position were the symbol shall be drawn
 /// @param color The color for the symbol
 /// @param scale The scale of the text
-void renderer_draw_symbol(Renderer const *self,
-                          GlyphInfo const *symbol,
-                          F32Vector2 const *position,
-                          F32Vector3 const *color,
-                          f32 scale);
+static void renderer_draw_symbol(Renderer const *self,
+                                 GlyphInfo const *symbol,
+                                 F32Vector2 const *position,
+                                 F32Vector3 const *color,
+                                 f32 scale);
 
 /// Draws the specified text at the given position
 /// @param self The renderer handle
@@ -194,12 +194,12 @@ void renderer_draw_symbol(Renderer const *self,
 /// @param scale The scale of the text
 /// @param fmt The format text that shall be drawn
 /// @param ... The variadic arguments
-void renderer_draw_text(Renderer const *self,
-                        F32Vector2 *position,
-                        F32Vector3 const *color,
-                        f32 scale,
-                        const char *fmt,
-                        ...);
+static void renderer_draw_text(Renderer const *self,
+                               F32Vector2 *position,
+                               F32Vector3 const *color,
+                               f32 scale,
+                               const char *fmt,
+                               ...);
 
 /// Draws the cursor and the specified text at the given position
 /// @param self The renderer handle
@@ -209,20 +209,20 @@ void renderer_draw_text(Renderer const *self,
 /// @param cursor_index The index of the cursor
 /// @param fmt The format text that shall be drawn
 /// @param ... The variadic arguments
-void renderer_draw_text_with_cursor(Renderer const *self,
-                                    F32Vector2 *position,
-                                    F32Vector3 const *color,
-                                    f32 scale,
-                                    u32 cursor_index,
-                                    const char *fmt,
-                                    ...);
+static void renderer_draw_text_with_cursor(Renderer const *self,
+                                           F32Vector2 *position,
+                                           F32Vector3 const *color,
+                                           f32 scale,
+                                           u32 cursor_index,
+                                           const char *fmt,
+                                           ...);
 
 /// Captures all following draw commands into a frame buffer
 /// @param self The renderer handle
-void renderer_crt_begin_capture(Renderer const *self);
+static void renderer_crt_begin_capture(Renderer const *self);
 
 /// Ends the capture of draw commands
 /// @param self The renderer handle
-void renderer_crt_end_capture(Renderer const *self);
+static void renderer_crt_end_capture(Renderer const *self);
 
 #endif// RETRO_GPU_RENDERER_H

@@ -8,11 +8,10 @@
 #include <string.h>
 #include <time.h>
 
-#include "types.h"
-
+// NOTE: keep the order of includes as is, required for unity build
 // clang-format off
-#include "arch/arch.c"
 #include "util/util.c"
+#include "arch/arch.c"
 #include "gpu/gpu.c"
 #include "core/core.c"
 // clang-format on
@@ -76,7 +75,7 @@ int main() {
                 renderer_end_batch(&renderer);
 
                 // should definitely document this more, here we must clear the render group,
-                // due to the fact that we might draw the emulator text output in the next frame,
+                // because we might draw the emulator text output in the next frame,
                 // which would result in left over render commands from our input text
                 renderer_begin_batch(&renderer);
                 break;

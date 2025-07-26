@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
 /// Reads the entire file into the specified buffer
-bool file_read(BinaryBuffer *buffer, const char *path) {
+static b32 file_read(BinaryBuffer *buffer, const char *path) {
     FILE *file = fopen(path, "rb");
     if (!file) {
         return false;
