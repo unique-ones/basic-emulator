@@ -37,12 +37,12 @@ bool file_read(BinaryBuffer *buffer, const char *path) {
     u32 const size = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    buffer->data = (char *) malloc(size);
+    buffer->data = (char *) malloc(size + 1);
     if (buffer->data) {
         buffer->size = size;
         fread(buffer->data, sizeof(char), size, file);
         fclose(file);
-        buffer->data[size - 1] = 0;
+        buffer->data[size] = 0;
     }
     return true;
 }

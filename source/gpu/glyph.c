@@ -62,8 +62,10 @@ GlyphCache *glyph_cache_new(char const *path) {
     self->atlas.width = size.x;
     self->atlas.height = size.y;
     self->atlas.channels = 1;
-    glCreateTextures(GL_TEXTURE_2D, 1, &self->atlas.handle);
-    glBindTextureUnit(0, self->atlas.handle);
+
+    glGenTextures(1, &self->atlas.handle);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, self->atlas.handle);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

@@ -12,7 +12,7 @@ typedef unsigned long (*ThreadRunner)(void *);
 
 #else
 
-typedef u32 Thread;
+typedef usize Thread;
 typedef void *(*ThreadRunner)(void *);
 
 #endif

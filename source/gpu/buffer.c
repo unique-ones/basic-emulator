@@ -274,7 +274,8 @@ void frame_buffer_bind(FrameBuffer const *self) {
 
 /// Binds the texture of the frame buffer at the specified sampler slot
 void frame_buffer_bind_texture(FrameBuffer const *self, u32 const slot) {
-    glBindTextureUnit(slot, self->texture_handle);
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_2D, self->texture_handle);
 }
 
 /// Unbinds the currently bound frame buffer
