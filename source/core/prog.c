@@ -1,19 +1,19 @@
 ﻿// Copyright (c) 2025 Elias Engelbert Plank
 
 /// Creates a new program tree
-void program_tree_create(ProgramTree *tree) {
+static void program_tree_create(ProgramTree *tree) {
     tree->root = NULL;
     tree->arena = arena_identity(ALIGNMENT8);
 }
 
 /// Destroys the program tree
-void program_tree_destroy(ProgramTree *tree) {
+static void program_tree_destroy(ProgramTree *tree) {
     tree->root = NULL;
     arena_destroy(&tree->arena);
 }
 
 /// Clears all nodes of the program tree
-void program_tree_clear(ProgramTree *tree) {
+static void program_tree_clear(ProgramTree *tree) {
     program_tree_destroy(tree);
     program_tree_create(tree);
 }
@@ -54,7 +54,7 @@ static void program_tree_node_insert(MemoryArena *arena, ProgramTreeNode *node, 
 }
 
 /// Inserts the given statement into the program tree
-void program_tree_insert(ProgramTree *tree, Statement *stmt) {
+static void program_tree_insert(ProgramTree *tree, Statement *stmt) {
     if (tree->root == NULL) {
         tree->root = program_tree_node_create(&tree->arena, stmt);
     } else {
@@ -77,12 +77,12 @@ static ProgramTreeNode *program_tree_node_get(ProgramTreeNode *node, usize const
 }
 
 /// Retrieves a program tree node from the given line
-ProgramTreeNode *program_tree_get(ProgramTree const *tree, usize const line) {
+static ProgramTreeNode *program_tree_get(ProgramTree const *tree, usize const line) {
     return program_tree_node_get(tree->root, line);
 }
 
 /// Creates a program which serves as the handle between emulator and AST
-void program_create(Program *self, Renderer *renderer) {
+static void program_create(Program *self, Renderer *renderer) {
     self->objects = arena_identity(ALIGNMENT8);
     self->symbols = hash_map_new();
     self->renderer = renderer;
@@ -95,7 +95,7 @@ void program_create(Program *self, Renderer *renderer) {
 }
 
 /// Destroys the program and all its data
-void program_destroy(Program *self) {
+static void program_destroy(Program *self) {
     program_tree_destroy(&self->lines);
 
     hash_map_free(self->symbols);
@@ -122,14 +122,14 @@ static void program_tree_node_execute(ProgramTreeNode const *node, Program *prog
 }
 
 /// Executes the program
-void program_execute(Program *self) {
+static void program_execute(Program *self) {
     self->text_position.x = PROGRAM_MARGIN_SIZE;
     self->text_position.y = PROGRAM_MARGIN_SIZE;
     program_tree_node_execute(self->lines.root, self);
 }
 
 /// Submits formatted text to the renderer
-void program_print_format(Program *self, const char *fmt, ...) {
+static void program_print_format(Program *self, const char *fmt, ...) {
     char buffer[1024];
     va_list list;
     va_start(list, fmt);

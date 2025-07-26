@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2025 Elias Engelbert Plank
 
 /// Aligns the specified size according to arena alignment
-usize arena_alignment_size(MemoryArena const *self, usize size) {
+static usize arena_alignment_size(MemoryArena const *self, usize size) {
     usize const align_distance = size % self->alignment;
     if (align_distance != 0) {
         size += align_distance;
@@ -10,11 +10,11 @@ usize arena_alignment_size(MemoryArena const *self, usize size) {
 }
 
 /// Aligns the used offset according to arena alignment
-usize arena_alignment_offset(MemoryArena const *self) {
+static usize arena_alignment_offset(MemoryArena const *self) {
     return arena_alignment_size(self, self->current->used);
 }
 
-MemoryBlock *arena_block_new(MemoryArena *self, usize const requested_size, bool const temporary) {
+static MemoryBlock *arena_block_new(MemoryArena *self, usize const requested_size, b32 const temporary) {
     // Default block size is 4 Kb, which should be a page?
     usize const block_size = 4 * 1024;
 
@@ -33,7 +33,7 @@ MemoryBlock *arena_block_new(MemoryArena *self, usize const requested_size, bool
 }
 
 /// Creates a new memory arena
-MemoryArena arena_make(ArenaSpecification const *spec) {
+static MemoryArena arena_make(ArenaSpecification const *spec) {
     MemoryArena result;
     result.alignment = spec->alignment;
     result.reserve = spec->reserve;
@@ -46,7 +46,7 @@ MemoryArena arena_make(ArenaSpecification const *spec) {
 }
 
 /// Creates an identity memory arena
-MemoryArena arena_identity(MemoryAlignment const alignment) {
+static MemoryArena arena_identity(MemoryAlignment const alignment) {
     ArenaSpecification spec;
     spec.alignment = alignment;
     spec.reserve = malloc;
@@ -55,7 +55,7 @@ MemoryArena arena_identity(MemoryAlignment const alignment) {
 }
 
 /// Destroys the specified memory arena
-void arena_destroy(MemoryArena *self) {
+static void arena_destroy(MemoryArena *self) {
     while (self->current != NULL) {
         MemoryBlock *before = self->current->before;
         // We must release the memory block itself as it is the base of the allocation
@@ -73,7 +73,7 @@ static void arena_append_block(MemoryArena *self, MemoryBlock *block) {
 }
 
 /// Allocates a block of memory in the specified arena
-void *arena_alloc(MemoryArena *self, usize const size) {
+static void *arena_alloc(MemoryArena *self, usize const size) {
     usize const aligned_size = arena_alignment_size(self, size);
 
     if (self->current->used + aligned_size > self->current->size) {
@@ -90,7 +90,7 @@ void *arena_alloc(MemoryArena *self, usize const size) {
 /// Begins a temporary scope where all subsequent allocations are freed after
 /// calling arena_end_temporary(). Note that previous allocations are not
 /// affected.
-void arena_begin_temporary(MemoryArena *self) {
+static void arena_begin_temporary(MemoryArena *self) {
     self->temporary = true;
     MemoryBlock *block = arena_block_new(self, 0, true);
     arena_append_block(self, block);
@@ -98,7 +98,7 @@ void arena_begin_temporary(MemoryArena *self) {
 
 /// Ends the temporary scope by freeing all memory allocations that are
 /// marked as temporary.
-void arena_end_temporary(MemoryArena *self) {
+static void arena_end_temporary(MemoryArena *self) {
     self->temporary = false;
     for (; self->current != NULL && self->current->temporary; self->current = self->current->before) {
         self->release(self->current);

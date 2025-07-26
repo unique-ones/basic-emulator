@@ -26,25 +26,25 @@ typedef struct ProgramTree {
 
 /// Creates a new program tree
 /// @param tree The program tree
-void program_tree_create(ProgramTree *tree);
+static void program_tree_create(ProgramTree *tree);
 
 /// Destroys the program tree
 /// @param tree The program tree
-void program_tree_destroy(ProgramTree *tree);
+static void program_tree_destroy(ProgramTree *tree);
 
 /// Clears all nodes of the program tree
-void program_tree_clear(ProgramTree *tree);
+static void program_tree_clear(ProgramTree *tree);
 
 /// Inserts the given statement into the program tree
 /// @param tree The program tree
 /// @param stmt The statement
-void program_tree_insert(ProgramTree *tree, Statement *stmt);
+static void program_tree_insert(ProgramTree *tree, Statement *stmt);
 
 /// Retrieves a program tree node from the given line
 /// @param tree The program tree
 /// @param line The line which is requested
 /// @return The request program tree node or NULL
-ProgramTreeNode *program_tree_get(ProgramTree const *tree, usize line);
+static ProgramTreeNode *program_tree_get(ProgramTree const *tree, usize line);
 
 enum {
     PROGRAM_MARGIN_SIZE = 30,
@@ -71,12 +71,12 @@ typedef struct Program {
     /// A tree map that stores the lines of the actual program.
     ProgramTree lines;
 
-    /// A boolean whose values indicates whether the program should wait
+    /// A b32ean whose values indicates whether the program should wait
     /// for the users input to cancel execution. possible values are:
     /// - true: do not wait for user input and return to the source
     /// - false: wait until the user presses ESC and only then return
     ///          to source
-    bool no_wait;
+    b32 no_wait;
 
     /// The last key that was pressed by the user.
     /// TODO(plank): Replace with memory
@@ -89,20 +89,20 @@ typedef struct Program {
 /// Creates a program which serves as the handle between emulator and AST
 /// @param self The program handle
 /// @param renderer The renderer
-void program_create(Program *self, Renderer *renderer);
+static void program_create(Program *self, Renderer *renderer);
 
 /// Destroys the program and all its data
 /// @param self The program handle
-void program_destroy(Program *self);
+static void program_destroy(Program *self);
 
 /// Executes the program
 /// @param self The program handle
-void program_execute(Program *self);
+static void program_execute(Program *self);
 
 /// Submits formatted text to the renderer
 /// @param self The program handle
 /// @param fmt The text format string
 /// @param ... The variadic arguments
-void program_print_format(Program *self, const char *fmt, ...);
+static void program_print_format(Program *self, const char *fmt, ...);
 
 #endif// RETRO_PROG_H

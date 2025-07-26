@@ -21,21 +21,21 @@ typedef struct Emulator {
     TextCursor text;
     TextQueue *history;
     MemoryArena arena;
-    bool enable_crt;
+    b32 enable_crt;
 } Emulator;
 
 /// Creates a new emulator instance
 /// @param self The emulator instance
 /// @param renderer The renderer of the emulator
-void emulator_create(Emulator *self, Renderer *renderer);
+static void emulator_create(Emulator *self, Renderer *renderer);
 
 /// Destroys the emulator and frees all its associated data
 /// @param self The emulator instance
-void emulator_destroy(Emulator *self);
+static void emulator_destroy(Emulator *self);
 
 /// Runs an emulation pass
 /// @param self The emulator instance
-void emulator_run(Emulator *self);
+static void emulator_run(Emulator *self);
 
 /// Key callback handler for handling GLFW key input
 /// @param handle The glfw window handle
@@ -43,11 +43,11 @@ void emulator_run(Emulator *self);
 /// @param scancode The scancode of the key
 /// @param action The action that indicates if the key is pressed or released
 /// @param mods I don't know about this one
-void emulator_key_callback(GLFWwindow *handle, s32 key, s32 scancode, s32 action, s32 mods);
+static void emulator_key_callback(GLFWwindow *handle, s32 key, s32 scancode, s32 action, s32 mods);
 
 /// Char callback handler for handling GLFW char input
 /// @param handle The glfw window handle
 /// @param unicode The character in Unicode
-void emulator_char_callback(GLFWwindow *handle, u32 unicode);
+static void emulator_char_callback(GLFWwindow *handle, u32 unicode);
 
 #endif// RETRO_EMU_H

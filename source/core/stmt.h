@@ -16,13 +16,13 @@ typedef struct LetStatement {
 /// @param variable The variable
 /// @param initializer The initializer value of the variable
 /// @return A new let statement
-Statement *let_statement_new(MemoryArena *arena, usize line, Expression *variable, Expression *initializer);
+static Statement *let_statement_new(MemoryArena *arena, usize line, Expression *variable, Expression *initializer);
 
 /// Creates a new clear statement
 /// @param arena The arena for allocations
 /// @param line The line of the statement
 /// @return A new clear statement
-Statement *clear_statement_new(MemoryArena *arena, usize line);
+static Statement *clear_statement_new(MemoryArena *arena, usize line);
 
 typedef struct DefFnStatement {
     Expression *name;
@@ -37,11 +37,11 @@ typedef struct DefFnStatement {
 /// @param variable The variable that is used
 /// @param body The body of the function
 /// @return A new def fn statement
-Statement *def_fn_statement_new(MemoryArena *arena,
-                                usize line,
-                                Expression *name,
-                                Expression *variable,
-                                Expression *body);
+static Statement *def_fn_statement_new(MemoryArena *arena,
+                                       usize line,
+                                       Expression *name,
+                                       Expression *variable,
+                                       Expression *body);
 
 typedef struct PrintStatement {
     Expression *printable;
@@ -52,12 +52,12 @@ typedef struct PrintStatement {
 /// @param line The line of the statement
 /// @param printable The printable expression
 /// @return A new print statement
-Statement *print_statement_new(MemoryArena *arena, usize line, Expression *printable);
+static Statement *print_statement_new(MemoryArena *arena, usize line, Expression *printable);
 
 /// Creates a new run statement
 /// @param arena The arena for allocations
 /// @return A new run statement
-Statement *run_statement_new(MemoryArena *arena);
+static Statement *run_statement_new(MemoryArena *arena);
 
 typedef enum StatementType {
     // Variable Control
@@ -98,11 +98,11 @@ typedef struct StatementResult {
 /// @param begin The first token in the statement
 /// @param end The last token in the statement
 /// @return The statement or nil if the statement where invalid
-StatementResult statement_compile(MemoryArena *arena, Token *begin, Token *end);
+static StatementResult statement_compile(MemoryArena *arena, Token *begin, Token *end);
 
 /// Executes the statement
 /// @param self The statement
 /// @param program The program state
-void statement_execute(Statement *self, Program *program);
+static void statement_execute(Statement *self, Program *program);
 
 #endif// RETRO_STMT_H

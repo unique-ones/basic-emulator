@@ -27,7 +27,7 @@ static u32 shader_compile(BinaryBuffer const *source, u32 const type) {
 }
 
 /// Creates a shader from the given vertex and fragment shader files
-bool shader_create(Shader *self, const char *vertex, const char *fragment) {
+static b32 shader_create(Shader *self, const char *vertex, const char *fragment) {
     BinaryBuffer vertex_source, fragment_source;
     if (!file_read(&vertex_source, vertex) || !file_read(&fragment_source, fragment)) {
         free(vertex_source.data);
@@ -96,74 +96,74 @@ bool shader_create(Shader *self, const char *vertex, const char *fragment) {
 }
 
 /// Destroys the specified shader
-void shader_destroy(Shader const *self) {
+static void shader_destroy(Shader const *self) {
     glDeleteProgram(self->handle);
 }
 
 /// Sets a sampler2D (texture) uniform
-void shader_uniform_sampler(Shader const *self, const char *name, u32 const slot) {
+static void shader_uniform_sampler(Shader const *self, const char *name, u32 const slot) {
     shader_uniform_s32(self, name, (s32) slot);
 }
 
 /// Sets an integer (s32) uniform
-void shader_uniform_s32(Shader const *self, const char *name, s32 const value) {
+static void shader_uniform_s32(Shader const *self, const char *name, s32 const value) {
     glUseProgram(self->handle);
     glUniform1i(glGetUniformLocation(self->handle, name), value);
 }
 
 /// Sets an 2D integer (S32Vector2) uniform
-void shader_uniform_s32vec2(Shader const *self, const char *name, S32Vector2 const *value) {
+static void shader_uniform_s32vec2(Shader const *self, const char *name, S32Vector2 const *value) {
     glUseProgram(self->handle);
     glUniform2i(glGetUniformLocation(self->handle, name), value->x, value->y);
 }
 
 /// Sets an 3D integer (S32Vector3) uniform
-void shader_uniform_s32vec3(Shader const *self, const char *name, S32Vector3 const *value) {
+static void shader_uniform_s32vec3(Shader const *self, const char *name, S32Vector3 const *value) {
     glUseProgram(self->handle);
     glUniform3i(glGetUniformLocation(self->handle, name), value->x, value->y, value->z);
 }
 
 /// Sets an 4D integer (S32Vector4) uniform
-void shader_uniform_s32vec4(Shader const *self, const char *name, S32Vector4 const *value) {
+static void shader_uniform_s32vec4(Shader const *self, const char *name, S32Vector4 const *value) {
     glUseProgram(self->handle);
     glUniform4i(glGetUniformLocation(self->handle, name), value->x, value->y, value->z, value->w);
 }
 
 /// Sets a float (f32) uniform
-void shader_uniform_f32(Shader const *self, const char *name, f32 const value) {
+static void shader_uniform_f32(Shader const *self, const char *name, f32 const value) {
     glUseProgram(self->handle);
     glUniform1f(glGetUniformLocation(self->handle, name), value);
 }
 
 /// Sets an 2D float (f32vec2_t) uniform
-void shader_uniform_f32vec2(Shader const *self, const char *name, F32Vector2 const *value) {
+static void shader_uniform_f32vec2(Shader const *self, const char *name, F32Vector2 const *value) {
     glUseProgram(self->handle);
     glUniform2f(glGetUniformLocation(self->handle, name), value->x, value->y);
 }
 
-void shader_uniform_f32vec3(Shader const *self, const char *name, F32Vector3 const *value) {
+static void shader_uniform_f32vec3(Shader const *self, const char *name, F32Vector3 const *value) {
     glUseProgram(self->handle);
     glUniform3f(glGetUniformLocation(self->handle, name), value->x, value->y, value->z);
 }
 
 /// Sets an 4D float (f32vec4_t) uniform
-void shader_uniform_f32vec4(Shader const *self, const char *name, F32Vector4 const *value) {
+static void shader_uniform_f32vec4(Shader const *self, const char *name, F32Vector4 const *value) {
     glUseProgram(self->handle);
     glUniform4f(glGetUniformLocation(self->handle, name), value->x, value->y, value->z, value->w);
 }
 
 /// Sets an 4x4 matrix (f32mat4_t) uniform
-void shader_uniform_f32mat4(Shader const *self, const char *name, F32Mat4 const *value) {
+static void shader_uniform_f32mat4(Shader const *self, const char *name, F32Mat4 const *value) {
     glUseProgram(self->handle);
     glUniformMatrix4fv(glGetUniformLocation(self->handle, name), 1, GL_FALSE, &value->value[0].x);
 }
 
 /// Binds the specified shader
-void shader_bind(Shader const *self) {
+static void shader_bind(Shader const *self) {
     glUseProgram(self->handle);
 }
 
 /// Unbinds the currently bound shader
-void shader_unbind(void) {
+static void shader_unbind(void) {
     glUseProgram(0);
 }

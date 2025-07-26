@@ -6,7 +6,7 @@ static void display_framebuffer_callback(GLFWwindow *handle, s32 const width, s3
 }
 
 /// Creates a new window and a corresponding OpenGL context
-bool display_create(Display *self, char const *title, s32 const width, s32 const height) {
+static b32 display_create(Display *self, char const *title, s32 const width, s32 const height) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -37,24 +37,24 @@ bool display_create(Display *self, char const *title, s32 const width, s32 const
 }
 
 /// Sets the argument that gets passed to every callback
-void display_callback_argument(Display const *self, void *arg) {
+static void display_callback_argument(Display const *self, void *arg) {
     glfwSetWindowUserPointer(self->handle, arg);
 }
 
 /// Updates the title of the window
-void display_title(Display *self, const char *title) {
+static void display_title(Display *self, const char *title) {
     glfwSetWindowTitle(self->handle, title);
     self->title = title;
 }
 
 /// Destroys the window
-void display_destroy(Display const *self) {
+static void display_destroy(Display const *self) {
     glfwDestroyWindow(self->handle);
     glfwTerminate();
 }
 
 /// Swaps front and back buffer
-f64 display_update_frame(Display *self) {
+static f64 display_update_frame(Display *self) {
     glfwSwapBuffers(self->handle);
     f64 const time = glfwGetTime();
     f64 const frame_time = time - self->time;
@@ -63,22 +63,22 @@ f64 display_update_frame(Display *self) {
 }
 
 /// Polls for incoming events
-void display_update_input(Display *self) {
+static void display_update_input(Display *self) {
     glfwPollEvents();
     glfwGetWindowSize(self->handle, &self->width, &self->height);
 }
 
 /// Checks if the window should be closed or not
-bool display_running(Display const *self) {
+static b32 display_running(Display const *self) {
     return self->running && !glfwWindowShouldClose(self->handle);
 }
 
 /// Sets the key callback for the display
-void display_key_callback(Display const *self, GLFWkeyfun const callback) {
+static void display_key_callback(Display const *self, GLFWkeyfun const callback) {
     glfwSetKeyCallback(self->handle, callback);
 }
 
 /// Sets the char callback for the display
-void display_char_callback(Display const *self, GLFWcharfun const callback) {
+static void display_char_callback(Display const *self, GLFWcharfun const callback) {
     glfwSetCharCallback(self->handle, callback);
 }

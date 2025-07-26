@@ -15,7 +15,7 @@ typedef struct hash_map_entry {
 } hash_map_entry_t;
 
 /// Allocates a new map instance
-HashMap *hash_map_new(void) {
+static HashMap *hash_map_new(void) {
     HashMap *self = (HashMap *) malloc(sizeof(HashMap));
     for (usize i = 0; i < MAP_BUCKET_COUNT; ++i) {
         self->buckets[i] = linked_list_new();
@@ -24,7 +24,7 @@ HashMap *hash_map_new(void) {
 }
 
 /// Frees the map and its buckets
-void hash_map_free(HashMap *self) {
+static void hash_map_free(HashMap *self) {
     for (usize i = 0; i < MAP_BUCKET_COUNT; ++i) {
         LinkedList *bucket = self->buckets[i];
         ListNode const *it = bucket->head;
@@ -39,14 +39,14 @@ void hash_map_free(HashMap *self) {
 }
 
 /// Clears the map and its buckets
-void hash_map_clear(HashMap const *self) {
+static void hash_map_clear(HashMap const *self) {
     for (usize i = 0; i < MAP_BUCKET_COUNT; ++i) {
         linked_list_clear(self->buckets[i]);
     }
 }
 
 /// Checks if two map entries are equal
-static bool hash_map_entry_equal(void const *a, void const *b) {
+static b32 hash_map_entry_equal(void const *a, void const *b) {
     hash_map_entry_t const *first = a;
     hash_map_entry_t const *second = b;
     if (first->type != second->type) {
@@ -59,7 +59,7 @@ static bool hash_map_entry_equal(void const *a, void const *b) {
 }
 
 /// Removes the specified key from the map
-void hash_map_remove(HashMap const *self, char const *key) {
+static void hash_map_remove(HashMap const *self, char const *key) {
     usize const bucket_index = hash(key, strlen(key)) % MAP_BUCKET_COUNT;
     LinkedList *bucket = self->buckets[bucket_index];
 
@@ -68,7 +68,7 @@ void hash_map_remove(HashMap const *self, char const *key) {
 }
 
 /// Inserts the specified key-value pair into the map
-void hash_map_insert(HashMap const *self, char const *key, void *value) {
+static void hash_map_insert(HashMap const *self, char const *key, void *value) {
     usize const bucket_index = hash(key, strlen(key)) % MAP_BUCKET_COUNT;
     LinkedList *bucket = self->buckets[bucket_index];
 
@@ -86,7 +86,7 @@ void hash_map_insert(HashMap const *self, char const *key, void *value) {
 }
 
 /// Inserts the specified key-value pair into the map
-void hash_map_insert_number(HashMap const *self, u64 const key, void *value) {
+static void hash_map_insert_number(HashMap const *self, u64 const key, void *value) {
     usize const bucket_index = key % MAP_BUCKET_COUNT;
     LinkedList *bucket = self->buckets[bucket_index];
 
@@ -104,7 +104,7 @@ void hash_map_insert_number(HashMap const *self, u64 const key, void *value) {
 }
 
 /// Tries to find a key-value pair where the key matches with the specified entry
-void *hash_map_find(HashMap const *self, char const *key) {
+static void *hash_map_find(HashMap const *self, char const *key) {
     usize const bucket_index = hash(key, strlen(key)) % MAP_BUCKET_COUNT;
     LinkedList const *bucket = self->buckets[bucket_index];
 
@@ -118,7 +118,7 @@ void *hash_map_find(HashMap const *self, char const *key) {
 }
 
 /// Tries to find a key-value pair where the key matches with the specified entry
-void *hash_map_find_number(HashMap const *self, u64 const key) {
+static void *hash_map_find_number(HashMap const *self, u64 const key) {
     usize const bucket_index = key % MAP_BUCKET_COUNT;
     LinkedList const *bucket = self->buckets[bucket_index];
 
@@ -137,7 +137,7 @@ static u32 hash_get16bits(const char *data) {
 }
 
 /// Computes hash of byte array
-u32 hash(const char *data, usize size) {
+static u32 hash(const char *data, usize size) {
     if (size == 0 || data == NULL) {
         return 0;
     }

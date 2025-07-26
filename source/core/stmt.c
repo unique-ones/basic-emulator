@@ -1,7 +1,10 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
 /// Creates a new let statement
-Statement *let_statement_new(MemoryArena *arena, usize const line, Expression *variable, Expression *initializer) {
+static Statement *let_statement_new(MemoryArena *arena,
+                                    usize const line,
+                                    Expression *variable,
+                                    Expression *initializer) {
     Statement *self = arena_alloc(arena, sizeof(Statement));
     self->line = line;
     self->type = STATEMENT_LET;
@@ -11,7 +14,7 @@ Statement *let_statement_new(MemoryArena *arena, usize const line, Expression *v
 }
 
 /// Creates a new clear statement
-Statement *clear_statement_new(MemoryArena *arena, usize const line) {
+static Statement *clear_statement_new(MemoryArena *arena, usize const line) {
     Statement *self = arena_alloc(arena, sizeof(Statement));
     self->line = line;
     self->type = STATEMENT_CLEAR;
@@ -19,11 +22,11 @@ Statement *clear_statement_new(MemoryArena *arena, usize const line) {
 }
 
 /// Creates a new def fn statement
-Statement *def_fn_statement_new(MemoryArena *arena,
-                                usize line,
-                                Expression *name,
-                                Expression *variable,
-                                Expression *body) {
+static Statement *def_fn_statement_new(MemoryArena *arena,
+                                       usize line,
+                                       Expression *name,
+                                       Expression *variable,
+                                       Expression *body) {
     Statement *self = arena_alloc(arena, sizeof(Statement));
     self->line = line;
     self->type = STATEMENT_DEF_FN;
@@ -34,7 +37,7 @@ Statement *def_fn_statement_new(MemoryArena *arena,
 }
 
 /// Creates a new print statement
-Statement *print_statement_new(MemoryArena *arena, usize const line, Expression *printable) {
+static Statement *print_statement_new(MemoryArena *arena, usize const line, Expression *printable) {
     Statement *self = arena_alloc(arena, sizeof(Statement));
     self->line = line;
     self->type = STATEMENT_PRINT;
@@ -43,7 +46,7 @@ Statement *print_statement_new(MemoryArena *arena, usize const line, Expression 
 }
 
 /// Creates a new run statement
-Statement *run_statement_new(MemoryArena *arena) {
+static Statement *run_statement_new(MemoryArena *arena) {
     Statement *self = arena_alloc(arena, sizeof(Statement));
     self->line = 0;
     self->type = STATEMENT_RUN;
@@ -51,12 +54,12 @@ Statement *run_statement_new(MemoryArena *arena) {
 }
 
 /// Checks if the given token type matches the current token in the state
-static bool match(TokenIterator const *state, TokenType const type) {
+static b32 match(TokenIterator const *state, TokenType const type) {
     return token_iterator_current(state)->type == type;
 }
 
 /// Checks if the given token type matches the next token in the state
-static bool match_next(TokenIterator const *state, TokenType const type) {
+static b32 match_next(TokenIterator const *state, TokenType const type) {
     return token_iterator_next(state)->type == type;
 }
 
@@ -256,7 +259,7 @@ static void statement_execute_print(Statement const *self, Program *program) {
 }
 
 /// Executes the statement
-void statement_execute(Statement *self, Program *program) {
+static void statement_execute(Statement *self, Program *program) {
     switch (self->type) {
         case STATEMENT_LET:
             statement_execute_let(self, program);

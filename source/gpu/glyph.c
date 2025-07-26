@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Elias Engelbert Plank
 
 /// Creates a glyph cache for the specified font
-GlyphCache *glyph_cache_new(char const *path) {
+static GlyphCache *glyph_cache_new(char const *path) {
     GlyphCache *self = malloc(sizeof(GlyphCache));
 
     BinaryBuffer font_data;
@@ -96,12 +96,12 @@ GlyphCache *glyph_cache_new(char const *path) {
 }
 
 /// Destroys the glyph cache and its glyph atlas
-void glyph_cache_free(GlyphCache *self) {
+static void glyph_cache_free(GlyphCache *self) {
     texture_destroy(&self->atlas);
     free(self);
 }
 
 /// Fetches the specified symbol from the glyph cache
-void glyph_cache_acquire(GlyphCache const *self, GlyphInfo *info, char const symbol) {
+static void glyph_cache_acquire(GlyphCache const *self, GlyphInfo *info, char const symbol) {
     *info = *(self->info + symbol - 32);
 }
