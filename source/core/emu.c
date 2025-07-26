@@ -13,7 +13,7 @@
 #include "stmt.h"
 #include "util/random.h"
 
-#include "GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 
 /// Finalizes an emulator pass by destroying associated data
 static void emulator_pass_finish(Emulator *self) {

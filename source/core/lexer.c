@@ -225,11 +225,13 @@ TokenList *tokenize(char *data, usize const length) {
         if (isalpha(string_iterator_current(&iterator))) {
             char const *lexeme = iterator.base + iterator.index;
             usize const begin_index = iterator.index;
-            while (isalpha(string_iterator_current(&iterator))) {
+
+            while (isalnum(string_iterator_current(&iterator))) {
                 string_iterator_advance(&iterator);
             }
+
             usize const end_index = iterator.index;
-            usize lexeme_length = end_index - begin_index;
+            usize const lexeme_length = end_index - begin_index;
 
             if (string_view_equal(lexeme, lexeme_length, "PRINT", 5)) {
                 token_list_push(list, TOKEN_PRINT, lexeme, lexeme_length);
